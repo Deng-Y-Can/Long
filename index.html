@@ -55,11 +55,24 @@
 				text-align: center;
 				text-shadow: 0 15px 50px red;
 			}
+			.dropdown-container {
+    position: absolute; /* 将下拉菜单容器设置为绝对定位 */
+    top: 0; /* 使其距离页面顶部为0，靠上布局 */
+    right: 0; /* 使其距离页面右边为0，靠右布局 */
+    /* 可根据实际需求设置宽度等其他样式 */
 		</style>
 	
         </head>
 	     
 <body>
+        <div class="dropdown-container">
+         
+        <select class="horizontal-dropdown" id="menu1">
+		    <option value="index.html">主页</option>
+			<option value="Page/tetris.html">俄罗斯方块</option>  
+            <option value="Page/calculator.html">计算器</option>        
+        </select>      
+       </div>
 		<div>
 			<p class="left"></p>
 			<p class="right"></p>
@@ -67,5 +80,17 @@
 		<h1>
 			 熊二，加油哦！
 		</h1>
+		<script>
+		    // 当DOM内容加载完成后执行以下函数
+      document.addEventListener('DOMContentLoaded', function () {
+    // 获取id为menu1的select下拉菜单元素
+    var menu1 = document.getElementById('menu1');
+    // 为其添加change事件监听器，当菜单选项改变时
+    menu1.addEventListener('change', function () {
+        // 将页面的URL设置为所选选项的值，实现页面跳转
+        window.location.href = menu1.value;
+    });
+});
+		</script>
 	</body>
 </html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stylish Calculator with Multiple Themes</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+   .calculator {
+      width: 300px;
+      margin: 50px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+   .display {
+      background-color: #f5f5f5;
+      border-radius: 5px;
+      height: 50px;
+      line-height: 50px;
+      text-align: right;
+      padding: 0 10px;
+      margin-bottom: 15px;
+      font-size: 24px;
+      overflow-x: auto;
+    }
+
+   .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 10px;
+    }
+
+   .button {
+      background-color: #e0e0e0;
+      color: #333;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.2s ease;
+    }
+
+   .button:hover {
+      background-color: #d0d0d0;
+    }
+
+   .operator {
+      background-color: #ff9966;
+      color: #fff;
+    }
+
+   .equal {
+      background-color: #66ccff;
+      color: #fff;
+    }
+
+   .clear {
+      background-color: #ff6666;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="calculator" id="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons" id="buttons">
+      <button class="button" onclick="appendNumber(7)">7</button>
+      <button class="button" onclick="appendNumber(8)">8</button>
+      <button class="button" onclick="appendNumber(9)">9</button>
+      <button class="button operator" onclick="appendOperator('/')">÷</button>
+      <button class="button" onclick="appendNumber(4)">4</button>
+      <button class="button" onclick="appendNumber(5)">5</button>
+      <button class="button" onclick="appendNumber(6)">6</button>
+      <button class="button operator" onclick="appendOperator('*')">×</button>
+      <button class="button" onclick="appendNumber(1)">1</button>
+      <button class="button" onclick="appendNumber(2)">2</button>
+      <button class="button" onclick="appendNumber(3)">3</button>
+      <button class="button operator" onclick="appendOperator('-')">-</button>
+      <button class="button" onclick="appendNumber(0)">0</button>
+      <button class="button" onclick="appendDecimal('.')">.</button>
+      <button class="button equal" onclick="calculate()">=</button>
+      <button class="button clear" onclick="clearDisplay()">C</button>
+    </div>
+  </div>
+  <div>
+    <button onclick="toggleTheme('light')">Light Theme</button>
+    <button onclick="toggleTheme('dark')">Dark Theme</button>
+    <button onclick="toggleTheme('blue')">Blue Theme</button>
+    <button onclick="toggleTheme('green')">Green Theme</button>
+  </div>
+  <script>
+    let displayValue = '0';
+    let operator = '';
+    let firstOperand = '';
+    let waitingForSecondOperand = false;
+
+    function appendNumber(number) {
+      if (waitingForSecondOperand) {
+        displayValue = number.toString();
+        waitingForSecondOperand = false;
+      } else {
+        displayValue === '0'? displayValue = number.toString() : displayValue += number.toString();
+      }
+      document.getElementById('display').textContent = displayValue;
+    }
+
+    function appendDecimal(decimal) {
+      if (!displayValue.includes('.')) {
+        appendNumber(decimal);
+      }
+    }
+
+    function appendOperator(op) {
+      if (operator!== '' &&!waitingForSecondOperand) {
+        calculate();
+      }
+      operator = op;
+      firstOperand = displayValue;
+      waitingForSecondOperand = true;
+    }
+
+    function calculate() {
+      let result;
+      const secondOperand = displayValue;
+      switch (operator) {
+        case '+':
+          result = parseFloat(firstOperand) + parseFloat(secondOperand);
+          break;
+        case '-':
+          result = parseFloat(firstOperand) - parseFloat(secondOperand);
+          break;
+        case '*':
+          result = parseFloat(firstOperand) * parseFloat(secondOperand);
+          break;
+        case '/':
+          if (secondOperand === '0') {
+            result = 'Error';
+          } else {
+            result = parseFloat(firstOperand) / parseFloat(secondOperand);
+          }
+          break;
+        default:
+          return;
+      }
+      displayValue = result.toString();
+      operator = '';
+      waitingForSecondOperand = false;
+      document.getElementById('display').textContent = displayValue;
+    }
+
+    function clearDisplay() {
+      displayValue = '0';
+      operator = '';
+      firstOperand = '';
+      waitingForSecondOperand = false;
+      document.getElementById('display').textContent = displayValue;
+    }
+
+    function toggleTheme(themeName) {
+      switch (themeName) {
+        case 'light':
+          document.body.style.backgroundColor = '#fff';
+          document.getElementById('calculator').style.backgroundColor = '#f5f5f5';
+          document.getElementById('display').style.backgroundColor = '#f5f5f5';
+          const buttons = document.querySelectorAll('.button');
+          buttons.forEach(button => {
+            button.style.backgroundColor = '#e0e0e0';
+            button.style.color = '#333';
+          });
+          break;
+        case 'dark':
+          document.body.style.backgroundColor = '#333';
+          document.getElementById('calculator').style.backgroundColor = '#444';
+          document.getElementById('display').style.backgroundColor = '#222';
+          const darkButtons = document.querySelectorAll('.button');
+          darkButtons.forEach(button => {
+            button.style.backgroundColor = '#555';
+            button.style.color = '#fff';
+          });
+          break;
+        case 'blue':
+          document.body.style.backgroundColor = '#0077b6';
+          document.getElementById('calculator').style.backgroundColor = '#005f87';
+          document.getElementById('display').style.backgroundColor = '#004c71';
+          const blueButtons = document.querySelectorAll('.button');
+          blueButtons.forEach(button => {
+            button.style.backgroundColor = '#006699';
+            button.style.color = '#fff';
+          });
+          break;
+        case 'green':
+          document.body.style.backgroundColor = '#4caf50';
+          document.getElementById('calculator').style.backgroundColor = '#388e3c';
+          document.getElementById('display').style.backgroundColor = '#2e7d32';
+          const greenButtons = document.querySelectorAll('.button');
+          greenButtons.forEach(button => {
+            button.style.backgroundColor = '#388e3c';
+            button.style.color = '#fff';
+          });
+          break;
+      }
+    }
+  </script>
+</body>
+
+</html>

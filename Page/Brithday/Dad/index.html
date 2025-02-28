@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>诗与你</title>
+    <style>
+        /* 整体页面容器 */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5dc;
+        }
+
+        /* 控制按钮及格式设置容器 */
+        #control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+
+        /* 调色板样式 */
+        #color-picker {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* 文本显示区域整体样式，模拟电视机框外观 */
+        #text-display {
+            width: 60vw;
+            max-width: 800px;
+            max-height: 60vh;
+            border: 20px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            background-color: #000;
+            box-sizing: border-box;
+        }
+
+        /* 用于显示文本的内部容器，模拟电视屏幕亮起效果 */
+        #text-display-inner {
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 用于滚动文本的容器 */
+        #scrolling-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            animation: scrollText 10s linear infinite;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            box-sizing: border-box;
+        }
+
+        /* 段落样式 */
+        p {
+            margin: 0;
+            line-height: 1.5;
+            text-align: right;
+            width: 100%;
+        }
+
+        /* 按钮样式 */
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 10px;
+            margin-right: 10px;
+        }
+
+        /* 动画关键帧，实现文本向上滚动 */
+        @keyframes scrollText {
+            0% {
+                top: 0;
+            }
+            100% {
+                top: -100%;
+            }
+        }
+
+        /* 文字格式输入框样式 */
+        #text-format input {
+            width: 80px;
+            margin-right: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* 尺寸控制相关输入框样式 */
+        #size-control input {
+            width: 80px;
+            margin-right: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* 以下是新增的文本对齐相关样式 */
+      .text-align-left {
+            text-align: left;
+        }
+
+      .text-align-center {
+            text-align: center;
+        }
+
+      .text-align-right {
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="control-panel">
+        <div id="color-picker">
+            <label for="bg-color">选择背景色：</label>
+            <input type="color" id="bg-color" value="#ffffff">
+        </div>
+        <div id="text-format">
+            <label for="font-family">字体：</label>
+            <input type="text" id="font-family" value="Arial">
+            <label for="font-size">字号：</label>
+            <input type="number" id="font-size" value="16">
+            <label for="text-color">文字颜色：</label>
+            <input type="color" id="text-color" value="#000000">
+            <label for="text-align">对齐方式：</label>
+            <select id="text-align">
+			    <option value="center">居中对齐</option>
+                <option value="left">左对齐</option>
+                <option value="right">右对齐</option>
+            </select>
+        </div>
+        <div id="size-control">
+            <label for="width">宽度：</label>
+            <input type="number" id="width" value="800">
+            <label for="aspect-ratio">长宽比：</label>
+            <input type="number" id="aspect-ratio" value="1.7778">
+            <button id="resize-btn">调整尺寸</button>
+        </div>
+        <button id="play-pause-btn">暂停</button>
+    </div>
+    <div id="text-display">
+        <div id="text-display-inner">
+            <div id="scrolling-text"></div>
+        </div>
+    </div>
+    <script>
+        // 获取相关DOM元素
+        const scrollingText = document.getElementById('scrolling-text');
+        const bgColorPicker = document.getElementById('bg-color');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const fontFamilyInput = document.getElementById('font-family');
+        const fontSizeInput = document.getElementById('font-size');
+        const textColorInput = document.getElementById('text-color');
+        const widthInput = document.getElementById('width');
+        const aspectRatioInput = document.getElementById('aspect-ratio');
+        const resizeBtn = document.getElementById('resize-btn');
+        const textAlignSelect = document.getElementById('text-align');
+
+        let isPlaying = false;
+        let lines = [];
+
+        // 读取文本文件内容
+        fetch('index.txt')
+     .then(response => response.text())
+     .then(data => {
+                lines = data.split('\n');
+                displayText();
+            })
+     .catch(error => console.error('Error:', error));
+
+        // 改变背景色的函数
+        bgColorPicker.addEventListener('change', function () {
+            document.body.style.backgroundColor = bgColorPicker.value;
+        });
+
+        // 根据选择的值更新文字对齐方式的函数
+        function updateTextAlign() {
+            const selectedValue = textAlignSelect.value;
+            const pTags = scrollingText.querySelectorAll('p');
+            pTags.forEach(p => {
+                p.style.textAlign = selectedValue;
+            });
+        }
+
+        // 根据输入框的值更新文字格式的函数
+        function updateTextFormat() {
+            const pTags = scrollingText.querySelectorAll('p');
+            pTags.forEach(p => {
+                p.style.fontFamily = fontFamilyInput.value;
+                p.style.fontSize = fontSizeInput.value + "px";
+                p.style.color = textColorInput.value;
+            });
+            updateTextAlign();
+        }
+
+        // 显示文本内容的函数
+        function displayText() {
+            let textContent = '';
+            lines.forEach(line => {
+                textContent += `<p>${line}</p>`;
+            });
+            scrollingText.innerHTML = textContent;
+            updateTextFormat();
+        }
+
+        // 播放/暂停按钮点击事件处理函数
+        playPauseBtn.addEventListener('click', function () {
+            isPlaying =!isPlaying;
+            if (isPlaying) {
+                playPauseBtn.textContent = '暂停';
+                document.getElementById('scrolling-text').style.animationPlayState = 'running';
+            } else {
+                playPauseBtn.textContent = '播放';
+                document.getElementById('scrolling-text').style.animationPlayState = 'paused';
+            }
+        });
+
+        // 监听字体、字号、文字颜色输入框的变化事件，实时更新文字格式
+        fontFamilyInput.addEventListener('input', updateTextFormat);
+        fontSizeInput.addEventListener('input', updateTextFormat);
+        textColorInput.addEventListener('input', updateTextFormat);
+        textAlignSelect.addEventListener('input', updateTextFormat);
+
+        // 调整尺寸按钮点击事件处理函数
+        resizeBtn.addEventListener('click', function () {
+            const width = parseInt(widthInput.value);
+            const aspectRatio = parseFloat(aspectRatioInput.value);
+            const height = width / aspectRatio;
+            const newWidth = width + "px";
+            const newHeight = height + "px";
+            document.getElementById('text-display').style.width = newWidth;
+            document.getElementById('text-display').style.height = newHeight;
+            document.getElementById('text-display-inner').style.width = newWidth;
+            document.getElementById('text-display-inner').style.height = newHeight;
+        });
+    </script>
+</body>
+
+</html>

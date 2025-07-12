@@ -1,0 +1,25 @@
+{
+  "Name": "book",
+  "Path": "E:\\home\\github\\test2\\TEST2\\book",
+  "Type": "Directory",
+  "Children": [
+    {
+      "Name": "C#API大全.pdf",
+      "Path": "E:\\home\\github\\test2\\TEST2\\book\\API大全.pdf",
+      "Type": "File",
+      "Children": null
+    },
+    {
+      "Name": "C#docs文档.pdf",
+      "Path": "E:\\home\\github\\test2\\TEST2\\book\\docs文档.pdf",
+      "Type": "File",
+      "Children": null
+    },
+    {
+      "Name": "C#开发实例大全 提高卷.pdf",
+      "Path": "E:\\home\\github\\test2\\TEST2\\book\\开发实例大全 提高卷.pdf",
+      "Type": "File",
+      "Children": null
+    }
+  ]
+}

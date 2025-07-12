@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>书籍阅读器（支持PDF和TXT）</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 左侧目录栏 */
+        .sidebar {
+            width: 300px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .search-container {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 30px 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            color: #999;
+        }
+
+        .search-results {
+            margin-top: 10px;
+            padding: 5px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .search-result-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .directory-tree {
+            list-style: none;
+        }
+
+        .tree-item {
+            margin: 5px 0;
+        }
+
+        .item-wrapper {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .item-wrapper:hover {
+            background-color: #e9ecef;
+        }
+
+        .folder-icon, .pdf-icon, .txt-icon {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+
+        .folder-icon {
+            color: #ffc107;
+        }
+
+        .pdf-icon {
+            color: #dc3545;
+        }
+
+        .txt-icon {
+            color: #198754;
+        }
+
+        .item-name {
+            flex: 1;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .toggle-icon {
+            font-size: 12px;
+            color: #666;
+            transition: transform 0.2s;
+        }
+
+        .subtree {
+            margin-left: 20px;
+            list-style: none;
+            display: none; /* 默认折叠 */
+        }
+
+        .subtree.expanded {
+            display: block; /* 展开状态 */
+        }
+
+        /* 右侧内容区 */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .controls {
+            padding: 15px;
+            background-color: #f1f3f5;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #e9ecef;
+        }
+
+        #pageInfo {
+            color: #495057;
+        }
+
+        select {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .page-jump {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .page-input {
+            width: 60px;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .pdf-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pdf-background {
+            position: absolute;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .pdf-canvas {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .txt-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .txt-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-family: monospace;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .no-selection {
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 20px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 左侧目录栏 -->
+    <div class="sidebar">
+        <h2>文档目录</h2>
+        
+        <!-- 搜索框 -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="搜索文件或文件夹...">
+            <span class="search-icon">🔍</span>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+        
+        <!-- 目录树 -->
+        <ul class="directory-tree" id="directoryTree">
+            <li class="loading">加载目录中...</li>
+        </ul>
+    </div>
+
+    <!-- 右侧内容区 -->
+    <div class="content">
+        <div class="controls">
+            <button id="prevPage">上一页</button>
+            <button id="nextPage">下一页</button>
+            
+            <!-- 页码跳转 -->
+            <div class="page-jump">
+                <input type="number" id="pageInput" class="page-input" min="1" placeholder="页码">
+                <button id="jumpToPage">跳转</button>
+            </div>
+            
+            <span id="pageInfo">页码: 1 / 0</span>
+            <select id="bgColor">
+                <option value="#ffffff">白色</option>
+                <option value="#f5f5f5">浅灰</option>
+                <option value="#e8f4fd">淡蓝</option>
+                <option value="#fff8e1">浅黄</option>
+                <option value="#2c3e50">深色模式</option>
+            </select>
+        </div>
+        
+        <!-- PDF容器 -->
+        <div class="pdf-container" id="pdfContainer">
+            <div class="no-selection">请从左侧双击PDF或TXT文件打开</div>
+        </div>
+        
+        <!-- TXT容器 -->
+        <div class="txt-container" id="txtContainer" style="display: none;">
+            <div class="txt-content" id="txtContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // PDF.js 配置
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        
+        // 全局变量
+        let pdfDoc = null;
+        let currentPage = 1;
+        let pageRendering = false;
+        let currentFilePath = '';
+        let currentFileType = ''; // 'pdf' 或 'txt'
+        let directoryData = null; // 存储完整目录数据用于搜索
+        
+        const pdfContainer = document.getElementById('pdfContainer');
+        const txtContainer = document.getElementById('txtContainer');
+        const txtContent = document.getElementById('txtContent');
+        const directoryTree = document.getElementById('directoryTree');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+
+        // 初始化：从bookroute.json加载目录结构
+        async function initDirectoryTree() {
+            try {
+                // 加载同级目录下的bookroute.json
+                const response = await fetch('bookroute.json');
+                if (!response.ok) throw new Error(`加载失败: ${response.statusText}`);
+                
+                directoryData = await response.json();
+                directoryTree.innerHTML = ''; // 清空加载提示
+                buildDirectoryTree(directoryData, directoryTree); // 生成目录树
+                
+                // 初始化搜索功能
+                initSearch();
+            } catch (error) {
+                directoryTree.innerHTML = `<li class="error-message">目录加载失败: ${error.message}</li>`;
+                console.error('目录加载错误:', error);
+            }
+        }
+
+        // 递归生成目录树HTML
+        function buildDirectoryTree(node, parentElement) {
+            // 忽略非文件夹、非PDF和非TXT文件
+            if (node.Type === "File" && 
+                !node.Name.toLowerCase().endsWith('.pdf') && 
+                !node.Name.toLowerCase().endsWith('.txt')) {
+                return;
+            }
+
+            const li = document.createElement('li');
+            li.className = 'tree-item';
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'item-wrapper';
+            wrapper.dataset.type = node.Type;
+            wrapper.dataset.relativePath = getRelativePath(node.Path); // 存储相对于book的路径
+
+            // 添加图标
+            const icon = document.createElement('span');
+            if (node.Type === 'Directory') {
+                icon.className = 'folder-icon';
+                icon.textContent = '📁';
+            } else if (node.Name.toLowerCase().endsWith('.pdf')) {
+                icon.className = 'pdf-icon';
+                icon.textContent = '📄';
+            } else {
+                icon.className = 'txt-icon';
+                icon.textContent = '📝';
+            }
+            wrapper.appendChild(icon);
+
+            // 添加名称
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'item-name';
+            nameSpan.textContent = node.Name;
+            wrapper.appendChild(nameSpan);
+
+            // 文件夹：添加展开/折叠功能
+            if (node.Type === 'Directory') {
+                const toggle = document.createElement('span');
+                toggle.className = 'toggle-icon';
+                toggle.textContent = '▶';
+                wrapper.appendChild(toggle);
+                
+                // 点击展开/折叠
+                wrapper.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const subtree = li.querySelector('.subtree');
+                    if (subtree) {
+                        subtree.classList.toggle('expanded');
+                        toggle.textContent = subtree.classList.contains('expanded') ? '▼' : '▶';
+                    }
+                });
+
+                // 生成子目录
+                if (node.Children && node.Children.length > 0) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'subtree';
+                    li.appendChild(ul);
+                    
+                    // 过滤子节点，只保留文件夹、PDF和TXT文件
+                    const filteredChildren = node.Children.filter(child => 
+                        child.Type === 'Directory' || 
+                        child.Name.toLowerCase().endsWith('.pdf') ||
+                        child.Name.toLowerCase().endsWith('.txt')
+                    );
+                    
+                    filteredChildren.forEach(child => {
+                        buildDirectoryTree(child, ul);
+                    });
+                }
+            } else {
+                // 文件：双击加载
+                wrapper.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    const relativePath = wrapper.dataset.relativePath;
+                    const fileType = node.Name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'txt';
+                    loadFile(`book/${relativePath}`, fileType);
+                });
+            }
+
+            li.appendChild(wrapper);
+            parentElement.appendChild(li);
+        }
+
+        // 从完整路径中提取相对于book的路径
+        function getRelativePath(fullPath) {
+            const bookIndex = fullPath.toLowerCase().indexOf("book");
+            if (bookIndex === -1) return fullPath;
+            
+            const relativePath = fullPath.substring(bookIndex + 4); // +4 跳过"book"
+            return relativePath.replace(/\\/g, "/").replace(/^\//, ""); // 转换反斜杠并移除开头的斜杠
+        }
+
+        // 加载文件（PDF或TXT）
+        async function loadFile(url, fileType) {
+            currentFilePath = url;
+            currentFileType = fileType;
+            
+            // 隐藏所有容器，显示加载状态
+            pdfContainer.style.display = 'none';
+            txtContainer.style.display = 'none';
+            pdfContainer.innerHTML = '<div>加载中...</div>';
+            pdfContainer.style.display = 'flex';
+            
+            try {
+                if (fileType === 'pdf') {
+                    // 加载PDF
+                    const loadingTask = pdfjsLib.getDocument(url);
+                    pdfDoc = await loadingTask.promise;
+                    currentPage = 1;
+                    renderPage(currentPage); // 渲染第一页
+                    updatePageInfo(); // 更新页码显示
+                } else {
+                    // 加载TXT
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`加载失败: ${response.statusText}`);
+                    
+                    const text = await response.text();
+                    txtContent.textContent = text;
+                    
+                    // 显示TXT容器
+                    pdfContainer.style.display = 'none';
+                    txtContainer.style.display = 'block';
+                }
+            } catch (error) {
+                pdfContainer.innerHTML = `<div class="error-message">文件加载失败: ${error.message}</div>`;
+                console.error('文件加载错误:', error);
+            }
+        }
+
+        // 渲染指定页码（PDF）
+        async function renderPage(num) {
+            if (pageRendering || !pdfDoc) return;
+            pageRendering = true;
+
+            try {
+                const page = await pdfDoc.getPage(num);
+                const scale = 1.2; // 渲染缩放比例
+                const viewport = page.getViewport({ scale });
+
+                // 清空容器并创建背景层
+                pdfContainer.innerHTML = '';
+                const background = document.createElement('div');
+                background.className = 'pdf-background';
+                background.style.height = `${viewport.height}px`;
+                background.style.width = `${viewport.width}px`;
+                background.style.backgroundColor = document.getElementById('bgColor').value;
+                pdfContainer.appendChild(background);
+
+                // 创建Canvas渲染PDF
+                const canvas = document.createElement('canvas');
+                canvas.className = 'pdf-canvas';
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                pdfContainer.appendChild(canvas);
+
+                // 渲染配置
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                // 执行渲染
+                await page.render(renderContext).promise;
+                currentPage = num;
+                updatePageInfo();
+            } catch (error) {
+                pdfContainer.innerHTML = `<div class="error-message">页面渲染失败: ${error.message}</div>`;
+                console.error('页面渲染错误:', error);
+            } finally {
+                pageRendering = false;
+            }
+        }
+
+        // 更新页码显示
+        function updatePageInfo() {
+            document.getElementById('pageInfo').textContent = 
+                currentFileType === 'pdf' 
+                ? `页码: ${currentPage} / ${pdfDoc ? pdfDoc.numPages : 0}`
+                : 'TXT文件';
+            
+            // 更新页码输入框
+            const pageInput = document.getElementById('pageInput');
+            if (currentFileType === 'pdf' && pdfDoc) {
+                pageInput.disabled = false;
+                pageInput.max = pdfDoc.numPages;
+            } else {
+                pageInput.disabled = true;
+                pageInput.value = '';
+            }
+        }
+
+        // 初始化搜索功能
+        function initSearch() {
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim().toLowerCase();
+                if (query.length < 2) { // 至少输入2个字符才开始搜索
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                // 执行搜索
+                const results = searchDirectory(directoryData, query);
+                
+                // 显示搜索结果
+                searchResults.innerHTML = '';
+                if (results.length > 0) {
+                    results.forEach(result => {
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'search-result-item';
+                        resultItem.textContent = result.path;
+                        resultItem.dataset.relativePath = result.relativePath;
+                        resultItem.dataset.type = result.type;
+                        
+                        resultItem.addEventListener('click', () => {
+                            searchInput.value = '';
+                            searchResults.style.display = 'none';
+                            
+                            if (result.type === 'Directory') {
+                                // 展开目录
+                                expandDirectoryByPath(result.relativePath);
+                            } else {
+                                // 打开文件
+                                loadFile(`book/${result.relativePath}`, 
+                                    result.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'txt');
+                            }
+                        });
+                        
+                        searchResults.appendChild(resultItem);
+                    });
+                    searchResults.style.display = 'block';
+                } else {
+                    searchResults.innerHTML = '<div class="search-result-item" style="color: #999;">未找到匹配结果</div>';
+                    searchResults.style.display = 'block';
+                }
+            });
+            
+            // 点击其他区域关闭搜索结果
+            document.addEventListener('click', (e) => {
+                if (!searchContainer.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+
+        // 搜索目录
+        function searchDirectory(node, query) {
+            const results = [];
+            
+            // 检查当前节点是否匹配
+            if (node.Name.toLowerCase().includes(query)) {
+                results.push({
+                    name: node.Name,
+                    path: getDisplayPath(node),
+                    relativePath: getRelativePath(node.Path),
+                    type: node.Type
+                });
+            }
+            
+            // 递归搜索子节点
+            if (node.Children && node.Children.length > 0) {
+                // 过滤子节点，只搜索文件夹、PDF和TXT文件
+                const filteredChildren = node.Children.filter(child => 
+                    child.Type === 'Directory' || 
+                    child.Name.toLowerCase().endsWith('.pdf') ||
+                    child.Name.toLowerCase().endsWith('.txt')
+                );
+                
+                filteredChildren.forEach(child => {
+                    results.push(...searchDirectory(child, query));
+                });
+            }
+            
+            return results;
+        }
+
+        // 获取用于显示的完整路径
+        function getDisplayPath(node) {
+            let path = node.Name;
+            let current = node;
+            
+            while (current.parent) {
+                current = current.parent;
+                path = `${current.Name}/${path}`;
+            }
+            
+            return path;
+        }
+
+        // 根据路径展开目录
+        function expandDirectoryByPath(relativePath) {
+            // 将路径分割为部分
+            const pathParts = relativePath.split('/');
+            let currentElement = directoryTree;
+            
+            // 逐级查找并展开目录
+            for (let i = 0; i < pathParts.length; i++) {
+                const part = pathParts[i];
+                let found = false;
+                
+                // 查找匹配的目录项
+                for (let j = 0; j < currentElement.children.length; j++) {
+                    const child = currentElement.children[j];
+                    const itemName = child.querySelector('.item-name').textContent;
+                    
+                    if (itemName === part) {
+                        // 展开目录
+                        const subtree = child.querySelector('.subtree');
+                        if (subtree) {
+                            subtree.classList.add('expanded');
+                            const toggleIcon = child.querySelector('.toggle-icon');
+                            if (toggleIcon) toggleIcon.textContent = '▼';
+                        }
+                        
+                        currentElement = subtree;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) break;
+            }
+        }
+
+        // 绑定按钮事件
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentFileType === 'pdf' && pdfDoc && currentPage > 1) {
+                renderPage(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentFileType === 'pdf' && pdfDoc && currentPage < pdfDoc.numPages) {
+                renderPage(currentPage + 1);
+            }
+        });
+
+        // 跳转到指定页码
+        document.getElementById('jumpToPage').addEventListener('click', () => {
+            if (currentFileType === 'pdf' && pdfDoc) {
+                const pageInput = document.getElementById('pageInput');
+                const pageNum = parseInt(pageInput.value);
+                
+                if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pdfDoc.numPages) {
+                    renderPage(pageNum);
+                } else {
+                    alert(`请输入有效的页码 (1-${pdfDoc.numPages})`);
+                }
+            }
+        });
+
+        // 支持按回车键跳转页码
+        document.getElementById('pageInput').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('jumpToPage').click();
+            }
+        });
+
+        // 背景色切换
+        document.getElementById('bgColor').addEventListener('change', () => {
+            const bgColor = event.target.value;
+            
+            if (currentFileType === 'pdf') {
+                const background = pdfContainer.querySelector('.pdf-background');
+                if (background) background.style.backgroundColor = bgColor;
+            } else if (currentFileType === 'txt') {
+                txtContent.style.backgroundColor = bgColor;
+            }
+        });
+
+        // 初始化目录
+        initDirectoryTree();
+    </script>
+</body>
+</html>

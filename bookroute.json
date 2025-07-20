@@ -251,6 +251,61 @@
       ]
     },
     {
+      "Name": "地理",
+      "Path": "E:\\home\\github\\Long\\Long\\book\\地理",
+      "Type": "Directory",
+      "Children": [
+        {
+          "Name": "01529地图学.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\地理\\01529地图学.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01530人类环境.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\地理\\01530人类环境.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01531地质学基础.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\地理\\01531地质学基础.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01532地理信息系统.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\地理\\01532地理信息系统.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01533环境监测.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\地理\\01533环境监测.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01534气象学与气候学.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\地理\\01534气象学与气候学.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01544讲故事-学地理.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\地理\\01544讲故事-学地理.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01545简易地理教学.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\地理\\01545简易地理教学.txt",
+          "Type": "File",
+          "Children": null
+        }
+      ]
+    },
+    {
       "Name": "学习方法",
       "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法",
       "Type": "Directory",
@@ -372,6 +427,91 @@
         {
           "Name": "00293学习方法指导丛书-其它各科学习方法指导.txt",
           "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00293学习方法指导丛书-其它各科学习方法指导.txt",
+          "Type": "File",
+          "Children": null
+        }
+      ]
+    },
+    {
+      "Name": "审美素质",
+      "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质",
+      "Type": "Directory",
+      "Children": [
+        {
+          "Name": "01275审美素质培养丛书-怎样画素描.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01275审美素质培养丛书-怎样画素描.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01276审美素质培养丛书-怎样画国画.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01276审美素质培养丛书-怎样画国画.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01277审美素质培养丛书-怎样画水彩画.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01277审美素质培养丛书-怎样画水彩画.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01278审美素质培养丛书-书法入门.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01278审美素质培养丛书-书法入门.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01279审美素质培养丛书-插花艺术入门.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01279审美素质培养丛书-插花艺术入门.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01280审美素质培养丛书-摄影入门.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01280审美素质培养丛书-摄影入门.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01281审美素质培养丛书-舞蹈入门.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01281审美素质培养丛书-舞蹈入门.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01282审美素质培养丛书-影视美与欣赏.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01282审美素质培养丛书-影视美与欣赏.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01283审美素质培养丛书-文学美与欣赏.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01283审美素质培养丛书-文学美与欣赏.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01284审美素质培养丛书-自然美与欣赏.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01284审美素质培养丛书-自然美与欣赏.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01285审美素质培养丛书-体育美与欣赏.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01285审美素质培养丛书-体育美与欣赏.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01286审美素质培养丛书-怎样培养正确的审美观.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01286审美素质培养丛书-怎样培养正确的审美观.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01287审美素质培养丛书-审美素质教育概况.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\审美素质\\01287审美素质培养丛书-审美素质教育概况.txt",
           "Type": "File",
           "Children": null
         }
@@ -630,6 +770,90 @@
       "Path": "E:\\home\\github\\Long\\Long\\book\\生物",
       "Type": "Directory",
       "Children": [
+        {
+          "Name": "01414中学百科全书-生物卷.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01414中学百科全书-生物卷.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01415中学生物科技活动.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01415中学生物科技活动.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01416中学生物学教学法.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01416中学生物学教学法.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01417植物学(第二版)下册.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01417植物学(第二版)下册.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01418人体解剖生理学(第三版).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01418人体解剖生理学(第三版).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01419生物进化的新探索.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01419生物进化的新探索.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01420生理学实验.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01420生理学实验.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01421卫生学(第四版).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01421卫生学(第四版).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01422达尔文传(1809-1882).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01422达尔文传(1809-1882).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01423植物栽培.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01423植物栽培.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01424无脊椎动物学(上册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01424无脊椎动物学(上册).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01425无脊椎动物学(下册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01425无脊椎动物学(下册).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01426生理学(第三版).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01426生理学(第三版).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01427生物技术.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\01427生物技术.txt",
+          "Type": "File",
+          "Children": null
+        },
         {
           "Name": "中国600种昆虫生态图鉴 -.pdf",
           "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\中国600种昆虫生态图鉴 -.pdf",
@@ -940,6 +1164,397 @@
       ]
     },
     {
+      "Name": "素质教育文库",
+      "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库",
+      "Type": "Directory",
+      "Children": [
+        {
+          "Name": "01211二十一世纪中小学生素质教育文库(10)学科常识.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01211二十一世纪中小学生素质教育文库(10)学科常识.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01212二十一世纪中小学生素质教育文库(11)历史典要.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01212二十一世纪中小学生素质教育文库(11)历史典要.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01213二十一世纪中小学生素质教育文库(12)名胜古迹.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01213二十一世纪中小学生素质教育文库(12)名胜古迹.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01214二十一世纪中小学生素质教育文库(13)政治经济纵横.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01214二十一世纪中小学生素质教育文库(13)政治经济纵横.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01215二十一世纪中小学生素质教育文库(14)科技史话.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01215二十一世纪中小学生素质教育文库(14)科技史话.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01216二十一世纪中小学生素质教育文库(15)体育博览.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01216二十一世纪中小学生素质教育文库(15)体育博览.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01217二十一世纪中小学生素质教育文库(16)趣谈法律.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01217二十一世纪中小学生素质教育文库(16)趣谈法律.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01218二十一世纪中小学生素质教育文库(17)战争与武器.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01218二十一世纪中小学生素质教育文库(17)战争与武器.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01219二十一世纪中小学生素质教育文库(18)趣谈天文.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01219二十一世纪中小学生素质教育文库(18)趣谈天文.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01220二十一世纪中小学生素质教育文库(19)怎样利用图书馆.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01220二十一世纪中小学生素质教育文库(19)怎样利用图书馆.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01221二十一世纪中小学生素质教育文库(20)生活技能.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01221二十一世纪中小学生素质教育文库(20)生活技能.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01222二十一世纪中小学生素质教育文库(21)家电操作与维护.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01222二十一世纪中小学生素质教育文库(21)家电操作与维护.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01223二十一世纪中小学生素质教育文库(22)计算机入门.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01223二十一世纪中小学生素质教育文库(22)计算机入门.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01224二十一世纪中小学生素质教育文库(23)应用文写作基础技能.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01224二十一世纪中小学生素质教育文库(23)应用文写作基础技能.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01225二十一世纪中小学生素质教育文库(24)危机自救与互救.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01225二十一世纪中小学生素质教育文库(24)危机自救与互救.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01226二十一世纪中小学生素质教育文库(25)学习技能.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01226二十一世纪中小学生素质教育文库(25)学习技能.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01227二十一世纪中小学生素质教育文库(26)劳动技能.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01227二十一世纪中小学生素质教育文库(26)劳动技能.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01228二十一世纪中小学生素质教育文库(27)中国文学史话.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01228二十一世纪中小学生素质教育文库(27)中国文学史话.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01229二十一世纪中小学生素质教育文库(28)外国文学史话.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01229二十一世纪中小学生素质教育文库(28)外国文学史话.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01230二十一世纪中小学生素质教育文库(29)中国文学名篇导读.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01230二十一世纪中小学生素质教育文库(29)中国文学名篇导读.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01231二十一世纪中小学生素质教育文库(30)外国文学名篇导读.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01231二十一世纪中小学生素质教育文库(30)外国文学名篇导读.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01232二十一世纪中小学生素质教育文库(31)影视巡礼.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01232二十一世纪中小学生素质教育文库(31)影视巡礼.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01233二十一世纪中小学生素质教育文库(32)戏曲曲艺.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01233二十一世纪中小学生素质教育文库(32)戏曲曲艺.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01234二十一世纪中小学生素质教育文库(33)音乐舞蹈.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01234二十一世纪中小学生素质教育文库(33)音乐舞蹈.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01235二十一世纪中小学生素质教育文库(34)工艺杂谈.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01235二十一世纪中小学生素质教育文库(34)工艺杂谈.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01236二十一世纪中小学生素质教育文库(35)美术发展史话.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01236二十一世纪中小学生素质教育文库(35)美术发展史话.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01237二十一世纪中小学生素质教育文库(36)建筑艺术.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01237二十一世纪中小学生素质教育文库(36)建筑艺术.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01238二十一世纪中小学生素质教育文库(37)礼仪与修养.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01238二十一世纪中小学生素质教育文库(37)礼仪与修养.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01239二十一世纪中小学生素质教育文库(38)个人礼仪.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01239二十一世纪中小学生素质教育文库(38)个人礼仪.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01240二十一世纪中小学生素质教育文库(39)家庭礼仪.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01240二十一世纪中小学生素质教育文库(39)家庭礼仪.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01241二十一世纪中小学生素质教育文库(40)学校礼仪.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01241二十一世纪中小学生素质教育文库(40)学校礼仪.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01242二十一世纪中小学生素质教育文库(41)社交礼仪.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01242二十一世纪中小学生素质教育文库(41)社交礼仪.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01243二十一世纪中小学生素质教育文库(42)外交礼仪.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01243二十一世纪中小学生素质教育文库(42)外交礼仪.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01244二十一世纪中小学生素质教育文库(43)礼仪心理.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01244二十一世纪中小学生素质教育文库(43)礼仪心理.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01245二十一世纪中小学生素质教育文库(44)生理卫生常识.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01245二十一世纪中小学生素质教育文库(44)生理卫生常识.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01246二十一世纪中小学生素质教育文库(45)常见疾病防治.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01246二十一世纪中小学生素质教育文库(45)常见疾病防治.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01247二十一世纪中小学生素质教育文库(46)运动须知.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01247二十一世纪中小学生素质教育文库(46)运动须知.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01248二十一世纪中小学生素质教育文库(47)休闲娱乐.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01248二十一世纪中小学生素质教育文库(47)休闲娱乐.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01249二十一世纪中小学生素质教育文库(48)饮食营养.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01249二十一世纪中小学生素质教育文库(48)饮食营养.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01250二十一世纪中小学生素质教育文库(49)智力开发.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01250二十一世纪中小学生素质教育文库(49)智力开发.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01251二十一世纪中小学生素质教育文库(50)五官保健.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01251二十一世纪中小学生素质教育文库(50)五官保健.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01252二十一世纪中小学生素质教育文库(51)生活戒律.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01252二十一世纪中小学生素质教育文库(51)生活戒律.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01253二十一世纪中小学生素质教育文库(52)人体健康自测.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01253二十一世纪中小学生素质教育文库(52)人体健康自测.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01254二十一世纪中小学生素质教育文库(53)生活常识.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01254二十一世纪中小学生素质教育文库(53)生活常识.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01255二十一世纪中小学生素质教育文库(54)计算机与未来社会.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01255二十一世纪中小学生素质教育文库(54)计算机与未来社会.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01256二十一世纪中小学生素质教育文库(55)仿生奥秘.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01256二十一世纪中小学生素质教育文库(55)仿生奥秘.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01257二十一世纪中小学生素质教育文库(56)世纪之交的热点问题.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01257二十一世纪中小学生素质教育文库(56)世纪之交的热点问题.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01258二十一世纪中小学生素质教育文库(57)留给下世纪的难题.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01258二十一世纪中小学生素质教育文库(57)留给下世纪的难题.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01259二十一世纪中小学生素质教育文库(58)能源材料.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01259二十一世纪中小学生素质教育文库(58)能源材料.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01260二十一世纪中小学生素质教育文库(59)生物工程.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01260二十一世纪中小学生素质教育文库(59)生物工程.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01261二十一世纪中小学生素质教育文库(60)信息时空.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01261二十一世纪中小学生素质教育文库(60)信息时空.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01262二十一世纪中小学生素质教育文库(61)航天与航空.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01262二十一世纪中小学生素质教育文库(61)航天与航空.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01263二十一世纪中小学生素质教育文库(62)医学新探.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01263二十一世纪中小学生素质教育文库(62)医学新探.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01264二十一世纪中小学生素质教育文库(63)交通运输.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01264二十一世纪中小学生素质教育文库(63)交通运输.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01265二十一世纪中小学生素质教育文库(64)健康心理.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01265二十一世纪中小学生素质教育文库(64)健康心理.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01266二十一世纪中小学生素质教育文库(65)学习与知识运用.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01266二十一世纪中小学生素质教育文库(65)学习与知识运用.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01267二十一世纪中小学生素质教育文库(66)品德的形成与培养.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01267二十一世纪中小学生素质教育文库(66)品德的形成与培养.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01268二十一世纪中小学生素质教育文库(67)差生的预防教育.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01268二十一世纪中小学生素质教育文库(67)差生的预防教育.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01269二十一世纪中小学生素质教育文库(68)个别差异与因材施教.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01269二十一世纪中小学生素质教育文库(68)个别差异与因材施教.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01270二十一世纪中小学生素质教育文库(69)记忆与思维.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01270二十一世纪中小学生素质教育文库(69)记忆与思维.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01271二十一世纪中小学生素质教育文库(70)情绪与情感.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01271二十一世纪中小学生素质教育文库(70)情绪与情感.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01272二十一世纪中小学生素质教育文库(71)人格的培养.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01272二十一世纪中小学生素质教育文库(71)人格的培养.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01273二十一世纪中小学生素质教育文库(72)社会人际关系.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01273二十一世纪中小学生素质教育文库(72)社会人际关系.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01274二十一世纪中小学生素质教育文库(73)心理学与心理活动.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\素质教育文库\\01274二十一世纪中小学生素质教育文库(73)心理学与心理活动.txt",
+          "Type": "File",
+          "Children": null
+        }
+      ]
+    },
+    {
       "Name": "英语",
       "Path": "E:\\home\\github\\Long\\Long\\book\\英语",
       "Type": "Directory",
@@ -978,6 +1593,36 @@
         {
           "Name": "00218当代中国少年儿童报刊百卷文库-中学生阅读.pdf",
           "Path": "E:\\home\\github\\Long\\Long\\book\\语文\\00218当代中国少年儿童报刊百卷文库-中学生阅读.pdf",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01320新世纪接班人素质培养-文化知识素养能力.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\语文\\01320新世纪接班人素质培养-文化知识素养能力.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01321新世纪接班人素质培养-语文素质培养-议论文.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\语文\\01321新世纪接班人素质培养-语文素质培养-议论文.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01322新世纪接班人素质培养-语文素质培养-记叙文.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\语文\\01322新世纪接班人素质培养-语文素质培养-记叙文.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01323新世纪接班人素质培养-语文素质培养-应用文.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\语文\\01323新世纪接班人素质培养-语文素质培养-应用文.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01324新世纪接班人素质培养-艺术素质培养-书法.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\语文\\01324新世纪接班人素质培养-艺术素质培养-书法.txt",
           "Type": "File",
           "Children": null
         }

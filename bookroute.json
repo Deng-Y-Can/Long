@@ -4,6 +4,169 @@
   "Type": "Directory",
   "Children": [
     {
+      "Name": "史书",
+      "Path": "E:\\home\\github\\Long\\Long\\book\\史书",
+      "Type": "Directory",
+      "Children": [
+        {
+          "Name": "00904汉书新注1.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00904汉书新注1.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00905汉书新注2.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00905汉书新注2.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00906汉书新注3.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00906汉书新注3.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00907汉书新注4.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00907汉书新注4.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00908三国史.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00908三国史.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00933世界通史·当代卷.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00933世界通史·当代卷.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00935世界通史·古代卷.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00935世界通史·古代卷.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00978马克思恩格斯选集(1).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00978马克思恩格斯选集(1).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00979马克思恩格斯选集(2).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00979马克思恩格斯选集(2).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00980马克思恩格斯选集(3).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00980马克思恩格斯选集(3).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00981马克思恩格斯选集(4).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00981马克思恩格斯选集(4).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00982列宁选集(1).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00982列宁选集(1).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00983列宁选集(2).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00983列宁选集(2).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00984列宁选集(3).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00984列宁选集(3).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00985列宁选集(4).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00985列宁选集(4).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00986史记(上).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00986史记(上).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00987史记(中).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00987史记(中).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00988史记(下).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\00988史记(下).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01023中国通史-第五卷-中古时代·三国两晋南北朝时期(上册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\01023中国通史-第五卷-中古时代·三国两晋南北朝时期(上册).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01024中国通史-第五卷-中古时代·三国两晋南北朝时期(下册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\01024中国通史-第五卷-中古时代·三国两晋南北朝时期(下册).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01025中国通史-第六卷-中古时代·隋唐时期(上册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\01025中国通史-第六卷-中古时代·隋唐时期(上册).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01026中国通史-第六卷-中古时代·隋唐时期(下册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\01026中国通史-第六卷-中古时代·隋唐时期(下册).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01027中国通史-第八卷-中古时代·元时期(上册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\01027中国通史-第八卷-中古时代·元时期(上册).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01028中国通史-第八卷-中古时代·元时期(下册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\01028中国通史-第八卷-中古时代·元时期(下册).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01029中国通史-第十卷-中古时代·清时期(上册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\01029中国通史-第十卷-中古时代·清时期(上册).txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "01030中国通史-第十卷-中古时代·清时期(下册).txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\史书\\01030中国通史-第十卷-中古时代·清时期(下册).txt",
+          "Type": "File",
+          "Children": null
+        }
+      ]
+    },
+    {
       "Name": "学习方法",
       "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法",
       "Type": "Directory",
@@ -337,6 +500,42 @@
         {
           "Name": "00339学友文库-民国兴衰.txt",
           "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00339学友文库-民国兴衰.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00340学友文库-清绝帝制.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00340学友文库-清绝帝制.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00341学友文库-元明风云.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00341学友文库-元明风云.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00342学友文库-宋室南移.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00342学友文库-宋室南移.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00343学友文库-隋唐春秋.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00343学友文库-隋唐春秋.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00344学友文库-南北乱世.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00344学友文库-南北乱世.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00345学友文库-三国鼎峙.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00345学友文库-三国鼎峙.txt",
           "Type": "File",
           "Children": null
         }

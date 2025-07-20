@@ -31,68 +31,8 @@
           "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\00232解竞赛题的钥匙.pdf",
           "Type": "File",
           "Children": null
-        },
-        {
-          "Name": "00240迷宫中的数学.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\00240迷宫中的数学.pdf",
-          "Type": "File",
-          "Children": null
-        },
-        {
-          "Name": "《初中数学竞赛中的平面几何》_11298519.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\《初中数学竞赛中的平面几何》_11298519.pdf",
-          "Type": "File",
-          "Children": null
-        },
-        {
-          "Name": "初中数理化知识大全.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\初中数理化知识大全.pdf",
-          "Type": "File",
-          "Children": null
-        },
-        {
-          "Name": "高中数学竞赛专题讲座  三角函数_11889857.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\高中数学竞赛专题讲座  三角函数_11889857.pdf",
-          "Type": "File",
-          "Children": null
-        },
-        {
-          "Name": "高中数学竞赛专题讲座  不等式_11885501.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\高中数学竞赛专题讲座  不等式_11885501.pdf",
-          "Type": "File",
-          "Children": null
-        },
-        {
-          "Name": "高中数学竞赛专题讲座  初等数论_11864320.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\高中数学竞赛专题讲座  初等数论_11864320.pdf",
-          "Type": "File",
-          "Children": null
-        },
-        {
-          "Name": "高中数学竞赛专题讲座  数列与归纳法_11864314.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\高中数学竞赛专题讲座  数列与归纳法_11864314.pdf",
-          "Type": "File",
-          "Children": null
-        },
-        {
-          "Name": "高中数学竞赛专题讲座  集合与简易逻辑 苏建一，张雷主编 浙江大学出版社 2007_11864481 图像PDG.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\高中数学竞赛专题讲座  集合与简易逻辑 苏建一，张雷主编 浙江大学出版社 2007_11864481 图像PDG.pdf",
-          "Type": "File",
-          "Children": null
-        },
-        {
-          "Name": "高中课本《微积分初步》（甲种本）全1册--人教社 1985.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\高中课本《微积分初步》（甲种本）全1册--人教社 1985.pdf",
-          "Type": "File",
-          "Children": null
         }
       ]
-    },
-    {
-      "Name": "物理",
-      "Path": "E:\\home\\github\\Long\\Long\\book\\物理",
-      "Type": "Directory",
-      "Children": []
     },
     {
       "Name": "生物",
@@ -116,10 +56,293 @@
           "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\怎样识别植物(汪劲武).pdf",
           "Type": "File",
           "Children": null
+        }
+      ]
+    },
+    {
+      "Name": "百科",
+      "Path": "E:\\home\\github\\Long\\Long\\book\\百科",
+      "Type": "Directory",
+      "Children": [
+        {
+          "Name": "00011世界科技全景百卷书(11)饮食文化.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00011世界科技全景百卷书(11)饮食文化.txt",
+          "Type": "File",
+          "Children": null
         },
         {
-          "Name": "植物学百科图鉴电子版.pdf",
-          "Path": "E:\\home\\github\\Long\\Long\\book\\生物\\植物学百科图鉴电子版.pdf",
+          "Name": "00012世界科技全景百卷书(12)漫话衣饰.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00012世界科技全景百卷书(12)漫话衣饰.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00013世界科技全景百卷书(13)生活用品大观.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00013世界科技全景百卷书(13)生活用品大观.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00014世界科技全景百卷书(14)农具与农技.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00014世界科技全景百卷书(14)农具与农技.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00015世界科技全景百卷书(15)钟表家族.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00015世界科技全景百卷书(15)钟表家族.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00016世界科技全景百卷书(16)医药纵横.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00016世界科技全景百卷书(16)医药纵横.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00017世界科技全景百卷书(17)话说通讯.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00017世界科技全景百卷书(17)话说通讯.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00018世界科技全景百卷书(18)文化用品博览.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00018世界科技全景百卷书(18)文化用品博览.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00019世界科技全景百卷书(19)工具小百科.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00019世界科技全景百卷书(19)工具小百科.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00020世界科技全景百卷书(20)影视俱乐部.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00020世界科技全景百卷书(20)影视俱乐部.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00021世界科技全景百卷书(21)照明.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00021世界科技全景百卷书(21)照明.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00022世界科技全景百卷书(22)船舶.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00022世界科技全景百卷书(22)船舶.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00023世界科技全景百卷书(23)飞机.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00023世界科技全景百卷书(23)飞机.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00024世界科技全景百卷书(24)车辆.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00024世界科技全景百卷书(24)车辆.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00025世界科技全景百卷书(25)机械.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00025世界科技全景百卷书(25)机械.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00026世界科技全景百卷书(26)材料.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00026世界科技全景百卷书(26)材料.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00027世界科技全景百卷书(27)仪器设备.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00027世界科技全景百卷书(27)仪器设备.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00028世界科技全景百卷书(28)电器.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00028世界科技全景百卷书(28)电器.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00029世界科技全景百卷书(29)计算机.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00029世界科技全景百卷书(29)计算机.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00030世界科技全景百卷书(30)技术.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00030世界科技全景百卷书(30)技术.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00031世界科技全景百卷书(31)考古大发现.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00031世界科技全景百卷书(31)考古大发现.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00032世界科技全景百卷书(32)寻找文明遗迹.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00032世界科技全景百卷书(32)寻找文明遗迹.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00033世界科技全景百卷书(33)发现新大陆.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00033世界科技全景百卷书(33)发现新大陆.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00034世界科技全景百卷书(34)探勘地球宝藏.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00034世界科技全景百卷书(34)探勘地球宝藏.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00035世界科技全景百卷书(35)无法解释的存在.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00035世界科技全景百卷书(35)无法解释的存在.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00036世界科技全景百卷书(36)天文大发现.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00036世界科技全景百卷书(36)天文大发现.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00037世界科技全景百卷书(37)医学大发现.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00037世界科技全景百卷书(37)医学大发现.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00038世界科技全景百卷书(38)数学大发现.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00038世界科技全景百卷书(38)数学大发现.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00039世界科技全景百卷书(39)化学大发现.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00039世界科技全景百卷书(39)化学大发现.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00040世界科技全景百卷书(40)物理大发现.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00040世界科技全景百卷书(40)物理大发现.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00041世界科技全景百卷书(41)智能武器.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00041世界科技全景百卷书(41)智能武器.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00042世界科技全景百卷书(42)古代军事科技.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00042世界科技全景百卷书(42)古代军事科技.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00043世界科技全景百卷书(43)现代军事科技.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00043世界科技全景百卷书(43)现代军事科技.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00044世界科技全景百卷书(44)坦克.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00044世界科技全景百卷书(44)坦克.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00045世界科技全景百卷书(45)间谍武器.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00045世界科技全景百卷书(45)间谍武器.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00046世界科技全景百卷书(46)兵器大观.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00046世界科技全景百卷书(46)兵器大观.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00047世界科技全景百卷书(47)导弹.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00047世界科技全景百卷书(47)导弹.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00048世界科技全景百卷书(48)核武器.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00048世界科技全景百卷书(48)核武器.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00049世界科技全景百卷书(49)舰艇.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00049世界科技全景百卷书(49)舰艇.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00050世界科技全景百卷书(50)未来武器的发展.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00050世界科技全景百卷书(50)未来武器的发展.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00051世界科技全景百卷书(51)太阳的奥秘.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00051世界科技全景百卷书(51)太阳的奥秘.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00052世界科技全景百卷书(52)遨游天河.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00052世界科技全景百卷书(52)遨游天河.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00053世界科技全景百卷书(53)UFO探索.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00053世界科技全景百卷书(53)UFO探索.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00054世界科技全景百卷书(54)漫步星空.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00054世界科技全景百卷书(54)漫步星空.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00055世界科技全景百卷书(55)探索九大行星.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00055世界科技全景百卷书(55)探索九大行星.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00056世界科技全景百卷书(56)认识地球.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00056世界科技全景百卷书(56)认识地球.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00057世界科技全景百卷书(57)月球探秘.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\百科\\00057世界科技全景百卷书(57)月球探秘.txt",
           "Type": "File",
           "Children": null
         }

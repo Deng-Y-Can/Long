@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>书籍阅读器（支持PDF和TXT）</title>
+    <title>文档阅读器（支持PDF和TXT）</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
         * {
@@ -191,6 +191,16 @@
             text-align: center;
         }
 
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .font-size-btn {
+            padding: 6px 10px;
+        }
+
         .pdf-container {
             flex: 1;
             overflow-y: auto;
@@ -204,7 +214,9 @@
         .pdf-background {
             position: absolute;
             width: 100%;
+            height: 100%;
             z-index: 1;
+            display: none; /* 隐藏背景遮罩 */
         }
 
         .pdf-canvas {
@@ -231,6 +243,9 @@
             line-height: 1.6;
             max-width: 800px;
             margin: 0 auto;
+            transition: all 0.3s ease;
+            font-size: 16px; /* 默认字体大小 */
+            min-height: 100%;
         }
 
         .no-selection {
@@ -276,17 +291,31 @@
             </div>
             
             <span id="pageInfo">页码: 1 / 0</span>
+            
+            <!-- 背景色选择 -->
             <select id="bgColor">
                 <option value="#ffffff">白色</option>
                 <option value="#f5f5f5">浅灰</option>
                 <option value="#e8f4fd">淡蓝</option>
                 <option value="#fff8e1">浅黄</option>
                 <option value="#2c3e50">深色模式</option>
+                <option value="#f8f9fa">极浅灰</option>
+                <option value="#e9ecef">浅灰白</option>
+                <option value="#d1e7dd">薄荷绿</option>
+                <option value="#fff3cd">温暖黄</option>
+                <option value="#f8d7da">浅粉红</option>
             </select>
+            
+            <!-- 字体大小控制 -->
+            <div class="font-controls">
+                <button class="font-size-btn" id="decreaseFont">A-</button>
+                <button class="font-size-btn" id="increaseFont">A+</button>
+            </div>
         </div>
         
         <!-- PDF容器 -->
         <div class="pdf-container" id="pdfContainer">
+            <div class="pdf-background" id="pdfBackground"></div>
             <div class="no-selection">请从左侧双击PDF或TXT文件打开</div>
         </div>
         
@@ -307,6 +336,9 @@
         let currentFilePath = '';
         let currentFileType = ''; // 'pdf' 或 'txt'
         let directoryData = null; // 存储完整目录数据用于搜索
+        let txtScrollPosition = 0; // TXT文件当前滚动位置
+        let currentFontSize = 16; // 默认字体大小(px)
+        let txtPageHeight = 0; // TXT每页高度
         
         const pdfContainer = document.getElementById('pdfContainer');
         const txtContainer = document.getElementById('txtContainer');
@@ -323,6 +355,8 @@
                 if (!response.ok) throw new Error(`加载失败: ${response.statusText}`);
                 
                 directoryData = await response.json();
+                // 为每个节点添加parent引用，便于路径计算
+                addParentReferences(directoryData);
                 directoryTree.innerHTML = ''; // 清空加载提示
                 buildDirectoryTree(directoryData, directoryTree); // 生成目录树
                 
@@ -331,6 +365,14 @@
             } catch (error) {
                 directoryTree.innerHTML = `<li class="error-message">目录加载失败: ${error.message}</li>`;
                 console.error('目录加载错误:', error);
+            }
+        }
+
+        // 为目录树节点添加parent引用
+        function addParentReferences(node, parent = null) {
+            node.parent = parent;
+            if (node.Children && node.Children.length > 0) {
+                node.Children.forEach(child => addParentReferences(child, node));
             }
         }
 
@@ -432,11 +474,13 @@
         async function loadFile(url, fileType) {
             currentFilePath = url;
             currentFileType = fileType;
+            currentPage = 1; // 重置页码
+            txtScrollPosition = 0; // 重置TXT滚动位置
             
             // 隐藏所有容器，显示加载状态
             pdfContainer.style.display = 'none';
             txtContainer.style.display = 'none';
-            pdfContainer.innerHTML = '<div>加载中...</div>';
+            pdfContainer.innerHTML = '<div class="pdf-background" id="pdfBackground" style="display: none;"></div><div>加载中...</div>';
             pdfContainer.style.display = 'flex';
             
             try {
@@ -444,7 +488,7 @@
                     // 加载PDF
                     const loadingTask = pdfjsLib.getDocument(url);
                     pdfDoc = await loadingTask.promise;
-                    currentPage = 1;
+                    
                     renderPage(currentPage); // 渲染第一页
                     updatePageInfo(); // 更新页码显示
                 } else {
@@ -455,13 +499,38 @@
                     const text = await response.text();
                     txtContent.textContent = text;
                     
+                    // 应用当前字体大小
+                    txtContent.style.fontSize = `${currentFontSize}px`;
+                    
+                    // 应用当前背景色
+                    applyBackgroundColor(document.getElementById('bgColor').value);
+                    
+                    // 计算TXT每页高度
+                    calculateTxtPageHeight();
+                    
                     // 显示TXT容器
                     pdfContainer.style.display = 'none';
                     txtContainer.style.display = 'block';
+                    
+                    // 更新页码信息（确保初始加载时显示正确）
+                    updatePageInfo();
                 }
             } catch (error) {
-                pdfContainer.innerHTML = `<div class="error-message">文件加载失败: ${error.message}</div>`;
+                pdfContainer.innerHTML = '<div class="pdf-background" id="pdfBackground" style="display: none;"></div><div class="error-message">文件加载失败: ' + error.message + '</div>';
                 console.error('文件加载错误:', error);
+            }
+        }
+
+        // 计算TXT每页高度（基于可视区域）
+        function calculateTxtPageHeight() {
+            if (currentFileType === 'txt') {
+                // 使用容器高度的90%作为每页高度，留出一些边距
+                txtPageHeight = txtContainer.clientHeight * 0.9;
+                
+                // 确保txtPageHeight有合理的值
+                if (txtPageHeight <= 0) {
+                    txtPageHeight = 500; // 默认值，防止计算错误
+                }
             }
         }
 
@@ -475,15 +544,9 @@
                 const scale = 1.2; // 渲染缩放比例
                 const viewport = page.getViewport({ scale });
 
-                // 清空容器并创建背景层
-                pdfContainer.innerHTML = '';
-                const background = document.createElement('div');
-                background.className = 'pdf-background';
-                background.style.height = `${viewport.height}px`;
-                background.style.width = `${viewport.width}px`;
-                background.style.backgroundColor = document.getElementById('bgColor').value;
-                pdfContainer.appendChild(background);
-
+                // 清空容器并创建背景层（隐藏状态）
+                pdfContainer.innerHTML = '<div class="pdf-background" id="pdfBackground" style="display: none;"></div>';
+                
                 // 创建Canvas渲染PDF
                 const canvas = document.createElement('canvas');
                 canvas.className = 'pdf-canvas';
@@ -503,7 +566,7 @@
                 currentPage = num;
                 updatePageInfo();
             } catch (error) {
-                pdfContainer.innerHTML = `<div class="error-message">页面渲染失败: ${error.message}</div>`;
+                pdfContainer.innerHTML = '<div class="pdf-background" id="pdfBackground" style="display: none;"></div><div class="error-message">页面渲染失败: ' + error.message + '</div>';
                 console.error('页面渲染错误:', error);
             } finally {
                 pageRendering = false;
@@ -512,19 +575,27 @@
 
         // 更新页码显示
         function updatePageInfo() {
-            document.getElementById('pageInfo').textContent = 
-                currentFileType === 'pdf' 
-                ? `页码: ${currentPage} / ${pdfDoc ? pdfDoc.numPages : 0}`
-                : 'TXT文件';
+            const pageInfo = document.getElementById('pageInfo');
             
-            // 更新页码输入框
-            const pageInput = document.getElementById('pageInput');
             if (currentFileType === 'pdf' && pdfDoc) {
-                pageInput.disabled = false;
-                pageInput.max = pdfDoc.numPages;
+                pageInfo.textContent = `页码: ${currentPage} / ${pdfDoc.numPages}`;
+                document.getElementById('pageInput').max = pdfDoc.numPages;
+                document.getElementById('pageInput').value = currentPage;
+            } else if (currentFileType === 'txt') {
+                // 计算TXT总页数
+                const totalHeight = txtContent.scrollHeight;
+                const totalPages = Math.max(1, Math.ceil(totalHeight / txtPageHeight));
+                
+                // 计算当前页码
+                currentPage = Math.floor(txtScrollPosition / txtPageHeight) + 1;
+                currentPage = Math.min(currentPage, totalPages);
+                
+                pageInfo.textContent = `页码: ${currentPage} / ${totalPages}`;
+                document.getElementById('pageInput').max = totalPages;
+                document.getElementById('pageInput').value = currentPage;
             } else {
-                pageInput.disabled = true;
-                pageInput.value = '';
+                pageInfo.textContent = '页码: 1 / 0';
+                document.getElementById('pageInput').value = '';
             }
         }
 
@@ -574,6 +645,7 @@
             });
             
             // 点击其他区域关闭搜索结果
+            const searchContainer = document.querySelector('.search-container');
             document.addEventListener('click', (e) => {
                 if (!searchContainer.contains(e.target)) {
                     searchResults.style.display = 'none';
@@ -660,29 +732,101 @@
             }
         }
 
+        // 应用背景色
+        function applyBackgroundColor(color) {
+            if (currentFileType === 'pdf') {
+                // PDF保持默认背景，不应用选择的颜色
+                document.getElementById('pdfBackground').style.display = 'none';
+            } else if (currentFileType === 'txt') {
+                // TXT使用实色背景
+                txtContent.style.backgroundColor = color;
+                
+                // 深色模式时自动调整文字颜色
+                if (color === '#2c3e50') {
+                    txtContent.style.color = '#ffffff';
+                } else {
+                    txtContent.style.color = '#000000';
+                }
+            }
+        }
+
+        // 调整字体大小
+        function changeFontSize(change) {
+            if (currentFileType !== 'txt') return;
+            
+            // 限制字体大小范围
+            const newSize = currentFontSize + change;
+            if (newSize < 12 || newSize > 32) return;
+            
+            currentFontSize = newSize;
+            txtContent.style.fontSize = `${currentFontSize}px`;
+            
+            // 重新计算页面高度并保持在当前页
+            const currentPage = Math.floor(txtScrollPosition / txtPageHeight) + 1;
+            calculateTxtPageHeight();
+            txtScrollPosition = (currentPage - 1) * txtPageHeight;
+            txtContainer.scrollTop = txtScrollPosition;
+            
+            updatePageInfo();
+        }
+
         // 绑定按钮事件
         document.getElementById('prevPage').addEventListener('click', () => {
             if (currentFileType === 'pdf' && pdfDoc && currentPage > 1) {
                 renderPage(currentPage - 1);
+            } else if (currentFileType === 'txt' && currentPage > 1) {
+                // TXT上一页
+                currentPage--;
+                txtScrollPosition = (currentPage - 1) * txtPageHeight;
+                txtContainer.scrollTop = txtScrollPosition;
+                updatePageInfo();
             }
         });
 
         document.getElementById('nextPage').addEventListener('click', () => {
             if (currentFileType === 'pdf' && pdfDoc && currentPage < pdfDoc.numPages) {
                 renderPage(currentPage + 1);
+            } else if (currentFileType === 'txt') {
+                // TXT下一页
+                const totalHeight = txtContent.scrollHeight;
+                const totalPages = Math.max(1, Math.ceil(totalHeight / txtPageHeight));
+                
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    txtScrollPosition = (currentPage - 1) * txtPageHeight;
+                    // 确保不会滚动超过内容总高度
+                    txtScrollPosition = Math.min(txtScrollPosition, totalHeight - txtPageHeight);
+                    txtContainer.scrollTop = txtScrollPosition;
+                    updatePageInfo();
+                }
             }
         });
 
         // 跳转到指定页码
         document.getElementById('jumpToPage').addEventListener('click', () => {
-            if (currentFileType === 'pdf' && pdfDoc) {
-                const pageInput = document.getElementById('pageInput');
-                const pageNum = parseInt(pageInput.value);
+            const pageInput = document.getElementById('pageInput');
+            const pageNum = parseInt(pageInput.value);
+            
+            if (isNaN(pageNum) || pageNum < 1) {
+                alert('请输入有效的页码');
+                return;
+            }
+            
+            if (currentFileType === 'pdf' && pdfDoc && pageNum <= pdfDoc.numPages) {
+                renderPage(pageNum);
+            } else if (currentFileType === 'txt') {
+                const totalHeight = txtContent.scrollHeight;
+                const totalPages = Math.max(1, Math.ceil(totalHeight / txtPageHeight));
                 
-                if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pdfDoc.numPages) {
-                    renderPage(pageNum);
+                if (pageNum <= totalPages) {
+                    currentPage = pageNum;
+                    txtScrollPosition = (currentPage - 1) * txtPageHeight;
+                    // 确保不会滚动超过内容总高度
+                    txtScrollPosition = Math.min(txtScrollPosition, totalHeight - txtPageHeight);
+                    txtContainer.scrollTop = txtScrollPosition;
+                    updatePageInfo();
                 } else {
-                    alert(`请输入有效的页码 (1-${pdfDoc.numPages})`);
+                    alert(`请输入有效的页码 (1-${totalPages})`);
                 }
             }
         });
@@ -695,14 +839,32 @@
         });
 
         // 背景色切换
-        document.getElementById('bgColor').addEventListener('change', () => {
-            const bgColor = event.target.value;
-            
-            if (currentFileType === 'pdf') {
-                const background = pdfContainer.querySelector('.pdf-background');
-                if (background) background.style.backgroundColor = bgColor;
-            } else if (currentFileType === 'txt') {
-                txtContent.style.backgroundColor = bgColor;
+        document.getElementById('bgColor').addEventListener('change', (e) => {
+            applyBackgroundColor(e.target.value);
+        });
+
+        // 字体大小调整
+        document.getElementById('decreaseFont').addEventListener('click', () => {
+            changeFontSize(-2); // 减小2px
+        });
+
+        document.getElementById('increaseFont').addEventListener('click', () => {
+            changeFontSize(2); // 增大2px
+        });
+
+        // 监听窗口大小变化，重新计算TXT页面高度
+        window.addEventListener('resize', () => {
+            if (currentFileType === 'txt') {
+                calculateTxtPageHeight();
+                updatePageInfo();
+            }
+        });
+
+        // 监听TXT滚动事件，更新页码
+        txtContainer.addEventListener('scroll', () => {
+            if (currentFileType === 'txt') {
+                txtScrollPosition = txtContainer.scrollTop;
+                updatePageInfo();
             }
         });
 

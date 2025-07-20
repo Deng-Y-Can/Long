@@ -4,6 +4,133 @@
   "Type": "Directory",
   "Children": [
     {
+      "Name": "学习方法",
+      "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法",
+      "Type": "Directory",
+      "Children": [
+        {
+          "Name": "00274学习方法指导丛书-课堂学习的基本环节操作.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00274学习方法指导丛书-课堂学习的基本环节操作.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00275学习方法指导丛书-课业学习程式和指导策略.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00275学习方法指导丛书-课业学习程式和指导策略.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00276学习方法指导丛书-课业学习的基本方法和能力.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00276学习方法指导丛书-课业学习的基本方法和能力.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00277学习方法指导丛书-语文阅读与课文学习方法.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00277学习方法指导丛书-语文阅读与课文学习方法.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00278学习方法指导丛书-语文课堂学习及指导策略.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00278学习方法指导丛书-语文课堂学习及指导策略.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00279学习方法指导丛书-数学课业学习常规.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00279学习方法指导丛书-数学课业学习常规.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00280学习方法指导丛书-数学解题与学习指导策略.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00280学习方法指导丛书-数学解题与学习指导策略.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00281学习方法指导丛书-物理学习的常规方法.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00281学习方法指导丛书-物理学习的常规方法.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00282学习方法指导丛书-物理复习与课堂学习指导.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00282学习方法指导丛书-物理复习与课堂学习指导.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00283学习方法指导丛书-化学课堂学习的基本方法.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00283学习方法指导丛书-化学课堂学习的基本方法.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00284学习方法指导丛书-化学解题与课业学习策略.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00284学习方法指导丛书-化学解题与课业学习策略.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00285学习方法指导丛书-英语课文学习方法.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00285学习方法指导丛书-英语课文学习方法.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00286学习方法指导丛书-英语解题和课业指导策略.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00286学习方法指导丛书-英语解题和课业指导策略.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00287学习方法指导丛书-历史课堂学习方法与程式.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00287学习方法指导丛书-历史课堂学习方法与程式.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00288学习方法指导丛书-历史复习和解题方法.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00288学习方法指导丛书-历史复习和解题方法.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00289学习方法指导丛书-地理课堂学习常规.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00289学习方法指导丛书-地理课堂学习常规.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00290学习方法指导丛书-地理解题与课业学习指导.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00290学习方法指导丛书-地理解题与课业学习指导.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00291学习方法指导丛书-思想政治课业学习常规.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00291学习方法指导丛书-思想政治课业学习常规.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00292学习方法指导丛书-思想政治学习指导与解题方法.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00292学习方法指导丛书-思想政治学习指导与解题方法.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00293学习方法指导丛书-其它各科学习方法指导.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\学习方法\\00293学习方法指导丛书-其它各科学习方法指导.txt",
+          "Type": "File",
+          "Children": null
+        }
+      ]
+    },
+    {
       "Name": "数学",
       "Path": "E:\\home\\github\\Long\\Long\\book\\数学",
       "Type": "Directory",
@@ -29,6 +156,187 @@
         {
           "Name": "00232解竞赛题的钥匙.pdf",
           "Path": "E:\\home\\github\\Long\\Long\\book\\数学\\00232解竞赛题的钥匙.pdf",
+          "Type": "File",
+          "Children": null
+        }
+      ]
+    },
+    {
+      "Name": "文库",
+      "Path": "E:\\home\\github\\Long\\Long\\book\\文库",
+      "Type": "Directory",
+      "Children": [
+        {
+          "Name": "00311学友文库-创世新说.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00311学友文库-创世新说.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00312学友文库-重构世界.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00312学友文库-重构世界.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00313学友文库-蓝色的诱惑.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00313学友文库-蓝色的诱惑.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00314学友文库-大脑的延伸.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00314学友文库-大脑的延伸.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00315学友文库-网络的奥秘.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00315学友文库-网络的奥秘.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00316学友文库-九天揽月.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00316学友文库-九天揽月.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00317学友文库-跨越时空.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00317学友文库-跨越时空.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00318学友文库-空中帝国.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00318学友文库-空中帝国.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00319学友文库-先秦散文.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00319学友文库-先秦散文.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00320学友文库-诗经·楚辞.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00320学友文库-诗经·楚辞.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00321学友文库-辞赋.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00321学友文库-辞赋.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00322学友文库-明清短篇小说.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00322学友文库-明清短篇小说.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00323学友文库-唐宋词.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00323学友文库-唐宋词.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00324学友文库-唐宋散文.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00324学友文库-唐宋散文.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00325学友文库-历代小品.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00325学友文库-历代小品.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00326学友文库-元曲.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00326学友文库-元曲.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00327学友文库-唐诗.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00327学友文库-唐诗.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00328学友文库-史传散文.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00328学友文库-史传散文.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00329学友文库-浪漫短篇小说.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00329学友文库-浪漫短篇小说.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00330学友文库-古希腊罗马神话.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00330学友文库-古希腊罗马神话.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00331学友文库-世态短篇小说.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00331学友文库-世态短篇小说.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00332学友文库-抒情诗歌.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00332学友文库-抒情诗歌.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00333学友文库-寓言.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00333学友文库-寓言.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00334学友文库-哲理诗歌.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00334学友文库-哲理诗歌.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00335学友文库-戏剧二种.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00335学友文库-戏剧二种.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00336学友文库-哲理散文.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00336学友文库-哲理散文.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00337学友文库-抒情散文.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00337学友文库-抒情散文.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00338学友文库-魏晋纷争.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00338学友文库-魏晋纷争.txt",
+          "Type": "File",
+          "Children": null
+        },
+        {
+          "Name": "00339学友文库-民国兴衰.txt",
+          "Path": "E:\\home\\github\\Long\\Long\\book\\文库\\00339学友文库-民国兴衰.txt",
           "Type": "File",
           "Children": null
         }

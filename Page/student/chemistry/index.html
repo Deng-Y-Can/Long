@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元素周期表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        alkali: '#FF6B6B',
+                        alkaline: '#FFD166',
+                        transition: '#06D6A0',
+                        postTransition: '#118AB2',
+                        metalloid: '#00B4D8',
+                        nonmetal: '#90E0EF',
+                        halogen: '#CAF0F8',
+                        noble: '#ADE8F4',
+                        lanthanoid: '#D9ED92',
+                        actinoid: '#B7E4C7',
+                        unknown: '#E9ECEF'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .element-cell {
+                @apply relative cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
+            }
+
+            .element-number {
+                @apply text-[8px] font-bold absolute top-0 left-1;
+            }
+
+            .element-symbol {
+                @apply text-[14px] font-bold text-center mt-2;
+            }
+
+            .element-name {
+                @apply text-[7px] text-center;
+            }
+
+            .element-mass {
+                @apply text-[7px] absolute bottom-0 right-1;
+            }
+
+            .detail-section {
+                @apply mb-6 pb-4 border-b border-gray-200 last:border-0 last:mb-0 last:pb-0;
+            }
+
+            .electron-shell {
+                @apply absolute rounded-full border border-gray-300 bg-white/30 transition-all duration-500;
+            }
+
+            .electron {
+                @apply absolute w-2 h-2 bg-blue-600 rounded-full;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="container mx-auto px-4 py-6">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">元素周期表</h1>
+            <p class="text-gray-600 mt-2">点击元素查看详细性质与用途</p>
+        </div>
+
+        <!-- 加载状态 -->
+        <div id="loading" class="text-center py-8">
+            <i class="fa fa-spinner fa-spin text-2xl text-gray-500"></i>
+            <p class="mt-2 text-gray-600">正在加载元素数据...</p>
+        </div>
+
+        <!-- 错误提示 -->
+        <div id="error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 text-center">
+            <p>无法加载元素数据，请确保同目录下存在elements.json文件</p>
+        </div>
+
+        <!-- 元素详情模态框 -->
+        <div id="element-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto m-4 transform transition-all duration-300">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h2 id="modal-title" class="text-2xl font-bold"></h2>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="modal-content-container" class="p-6">
+                    <!-- 内容将动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 周期表容器 -->
+        <div id="periodic-table-container" class="hidden bg-white rounded-xl shadow-md p-4 overflow-x-auto mb-8"></div>
+
+        <!-- 镧系元素 -->
+        <div id="lanthanides-section" class="hidden mt-6">
+            <h3 class="text-lg font-semibold mb-3">镧系元素</h3>
+            <div id="lanthanides-container" class="grid grid-cols-15 gap-1"></div>
+        </div>
+
+        <!-- 锕系元素 -->
+        <div id="actinides-section" class="hidden mt-6">
+            <h3 class="text-lg font-semibold mb-3">锕系元素</h3>
+            <div id="actinides-container" class="grid grid-cols-15 gap-1"></div>
+        </div>
+    </div>
+
+    <script>
+        // 元素位置映射 (周期, 族)
+        const elementPositions = {
+            // 周期1
+            1: [1, 1],   // H
+            2: [1, 18],  // He
+
+            // 周期2
+            3: [2, 1],   // Li
+            4: [2, 2],   // Be
+            5: [2, 13],  // B
+            6: [2, 14],  // C
+            7: [2, 15],  // N
+            8: [2, 16],  // O
+            9: [2, 17],  // F
+            10: [2, 18], // Ne
+
+            // 周期3
+            11: [3, 1],  // Na
+            12: [3, 2],  // Mg
+            13: [3, 13], // Al
+            14: [3, 14], // Si
+            15: [3, 15], // P
+            16: [3, 16], // S
+            17: [3, 17], // Cl
+            18: [3, 18], // Ar
+
+            // 周期4
+            19: [4, 1],  // K
+            20: [4, 2],  // Ca
+            21: [4, 3],  // Sc
+            22: [4, 4],  // Ti
+            23: [4, 5],  // V
+            24: [4, 6],  // Cr
+            25: [4, 7],  // Mn
+            26: [4, 8],  // Fe
+            27: [4, 9],  // Co
+            28: [4, 10], // Ni
+            29: [4, 11], // Cu
+            30: [4, 12], // Zn
+            31: [4, 13], // Ga
+            32: [4, 14], // Ge
+            33: [4, 15], // As
+            34: [4, 16], // Se
+            35: [4, 17], // Br
+            36: [4, 18], // Kr
+
+            // 周期5
+            37: [5, 1],  // Rb
+            38: [5, 2],  // Sr
+            39: [5, 3],  // Y
+            40: [5, 4],  // Zr
+            41: [5, 5],  // Nb
+            42: [5, 6],  // Mo
+            43: [5, 7],  // Tc
+            44: [5, 8],  // Ru
+            45: [5, 9],  // Rh
+            46: [5, 10], // Pd
+            47: [5, 11], // Ag
+            48: [5, 12], // Cd
+            49: [5, 13], // In
+            50: [5, 14], // Sn
+            51: [5, 15], // Sb
+            52: [5, 16], // Te
+            53: [5, 17], // I
+            54: [5, 18], // Xe
+
+            // 周期6
+            55: [6, 1],  // Cs
+            56: [6, 2],  // Ba
+            57: [6, 3],  // La
+            72: [6, 4],  // Hf
+            73: [6, 5],  // Ta
+            74: [6, 6],  // W
+            75: [6, 7],  // Re
+            76: [6, 8],  // Os
+            77: [6, 9],  // Ir
+            78: [6, 10], // Pt
+            79: [6, 11], // Au
+            80: [6, 12], // Hg
+            81: [6, 13], // Tl
+            82: [6, 14], // Pb
+            83: [6, 15], // Bi
+            84: [6, 16], // Po
+            85: [6, 17], // At
+            86: [6, 18], // Rn
+
+            // 周期7
+            87: [7, 1],  // Fr
+            88: [7, 2],  // Ra
+            89: [7, 3],  // Ac
+            104: [7, 4], // Rf
+            105: [7, 5], // Db
+            106: [7, 6], // Sg
+            107: [7, 7], // Bh
+            108: [7, 8], // Hs
+            109: [7, 9], // Mt
+            110: [7, 10],// Ds
+            111: [7, 11],// Rg
+            112: [7, 12],// Cn
+            113: [7, 13],// Nh
+            114: [7, 14],// Fl
+            115: [7, 15],// Mc
+            116: [7, 16],// Lv
+            117: [7, 17],// Ts
+            118: [7, 18] // Og
+        };
+
+        // 电子层最大容量
+        const electronShellCapacities = [2, 8, 18, 32, 32, 18, 8];
+
+        // DOM元素引用 - 在DOM加载后初始化
+        let DOM = {};
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', init);
+
+        async function init() {
+            // 初始化DOM引用
+            initDOMReferences();
+
+            try {
+                // 读取同目录下的elements.json文件
+                const response = await fetch('chemistry.json');
+                if (!response.ok) {
+                    throw new Error('文件不存在或无法读取');
+                }
+                const elements = await response.json();
+
+                // 隐藏加载状态，显示内容
+                DOM.loading.classList.add('hidden');
+                DOM.periodicTableContainer.classList.remove('hidden');
+                DOM.lanthanidesSection.classList.remove('hidden');
+                DOM.actinidesSection.classList.remove('hidden');
+
+                // 生成周期表
+                renderPeriodicTable(elements);
+
+                // 生成镧系元素 (57-71)
+                const lanthanideNumbers = Array.from({ length: 15 }, (_, i) => 57 + i);
+                renderLanthanides(elements, lanthanideNumbers);
+
+                // 生成锕系元素 (89-103)
+                const actinideNumbers = Array.from({ length: 15 }, (_, i) => 89 + i);
+                renderActinides(elements, actinideNumbers);
+
+                // 设置关闭模态框事件
+                setupModalEvents(elements);
+
+            } catch (err) {
+                console.error('加载JSON失败:', err);
+                DOM.loading.classList.add('hidden');
+                DOM.error.classList.remove('hidden');
+            }
+        }
+
+        // 初始化DOM引用
+        function initDOMReferences() {
+            DOM = {
+                loading: document.getElementById('loading'),
+                error: document.getElementById('error'),
+                periodicTableContainer: document.getElementById('periodic-table-container'),
+                lanthanidesSection: document.getElementById('lanthanides-section'),
+                lanthanidesContainer: document.getElementById('lanthanides-container'),
+                actinidesSection: document.getElementById('actinides-section'),
+                actinidesContainer: document.getElementById('actinides-container'),
+                elementModal: document.getElementById('element-modal'),
+                modalTitle: document.getElementById('modal-title'),
+                modalContentContainer: document.getElementById('modal-content-container'),
+                closeModal: document.getElementById('close-modal')
+            };
+        }
+
+        // 生成周期表
+        function renderPeriodicTable(elements) {
+            let tableHTML = `
+                        <table class="min-w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="border border-gray-300 bg-gray-100 p-2 w-12"></th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1" colspan="18">
+                                        <div class="text-center font-bold">元素周期表</div>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th class="border border-gray-300 bg-gray-100 p-2 w-12"></th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅠA</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅡA</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center" colspan="10"></th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅢA</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅣA</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅤA</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅥA</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅦA</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">0</th>
+                                </tr>
+                                <tr>
+                                    <th class="border border-gray-300 bg-gray-100 p-2 w-12"></th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center" colspan="2"></th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅢB</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅣB</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅤB</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅥB</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅦB</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center" colspan="3">Ⅷ</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅠB</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center">ⅡB</th>
+                                    <th class="border border-gray-300 bg-gray-100 p-1 text-xs text-center" colspan="6"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+            // 生成7个周期
+            for (let period = 1; period <= 7; period++) {
+                tableHTML += `<tr>`;
+                // 周期编号
+                tableHTML += `<td class="border border-gray-300 bg-gray-100 p-2 text-center font-medium">${period}</td>`;
+
+                // 生成18个族
+                for (let group = 1; group <= 18; group++) {
+                    // 查找当前周期和族对应的元素
+                    const element = elements.find(el => {
+                        const pos = elementPositions[el.number];
+                        return pos && pos[0] === period && pos[1] === group;
+                    });
+
+                    if (element) {
+                        // 有元素
+                        tableHTML += `
+                                    <td class="border border-gray-300 p-0">
+                                        <div class="element-cell bg-${element.category} h-16 rounded-sm" data-number="${element.number}">
+                                            <div class="element-number">${element.number}</div>
+                                            <div class="element-symbol">${element.symbol}</div>
+                                            <div class="element-name">${element.name}</div>
+                                            <div class="element-mass">${element.weight}</div>
+                                        </div>
+                                    </td>
+                                `;
+                    } else {
+                        // 无元素
+                        tableHTML += `<td class="border border-gray-300 p-0 h-16"></td>`;
+                    }
+                }
+                tableHTML += `</tr>`;
+            }
+
+            tableHTML += `</tbody></table>`;
+            DOM.periodicTableContainer.innerHTML = tableHTML;
+
+            // 添加元素点击事件
+            document.querySelectorAll('.element-cell').forEach(cell => {
+                cell.addEventListener('click', function () {
+                    const elementNumber = parseInt(this.getAttribute('data-number'));
+                    const element = elements.find(el => el.number === elementNumber);
+                    if (element) {
+                        showElementDetails(element);
+                    }
+                });
+            });
+        }
+
+        // 生成镧系元素
+        function renderLanthanides(elements, lanthanideNumbers) {
+            lanthanideNumbers.forEach(number => {
+                const element = elements.find(el => el.number === number);
+                if (element) {
+                    const card = document.createElement('div');
+                    card.className = `element-cell bg-lanthanoid h-16 rounded-sm`;
+                    card.innerHTML = `
+                                <div class="element-number">${element.number}</div>
+                                <div class="element-symbol">${element.symbol}</div>
+                                <div class="element-name">${element.name}</div>
+                                <div class="element-mass">${element.weight}</div>
+                            `;
+                    card.addEventListener('click', () => showElementDetails(element));
+                    DOM.lanthanidesContainer.appendChild(card);
+                } else {
+                    const emptyCard = document.createElement('div');
+                    emptyCard.className = 'element-cell bg-gray-200 h-16 rounded-sm flex items-center justify-center text-xs text-gray-500';
+                    emptyCard.textContent = number;
+                    DOM.lanthanidesContainer.appendChild(emptyCard);
+                }
+            });
+        }
+
+        // 生成锕系元素
+        function renderActinides(elements, actinideNumbers) {
+            actinideNumbers.forEach(number => {
+                const element = elements.find(el => el.number === number);
+                if (element) {
+                    const card = document.createElement('div');
+                    card.className = `element-cell bg-actinoid h-16 rounded-sm`;
+                    card.innerHTML = `
+                                <div class="element-number">${element.number}</div>
+                                <div class="element-symbol">${element.symbol}</div>
+                                <div class="element-name">${element.name}</div>
+                                <div class="element-mass">${element.weight}</div>
+                            `;
+                    card.addEventListener('click', () => showElementDetails(element));
+                    DOM.actinidesContainer.appendChild(card);
+                } else {
+                    const emptyCard = document.createElement('div');
+                    emptyCard.className = 'element-cell bg-gray-200 h-16 rounded-sm flex items-center justify-center text-xs text-gray-500';
+                    emptyCard.textContent = number;
+                    DOM.actinidesContainer.appendChild(emptyCard);
+                }
+            });
+        }
+
+        // 解析电子排布式，获取各电子层电子数
+        function parseElectronConfiguration(config) {
+            if (!config) return [];
+
+            // 简单解析电子排布式，提取各层电子数
+            const shells = [];
+            let remainingElectrons = 0;
+
+            // 处理稀有气体核心简写（如[He] 2s²）
+            const nobleGasMatch = config.match(/\[([A-Za-z]+)\]/);
+ if (nobleGasMatch) {
+ const nobleGases = {
+ 'He': 2, 'Ne': 10, 'Ar': 18, 'Kr': 36,
+ 'Xe': 54, 'Rn': 86, 'Og': 118
+ };
+ totalElectrons = nobleGases[nobleGasMatch[1]] || 0;
+ config = config.replace(/\[([A-Za-z]+)\]/, '');
+ }
+
+            // 解析剩余部分
+            const electronMatches = config.match(/(\d+)s(\d+)|(\d+)p(\d+)|(\d+)d(\d+)|(\d+)f(\d+)/g);
+            if (electronMatches) {
+                electronMatches.forEach(match => {
+                    const parts = match.match(/(\d+)([spdf])(\d+)/);
+                    if (parts) {
+                        remainingElectrons += parseInt(parts[3]);
+                    }
+                });
+            }
+
+            // 分配电子到各层
+            let electronsLeft = remainingElectrons;
+            let shellIndex = 0;
+
+            while (electronsLeft > 0 && shellIndex < electronShellCapacities.length) {
+                const capacity = electronShellCapacities[shellIndex];
+                const electronsInShell = Math.min(capacity, electronsLeft);
+                shells.push(electronsInShell);
+                electronsLeft -= electronsInShell;
+                shellIndex++;
+            }
+
+            return shells;
+        }
+
+        // 绘制原子结构示意图
+        function createAtomicStructure(shells) {
+            const container = document.createElement('div');
+            container.className = 'relative w-64 h-64 mx-auto my-4';
+
+            // 计算壳层半径（从内到外增大）
+            const maxRadius = 120; // 最大半径
+            const shellCount = shells.length;
+            const radiusIncrement = maxRadius / shellCount;
+
+            // 创建壳层
+            shells.forEach((electrons, index) => {
+                const radius = (index + 1) * radiusIncrement;
+                const shell = document.createElement('div');
+                shell.className = 'electron-shell';
+                shell.style.width = `${radius * 2}px`;
+                shell.style.height = `${radius * 2}px`;
+                shell.style.left = `${120 - radius}px`;
+                shell.style.top = `${120 - radius}px`;
+                container.appendChild(shell);
+
+                // 放置电子
+                if (electrons > 0) {
+                    const angleIncrement = (2 * Math.PI) / electrons;
+                    for (let i = 0; i < electrons; i++) {
+                        const angle = angleIncrement * i;
+                        const electron = document.createElement('div');
+                        electron.className = 'electron';
+
+                        // 计算电子位置
+                        const x = 120 + radius * Math.cos(angle) - 2;
+                        const y = 120 + radius * Math.sin(angle) - 2;
+
+                        electron.style.left = `${x}px`;
+                        electron.style.top = `${y}px`;
+
+                        // 添加轨道动画
+                        electron.style.animation = `orbit${(i % 3) + 1} ${3 + i * 0.2}s linear infinite`;
+                        container.appendChild(electron);
+                    }
+                }
+            });
+
+            // 添加原子核
+            const nucleus = document.createElement('div');
+            nucleus.className = 'absolute bg-gray-800 rounded-full w-8 h-8 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center text-white text-xs font-bold';
+            nucleus.textContent = `+${shells.reduce((a, b) => a + b, 0)}`;
+            container.appendChild(nucleus);
+
+            // 添加轨道动画样式
+            const style = document.createElement('style');
+            style.textContent = `
+                        @keyframes orbit1 {
+                            from { transform: rotate(0deg); }
+                            to { transform: rotate(360deg); }
+                        }
+                        @keyframes orbit2 {
+                            from { transform: rotate(120deg); }
+                            to { transform: rotate(480deg); }
+                        }
+                        @keyframes orbit3 {
+                            from { transform: rotate(240deg); }
+                            to { transform: rotate(600deg); }
+                        }
+                        .electron {
+                            transform-origin: 50% 50%;
+                        }
+                    `;
+            container.appendChild(style);
+
+            return container;
+        }
+
+        // 显示元素详情
+        function showElementDetails(element) {
+            // 确保DOM引用已初始化
+            if (!DOM.modalTitle || !DOM.modalContentContainer || !DOM.elementModal) {
+                initDOMReferences();
+            }
+
+            DOM.modalTitle.textContent = `${element.name} (${element.symbol})`;
+
+            // 解析电子排布，生成原子结构
+            const electronShells = parseElectronConfiguration(element.electrons);
+            const atomicStructure = createAtomicStructure(electronShells);
+
+            DOM.modalContentContainer.innerHTML = `
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <!-- 左侧：原子结构 -->
+                            <div class="lg:col-span-1 flex flex-col items-center">
+                                <div class="bg-${element.category} text-white px-4 py-2 rounded-lg mb-4">
+                                    原子结构示意图
+                                </div>
+                                ${atomicStructure.outerHTML}
+                                <div class="mt-4 text-sm text-center">
+                                    <p>电子层分布: ${electronShells.join(' - ')}</p>
+                                </div>
+                            </div>
+
+                            <!-- 右侧：元素信息 -->
+                            <div class="lg:col-span-2">
+                                <div class="bg-${element.category} text-xs px-3 py-1 rounded inline-block mb-6">
+                                    ${element.categoryName}
+                                </div>
+
+                                <div class="detail-section">
+                                    <h3 class="text-lg font-semibold mb-3">基本信息</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div><span class="text-gray-500">原子序数：</span>${element.number}</div>
+                                        <div><span class="text-gray-500">原子量：</span>${element.weight}</div>
+                                        <div><span class="text-gray-500">电子排布：</span>${element.electrons || '未知'}</div>
+                                        <div><span class="text-gray-500">发现年份：</span>${element.year || '未知'}</div>
+                                    </div>
+                                </div>
+
+                                <div class="detail-section">
+                                    <h3 class="text-lg font-semibold mb-3">物理性质</h3>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div><span class="text-gray-500">密度：</span>${element.density || '未知'}</div>
+                                        <div><span class="text-gray-500">熔点：</span>${element.melting || '未知'}</div>
+                                        <div><span class="text-gray-500">沸点：</span>${element.boiling || '未知'}</div>
+                                        <div><span class="text-gray-500">原子半径：</span>${element.radius || '未知'}</div>
+                                    </div>
+                                </div>
+
+                                <div class="detail-section">
+                                    <h3 class="text-lg font-semibold mb-3">化学性质</h3>
+                                    <p class="mb-2"><span class="text-gray-500">电负性：</span>${element.electronegativity || '未知'}</p>
+                                    <p class="text-gray-700 leading-relaxed">${element.chemical || '暂无数据'}</p>
+                                </div>
+
+                                <div class="detail-section">
+                                    <h3 class="text-lg font-semibold mb-3">用途</h3>
+                                    ${element.uses && element.uses.length > 0 ?
+                    `<ul class="list-disc pl-5 space-y-1 text-gray-700">
+                                            ${element.uses.map(use => `<li>${use}</li>`).join('')}
+                                        </ul>` :
+                    `<p class="text-gray-700">暂无数据</p>`
+                }
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+            // 显示模态框并添加动画
+            DOM.elementModal.classList.remove('hidden');
+            const modalContent = DOM.elementModal.querySelector('div');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // 设置模态框事件
+        function setupModalEvents(elements) {
+            // 关闭按钮事件
+            DOM.closeModal.addEventListener('click', () => {
+                closeElementModal();
+            });
+
+            // 点击模态框外部关闭
+            DOM.elementModal.addEventListener('click', (e) => {
+                if (e.target === DOM.elementModal) {
+                    closeElementModal();
+                }
+            });
+
+            // ESC键关闭
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !DOM.elementModal.classList.contains('hidden')) {
+                    closeElementModal();
+                }
+            });
+        }
+
+        // 关闭模态框并添加动画
+        function closeElementModal() {
+            const modalContent = DOM.elementModal.querySelector('div');
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                DOM.elementModal.classList.add('hidden');
+            }, 200);
+        }
+    </script>
+</body>
+</html>

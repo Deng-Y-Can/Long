@@ -1,0 +1,2495 @@
+{
+  "middle_high_school_physics": {
+    "mechanics": {
+      "basic_concepts": [
+        {
+          "term": "质点",
+          "definition": "忽略形状和大小，只具有质量的理想化模型",
+          "level": "初中"
+        },
+        {
+          "term": "参考系",
+          "definition": "描述物体运动时选作标准的物体或物体系",
+          "level": "初中"
+        },
+        {
+          "term": "位移",
+          "definition": "从初位置到末位置的有向线段，矢量",
+          "level": "初中"
+        },
+        {
+          "term": "路程",
+          "definition": "物体运动轨迹的长度，标量",
+          "level": "初中"
+        },
+        {
+          "term": "矢量",
+          "definition": "既有大小又有方向的物理量",
+          "level": "高中"
+        },
+        {
+          "term": "标量",
+          "definition": "只有大小没有方向的物理量",
+          "level": "高中"
+        }
+      ],
+      "kinematics_formulas": [
+        {
+          "formula": "v = s/t",
+          "explanation": {
+            "v": "速度(m/s)",
+            "s": "路程(m)",
+            "t": "时间(s)",
+            "meaning": "匀速直线运动速度公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "s = vt",
+          "explanation": {
+            "s": "路程(m)",
+            "v": "速度(m/s)",
+            "t": "时间(s)",
+            "meaning": "匀速直线运动路程公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "t = s/v",
+          "explanation": {
+            "t": "时间(s)",
+            "s": "路程(m)",
+            "v": "速度(m/s)",
+            "meaning": "匀速直线运动时间公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "v̄ = (v₀ + v)/2",
+          "explanation": {
+            "v̄": "平均速度(m/s)",
+            "v₀": "初速度(m/s)",
+            "v": "末速度(m/s)",
+            "meaning": "匀变速直线运动平均速度公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "v = v₀ + at",
+          "explanation": {
+            "v": "末速度(m/s)",
+            "v₀": "初速度(m/s)",
+            "a": "加速度(m/s²)",
+            "t": "时间(s)",
+            "meaning": "匀变速直线运动速度公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "s = v₀t + ½at²",
+          "explanation": {
+            "s": "位移(m)",
+            "v₀": "初速度(m/s)",
+            "a": "加速度(m/s²)",
+            "t": "时间(s)",
+            "meaning": "匀变速直线运动位移公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "v² - v₀² = 2as",
+          "explanation": {
+            "v": "末速度(m/s)",
+            "v₀": "初速度(m/s)",
+            "a": "加速度(m/s²)",
+            "s": "位移(m)",
+            "meaning": "匀变速直线运动速度-位移公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "Δs = aT²",
+          "explanation": {
+            "Δs": "连续相等时间间隔内的位移差(m)",
+            "a": "加速度(m/s²)",
+            "T": "时间间隔(s)",
+            "meaning": "匀变速直线运动的推论"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "vₜ/₂ = v̄ = (v₀ + v)/2",
+          "explanation": {
+            "vₜ/₂": "中间时刻速度(m/s)",
+            "v̄": "平均速度(m/s)",
+            "meaning": "匀变速直线运动中间时刻速度等于平均速度"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "vₛ/₂ = √[(v₀² + v²)/2]",
+          "explanation": {
+            "vₛ/₂": "中间位置速度(m/s)",
+            "meaning": "匀变速直线运动中间位置速度公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "h = ½gt²",
+          "explanation": {
+            "h": "下落高度(m)",
+            "g": "重力加速度(m/s²)",
+            "t": "时间(s)",
+            "meaning": "自由落体运动位移公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "v = gt",
+          "explanation": {
+            "v": "末速度(m/s)",
+            "g": "重力加速度(m/s²)",
+            "t": "时间(s)",
+            "meaning": "自由落体运动速度公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "v² = 2gh",
+          "explanation": {
+            "v": "末速度(m/s)",
+            "g": "重力加速度(m/s²)",
+            "h": "下落高度(m)",
+            "meaning": "自由落体运动速度-位移公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "x = v₀t",
+          "explanation": {
+            "x": "水平位移(m)",
+            "v₀": "水平初速度(m/s)",
+            "t": "时间(s)",
+            "meaning": "平抛运动水平方向位移公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "y = ½gt²",
+          "explanation": {
+            "y": "竖直位移(m)",
+            "g": "重力加速度(m/s²)",
+            "t": "时间(s)",
+            "meaning": "平抛运动竖直方向位移公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "vₓ = v₀",
+          "explanation": {
+            "vₓ": "水平分速度(m/s)",
+            "v₀": "初速度(m/s)",
+            "meaning": "平抛运动水平分速度"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "vᵧ = gt",
+          "explanation": {
+            "vᵧ": "竖直分速度(m/s)",
+            "g": "重力加速度(m/s²)",
+            "t": "时间(s)",
+            "meaning": "平抛运动竖直分速度"
+          },
+          "level": "高中"
+        }
+      ],
+      "dynamics_formulas": [
+        {
+          "formula": "G = mg",
+          "explanation": {
+            "G": "重力(N)",
+            "m": "质量(kg)",
+            "g": "重力加速度(m/s²)",
+            "meaning": "重力计算公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "F = ma",
+          "explanation": {
+            "F": "合力(N)",
+            "m": "质量(kg)",
+            "a": "加速度(m/s²)",
+            "meaning": "牛顿第二定律"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "f = μN",
+          "explanation": {
+            "f": "滑动摩擦力(N)",
+            "μ": "动摩擦因数",
+            "N": "正压力(N)",
+            "meaning": "滑动摩擦力公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "F = kx",
+          "explanation": {
+            "F": "弹簧弹力(N)",
+            "k": "劲度系数(N/m)",
+            "x": "形变量(m)",
+            "meaning": "胡克定律"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "p = F/S",
+          "explanation": {
+            "p": "压强(Pa)",
+            "F": "压力(N)",
+            "S": "受力面积(m²)",
+            "meaning": "压强的定义式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "p = ρgh",
+          "explanation": {
+            "p": "液体压强(Pa)",
+            "ρ": "液体密度(kg/m³)",
+            "g": "重力加速度(m/s²)",
+            "h": "深度(m)",
+            "meaning": "液体内部压强公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "F浮 = G排 = ρ液gV排",
+          "explanation": {
+            "F浮": "浮力(N)",
+            "G排": "排开液体重力(N)",
+            "ρ液": "液体密度(kg/m³)",
+            "V排": "排开液体体积(m³)",
+            "meaning": "阿基米德原理"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "F浮 = G物",
+          "explanation": {
+            "F浮": "浮力(N)",
+            "G物": "物体重力(N)",
+            "meaning": "物体漂浮或悬浮时浮力等于重力"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "F₁l₁ = F₂l₂",
+          "explanation": {
+            "F₁,F₂": "动力和阻力(N)",
+            "l₁,l₂": "动力臂和阻力臂(m)",
+            "meaning": "杠杆平衡条件"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "η = W有/W总 × 100%",
+          "explanation": {
+            "η": "机械效率",
+            "W有": "有用功(J)",
+            "W总": "总功(J)",
+            "meaning": "机械效率公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "W = Fs",
+          "explanation": {
+            "W": "功(J)",
+            "F": "力(N)",
+            "s": "在力的方向上移动的距离(m)",
+            "meaning": "力对物体做功公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "P = W/t",
+          "explanation": {
+            "P": "功率(W)",
+            "W": "功(J)",
+            "t": "时间(s)",
+            "meaning": "功率的定义式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "P = Fv",
+          "explanation": {
+            "P": "功率(W)",
+            "F": "力(N)",
+            "v": "速度(m/s)",
+            "meaning": "功率与力、速度的关系"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "Eₖ = ½mv²",
+          "explanation": {
+            "Eₖ": "动能(J)",
+            "m": "质量(kg)",
+            "v": "速度(m/s)",
+            "meaning": "动能公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "Eₚ = mgh",
+          "explanation": {
+            "Eₚ": "重力势能(J)",
+            "m": "质量(kg)",
+            "g": "重力加速度(m/s²)",
+            "h": "高度(m)",
+            "meaning": "重力势能公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "W合 = ΔEₖ = ½mv² - ½mv₀²",
+          "explanation": {
+            "W合": "合外力做的功(J)",
+            "ΔEₖ": "动能变化量(J)",
+            "meaning": "动能定理"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "W_G = -ΔEₚ",
+          "explanation": {
+            "W_G": "重力做的功(J)",
+            "ΔEₚ": "重力势能变化量(J)",
+            "meaning": "重力做功与重力势能变化的关系"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "Eₖ₁ + Eₚ₁ = Eₖ₂ + Eₚ₂",
+          "explanation": {
+            "Eₖ": "动能",
+            "Eₚ": "重力势能",
+            "meaning": "只有重力做功时的机械能守恒定律"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "p = mv",
+          "explanation": {
+            "p": "动量(kg·m/s)",
+            "m": "质量(kg)",
+            "v": "速度(m/s)",
+            "meaning": "动量的定义式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "I = Ft",
+          "explanation": {
+            "I": "冲量(N·s)",
+            "F": "力(N)",
+            "t": "时间(s)",
+            "meaning": "冲量的定义式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "I = Δp = mv - mv₀",
+          "explanation": {
+            "I": "冲量(N·s)",
+            "Δp": "动量变化量(kg·m/s)",
+            "meaning": "动量定理"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "m₁v₁ + m₂v₂ = m₁v₁' + m₂v₂'",
+          "explanation": {
+            "m": "质量",
+            "v": "速度",
+            "meaning": "动量守恒定律"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "v = ωr",
+          "explanation": {
+            "v": "线速度(m/s)",
+            "ω": "角速度(rad/s)",
+            "r": "半径(m)",
+            "meaning": "线速度与角速度的关系"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "ω = 2π/T = 2πf",
+          "explanation": {
+            "ω": "角速度(rad/s)",
+            "T": "周期(s)",
+            "f": "频率(Hz)",
+            "meaning": "角速度与周期、频率的关系"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "aₙ = v²/r = ω²r",
+          "explanation": {
+            "aₙ": "向心加速度(m/s²)",
+            "v": "线速度(m/s)",
+            "ω": "角速度(rad/s)",
+            "r": "半径(m)",
+            "meaning": "向心加速度公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "Fₙ = mv²/r = mω²r",
+          "explanation": {
+            "Fₙ": "向心力(N)",
+            "m": "质量(kg)",
+            "v": "线速度(m/s)",
+            "ω": "角速度(rad/s)",
+            "r": "半径(m)",
+            "meaning": "向心力公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "F = Gm₁m₂/r²",
+          "explanation": {
+            "F": "万有引力(N)",
+            "G": "引力常量(6.67×10⁻¹¹N·m²/kg²)",
+            "m₁,m₂": "两物体质量(kg)",
+            "r": "距离(m)",
+            "meaning": "万有引力定律"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "T = 2π√(l/g)",
+          "explanation": {
+            "T": "单摆周期(s)",
+            "l": "摆长(m)",
+            "g": "重力加速度(m/s²)",
+            "meaning": "单摆周期公式(小角度)"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "T = 2π√(m/k)",
+          "explanation": {
+            "T": "弹簧振子周期(s)",
+            "m": "质量(kg)",
+            "k": "劲度系数(N/m)",
+            "meaning": "弹簧振子周期公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "f = 1/T",
+          "explanation": {
+            "f": "频率(Hz)",
+            "T": "周期(s)",
+            "meaning": "频率与周期的关系"
+          },
+          "level": "初中"
+        }
+      ]
+    },
+    "thermodynamics": {
+      "basic_concepts": [
+        {
+          "term": "温度",
+          "definition": "表示物体冷热程度的物理量",
+          "level": "初中"
+        },
+        {
+          "term": "热量",
+          "definition": "在热传递过程中传递能量的多少",
+          "level": "初中"
+        },
+        {
+          "term": "内能",
+          "definition": "物体内部所有分子热运动的动能和分子势能的总和",
+          "level": "初中"
+        }
+      ],
+      "formulas": [
+        {
+          "formula": "Q = cmΔt",
+          "explanation": {
+            "Q": "热量(J)",
+            "c": "比热容[J/(kg·°C)]",
+            "m": "质量(kg)",
+            "Δt": "温度变化量(°C)",
+            "meaning": "物体温度变化时吸收或放出的热量"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "Q = mq",
+          "explanation": {
+            "Q": "燃料完全燃烧放出的热量(J)",
+            "m": "燃料质量(kg)",
+            "q": "热值(J/kg)",
+            "meaning": "燃料燃烧放热公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "η = Q有/Q总 × 100%",
+          "explanation": {
+            "η": "热机效率",
+            "Q有": "有用功的能量(J)",
+            "Q总": "燃料完全燃烧放出的能量(J)",
+            "meaning": "热机效率公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "T = t + 273.15",
+          "explanation": {
+            "T": "热力学温度(K)",
+            "t": "摄氏温度(°C)",
+            "meaning": "热力学温度与摄氏温度的换算"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "p₁V₁/T₁ = p₂V₂/T₂",
+          "explanation": {
+            "p": "压强",
+            "V": "体积",
+            "T": "热力学温度",
+            "meaning": "理想气体状态方程的变形式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "ΔU = Q + W",
+          "explanation": {
+            "ΔU": "内能变化量",
+            "Q": "吸收的热量",
+            "W": "外界对系统做的功",
+            "meaning": "热力学第一定律"
+          },
+          "level": "高中"
+        }
+      ]
+    },
+    "electromagnetism": {
+      "basic_concepts": [
+        {
+          "term": "电荷",
+          "definition": "物体具有吸引轻小物体的性质称为带电，或带了电荷",
+          "level": "初中"
+        },
+        {
+          "term": "电流",
+          "definition": "电荷的定向移动形成电流",
+          "level": "初中"
+        },
+        {
+          "term": "电压",
+          "definition": "使电路中形成电流的原因",
+          "level": "初中"
+        },
+        {
+          "term": "电阻",
+          "definition": "表示导体对电流阻碍作用的大小",
+          "level": "初中"
+        }
+      ],
+      "formulas": [
+        {
+          "formula": "I = Q/t",
+          "explanation": {
+            "I": "电流(A)",
+            "Q": "电荷量(C)",
+            "t": "时间(s)",
+            "meaning": "电流的定义式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "I = U/R",
+          "explanation": {
+            "I": "电流(A)",
+            "U": "电压(V)",
+            "R": "电阻(Ω)",
+            "meaning": "欧姆定律"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "U = IR",
+          "explanation": {
+            "U": "电压(V)",
+            "I": "电流(A)",
+            "R": "电阻(Ω)",
+            "meaning": "欧姆定律变形"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "R = U/I",
+          "explanation": {
+            "R": "电阻(Ω)",
+            "U": "电压(V)",
+            "I": "电流(A)",
+            "meaning": "电阻的定义式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "R = ρL/S",
+          "explanation": {
+            "R": "电阻(Ω)",
+            "ρ": "电阻率(Ω·m)",
+            "L": "长度(m)",
+            "S": "横截面积(m²)",
+            "meaning": "电阻定律"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "P = UI",
+          "explanation": {
+            "P": "电功率(W)",
+            "U": "电压(V)",
+            "I": "电流(A)",
+            "meaning": "电功率公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "P = I²R",
+          "explanation": {
+            "P": "电功率(W)",
+            "I": "电流(A)",
+            "R": "电阻(Ω)",
+            "meaning": "电功率的变形式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "P = U²/R",
+          "explanation": {
+            "P": "电功率(W)",
+            "U": "电压(V)",
+            "R": "电阻(Ω)",
+            "meaning": "电功率的变形式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "W = Pt",
+          "explanation": {
+            "W": "电功(J或kW·h)",
+            "P": "功率(W或kW)",
+            "t": "时间(s或h)",
+            "meaning": "电功公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "W = UIt",
+          "explanation": {
+            "W": "电功(J)",
+            "U": "电压(V)",
+            "I": "电流(A)",
+            "t": "时间(s)",
+            "meaning": "电功的变形式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "W = I²Rt",
+          "explanation": {
+            "W": "电功(J)",
+            "I": "电流(A)",
+            "R": "电阻(Ω)",
+            "t": "时间(s)",
+            "meaning": "电功的变形式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "W = U²t/R",
+          "explanation": {
+            "W": "电功(J)",
+            "U": "电压(V)",
+            "R": "电阻(Ω)",
+            "t": "时间(s)",
+            "meaning": "电功的变形式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "Q = I²Rt",
+          "explanation": {
+            "Q": "焦耳热(J)",
+            "I": "电流(A)",
+            "R": "电阻(Ω)",
+            "t": "时间(s)",
+            "meaning": "焦耳定律"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "R串 = R₁ + R₂ + ... + Rₙ",
+          "explanation": {
+            "R串": "串联总电阻",
+            "R₁...Rₙ": "各串联电阻",
+            "meaning": "串联电路总电阻公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "1/R并 = 1/R₁ + 1/R₂ + ... + 1/Rₙ",
+          "explanation": {
+            "R并": "并联总电阻",
+            "R₁...Rₙ": "各并联电阻",
+            "meaning": "并联电路总电阻公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "I串 = I₁ = I₂ = ... = Iₙ",
+          "explanation": {
+            "I串": "串联电路电流",
+            "I₁...Iₙ": "各支路电流",
+            "meaning": "串联电路电流特点"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "U串 = U₁ + U₂ + ... + Uₙ",
+          "explanation": {
+            "U串": "串联电路总电压",
+            "U₁...Uₙ": "各部分电压",
+            "meaning": "串联电路电压特点"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "U并 = U₁ = U₂ = ... = Uₙ",
+          "explanation": {
+            "U并": "并联电路电压",
+            "U₁...Uₙ": "各支路电压",
+            "meaning": "并联电路电压特点"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "I并 = I₁ + I₂ + ... + Iₙ",
+          "explanation": {
+            "I并": "并联电路总电流",
+            "I₁...Iₙ": "各支路电流",
+            "meaning": "并联电路电流特点"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "F = kq₁q₂/r²",
+          "explanation": {
+            "F": "静电力(N)",
+            "k": "静电力常量",
+            "q₁,q₂": "电荷量(C)",
+            "r": "距离(m)",
+            "meaning": "库仑定律"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "E = F/q",
+          "explanation": {
+            "E": "电场强度(N/C或V/m)",
+            "F": "电场力(N)",
+            "q": "试探电荷(C)",
+            "meaning": "电场强度定义式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "U = W/q",
+          "explanation": {
+            "U": "电势差(V)",
+            "W": "电场力做功(J)",
+            "q": "电荷量(C)",
+            "meaning": "电势差定义式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "C = Q/U",
+          "explanation": {
+            "C": "电容(F)",
+            "Q": "电荷量(C)",
+            "U": "电压(V)",
+            "meaning": "电容定义式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "F = BIL",
+          "explanation": {
+            "F": "安培力(N)",
+            "B": "磁感应强度(T)",
+            "I": "电流(A)",
+            "L": "导体长度(m)",
+            "meaning": "安培力公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "F = qvB",
+          "explanation": {
+            "F": "洛伦兹力(N)",
+            "q": "电荷量(C)",
+            "v": "速度(m/s)",
+            "B": "磁感应强度(T)",
+            "meaning": "洛伦兹力公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "Φ = BS",
+          "explanation": {
+            "Φ": "磁通量(Wb)",
+            "B": "磁感应强度(T)",
+            "S": "面积(m²)",
+            "meaning": "磁通量公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "E = nΔΦ/Δt",
+          "explanation": {
+            "E": "感应电动势(V)",
+            "n": "线圈匝数",
+            "ΔΦ": "磁通量变化量(Wb)",
+            "Δt": "时间变化量(s)",
+            "meaning": "法拉第电磁感应定律"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "E = BLv",
+          "explanation": {
+            "E": "感应电动势(V)",
+            "B": "磁感应强度(T)",
+            "L": "导体长度(m)",
+            "v": "切割速度(m/s)",
+            "meaning": "导体切割磁感线产生的电动势"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "I = Iₘ sinωt",
+          "explanation": {
+            "I": "瞬时电流(A)",
+            "Iₘ": "电流最大值(A)",
+            "ω": "角频率(rad/s)",
+            "t": "时间(s)",
+            "meaning": "正弦交流电的电流瞬时值"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "U = Uₘ sinωt",
+          "explanation": {
+            "U": "瞬时电压(V)",
+            "Uₘ": "电压最大值(V)",
+            "ω": "角频率(rad/s)",
+            "t": "时间(s)",
+            "meaning": "正弦交流电的电压瞬时值"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "I = Iₘ/√2",
+          "explanation": {
+            "I": "电流有效值(A)",
+            "Iₘ": "电流最大值(A)",
+            "meaning": "正弦交流电电流有效值与最大值关系"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "U = Uₘ/√2",
+          "explanation": {
+            "U": "电压有效值(V)",
+            "Uₘ": "电压最大值(V)",
+            "meaning": "正弦交流电电压有效值与最大值关系"
+          },
+          "level": "高中"
+        }
+      ]
+    },
+    "optics": {
+      "basic_concepts": [
+        {
+          "term": "光的反射",
+          "definition": "光从一种介质射向另一种介质表面时，一部分光被反射回原来介质的现象",
+          "level": "初中"
+        },
+        {
+          "term": "光的折射",
+          "definition": "光从一种介质斜射入另一种介质时，传播方向发生偏折的现象",
+          "level": "初中"
+        },
+        {
+          "term": "凸透镜",
+          "definition": "中间厚、边缘薄，对光线有会聚作用的透镜",
+          "level": "初中"
+        },
+        {
+          "term": "凹透镜",
+          "definition": "中间薄、边缘厚，对光线有发散作用的透镜",
+          "level": "初中"
+        }
+      ],
+      "formulas": [
+        {
+          "formula": "θᵢ = θᵣ",
+          "explanation": {
+            "θᵢ": "入射角(°)",
+            "θᵣ": "反射角(°)",
+            "meaning": "光的反射定律"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "n₁ sinθ₁ = n₂ sinθ₂",
+          "explanation": {
+            "n₁,n₂": "两种介质的折射率",
+            "θ₁": "入射角(°)",
+            "θ₂": "折射角(°)",
+            "meaning": "光的折射定律(斯涅尔定律)"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "n = c/v",
+          "explanation": {
+            "n": "折射率",
+            "c": "真空中光速(m/s)",
+            "v": "介质中光速(m/s)",
+            "meaning": "折射率与光速的关系"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "1/f = 1/u + 1/v",
+          "explanation": {
+            "f": "焦距(m)",
+            "u": "物距(m)",
+            "v": "像距(m)",
+            "meaning": "透镜成像公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "m = |v/u|",
+          "explanation": {
+            "m": "放大率",
+            "v": "像距(m)",
+            "u": "物距(m)",
+            "meaning": "透镜成像放大率公式"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "λ = c/f",
+          "explanation": {
+            "λ": "波长(m)",
+            "c": "波速(m/s)",
+            "f": "频率(Hz)",
+            "meaning": "波长、波速与频率的关系"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "E = hν",
+          "explanation": {
+            "E": "光子能量(J)",
+            "h": "普朗克常量(6.63×10⁻³⁴J·s)",
+            "ν": "频率(Hz)",
+            "meaning": "光子能量公式"
+          },
+          "level": "高中"
+        }
+      ]
+    },
+    "waves_and_acoustics": {
+      "basic_concepts": [
+        {
+          "term": "机械波",
+          "definition": "机械振动在介质中的传播",
+          "level": "高中"
+        },
+        {
+          "term": "横波",
+          "definition": "质点振动方向与波的传播方向垂直的波",
+          "level": "高中"
+        },
+        {
+          "term": "纵波",
+          "definition": "质点振动方向与波的传播方向在同一直线上的波",
+          "level": "高中"
+        }
+      ],
+      "formulas": [
+        {
+          "formula": "v = λf",
+          "explanation": {
+            "v": "波速(m/s)",
+            "λ": "波长(m)",
+            "f": "频率(Hz)",
+            "meaning": "波速、波长与频率的关系"
+          },
+          "level": "初中"
+        },
+        {
+          "formula": "v = λ/T",
+          "explanation": {
+            "v": "波速(m/s)",
+            "λ": "波长(m)",
+            "T": "周期(s)",
+            "meaning": "波速、波长与周期的关系"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "f' = f(v + v₀)/(v - vₛ)",
+          "explanation": {
+            "f'": "观察者接收到的频率(Hz)",
+            "f": "波源频率(Hz)",
+            "v": "波速(m/s)",
+            "v₀": "观察者速度(m/s)",
+            "vₛ": "波源速度(m/s)",
+            "meaning": "多普勒效应公式"
+          },
+          "level": "高中"
+        }
+      ]
+    },
+    "modern_physics": {
+      "basic_concepts": [
+        {
+          "term": "光电效应",
+          "definition": "光照射到金属表面时，金属表面发射出电子的现象",
+          "level": "高中"
+        },
+        {
+          "term": "半衰期",
+          "definition": "放射性元素的原子核有半数发生衰变所需的时间",
+          "level": "高中"
+        }
+      ],
+      "formulas": [
+        {
+          "formula": "Eₖₘₐₓ = hν - W₀",
+          "explanation": {
+            "Eₖₘₐₓ": "光电子最大初动能(J)",
+            "h": "普朗克常量",
+            "ν": "入射光频率(Hz)",
+            "W₀": "逸出功(J)",
+            "meaning": "光电效应方程"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "N = N₀(1/2)^(t/T₁/₂)",
+          "explanation": {
+            "N": "剩余原子核数",
+            "N₀": "初始原子核数",
+            "t": "时间",
+            "T₁/₂": "半衰期",
+            "meaning": "放射性衰变公式"
+          },
+          "level": "高中"
+        },
+        {
+          "formula": "E = mc²",
+          "explanation": {
+            "E": "能量(J)",
+            "m": "质量(kg)",
+            "c": "真空中光速(m/s)",
+            "meaning": "质能方程"
+          },
+          "level": "高中"
+        }
+      ]
+    }
+  },
+  "university_physics": {
+    "classical_mechanics": {
+      "kinematics": [
+        {
+          "formula": "v = ds/dt",
+          "explanation": {
+            "v": "瞬时速度",
+            "s": "位移",
+            "t": "时间",
+            "meaning": "瞬时速度的定义(导数形式)"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "a = dv/dt = d²s/dt²",
+          "explanation": {
+            "a": "瞬时加速度",
+            "v": "速度",
+            "s": "位移",
+            "t": "时间",
+            "meaning": "瞬时加速度的定义(导数形式)"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "r = x i + y j + z k",
+          "explanation": {
+            "r": "位置矢量",
+            "x,y,z": "坐标分量",
+            "i,j,k": "单位矢量",
+            "meaning": "三维空间位置矢量表达式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "v = dr/dt = vₓ i + vᵧ j + v_z k",
+          "explanation": {
+            "v": "速度矢量",
+            "r": "位置矢量",
+            "vₓ,vᵧ,v_z": "速度分量",
+            "meaning": "速度矢量的分量表达式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "a = dv/dt = aₓ i + aᵧ j + a_z k",
+          "explanation": {
+            "a": "加速度矢量",
+            "v": "速度矢量",
+            "aₓ,aᵧ,a_z": "加速度分量",
+            "meaning": "加速度矢量的分量表达式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "v = ∫a dt + v₀",
+          "explanation": {
+            "v": "末速度",
+            "a": "加速度",
+            "t": "时间",
+            "v₀": "初速度",
+            "meaning": "通过加速度积分求速度"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "r = ∫v dt + r₀",
+          "explanation": {
+            "r": "末位置",
+            "v": "速度",
+            "t": "时间",
+            "r₀": "初位置",
+            "meaning": "通过速度积分求位置"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "aₜ = dv/dt = αr",
+          "explanation": {
+            "aₜ": "切向加速度",
+            "v": "线速度",
+            "α": "角加速度",
+            "r": "半径",
+            "meaning": "切向加速度公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "aₙ = v²/r = ω²r",
+          "explanation": {
+            "aₙ": "法向加速度",
+            "v": "线速度",
+            "ω": "角速度",
+            "r": "半径",
+            "meaning": "法向加速度公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "α = dω/dt = d²θ/dt²",
+          "explanation": {
+            "α": "角加速度",
+            "ω": "角速度",
+            "θ": "角位移",
+            "t": "时间",
+            "meaning": "角加速度的定义"
+          },
+          "course": "大学物理"
+        }
+      ],
+      "dynamics": [
+        {
+          "formula": "F = dp/dt = d(mv)/dt",
+          "explanation": {
+            "F": "合力",
+            "p": "动量",
+            "m": "质量",
+            "v": "速度",
+            "t": "时间",
+            "meaning": "牛顿第二定律的普遍形式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "M = r × F",
+          "explanation": {
+            "M": "力矩",
+            "r": "位置矢量",
+            "F": "力",
+            "×": "矢量叉乘",
+            "meaning": "力矩的定义"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "M = dL/dt",
+          "explanation": {
+            "M": "合外力矩",
+            "L": "角动量",
+            "t": "时间",
+            "meaning": "角动量定理"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "L = r × p = r × mv",
+          "explanation": {
+            "L": "角动量",
+            "r": "位置矢量",
+            "p": "动量",
+            "m": "质量",
+            "v": "速度",
+            "meaning": "角动量的定义"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "I = ∫r² dm",
+          "explanation": {
+            "I": "转动惯量",
+            "r": "质点到轴的距离",
+            "m": "质量",
+            "meaning": "转动惯量的定义"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "L = Iω",
+          "explanation": {
+            "L": "角动量",
+            "I": "转动惯量",
+            "ω": "角速度",
+            "meaning": "刚体绕定轴转动的角动量"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "M = Iα",
+          "explanation": {
+            "M": "力矩",
+            "I": "转动惯量",
+            "α": "角加速度",
+            "meaning": "刚体定轴转动定律"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "W = ∫M dθ",
+          "explanation": {
+            "W": "力矩做的功",
+            "M": "力矩",
+            "θ": "角位移",
+            "meaning": "力矩做功的定义"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "Eₖᵣ = ½Iω²",
+          "explanation": {
+            "Eₖᵣ": "转动动能",
+            "I": "转动惯量",
+            "ω": "角速度",
+            "meaning": "刚体转动动能公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "∑L = 常量 (当M=0时)",
+          "explanation": {
+            "L": "角动量",
+            "M": "合外力矩",
+            "meaning": "角动量守恒定律"
+          },
+          "course": "大学物理"
+        }
+      ],
+      "work_and_energy": [
+        {
+          "formula": "W = ∫F·dr",
+          "explanation": {
+            "W": "功",
+            "F": "力矢量",
+            "dr": "位移微元",
+            "·": "矢量点积",
+            "meaning": "变力做功的定义"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "P = dW/dt = F·v",
+          "explanation": {
+            "P": "瞬时功率",
+            "W": "功",
+            "t": "时间",
+            "F": "力",
+            "v": "速度",
+            "meaning": "瞬时功率的定义"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "Eₖ = ½mv²",
+          "explanation": {
+            "Eₖ": "动能",
+            "m": "质量",
+            "v": "速度",
+            "meaning": "质点动能公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "W合 = ΔEₖ",
+          "explanation": {
+            "W合": "合外力做的功",
+            "ΔEₖ": "动能变化量",
+            "meaning": "动能定理的普遍形式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "F = -∇U",
+          "explanation": {
+            "F": "保守力",
+            "U": "势能",
+            "∇": "梯度算符",
+            "meaning": "保守力与势能的关系"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "E = Eₖ + U = 常量 (只有保守力做功时)",
+          "explanation": {
+            "E": "机械能",
+            "Eₖ": "动能",
+            "U": "势能",
+            "meaning": "机械能守恒定律"
+          },
+          "course": "大学物理"
+        }
+      ],
+      "oscillations_and_waves": [
+        {
+          "formula": "d²x/dt² + ω₀²x = 0",
+          "explanation": {
+            "x": "位移",
+            "t": "时间",
+            "ω₀": "固有角频率",
+            "meaning": "简谐振动的微分方程"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "x = A cos(ωt + φ)",
+          "explanation": {
+            "x": "位移",
+            "A": "振幅",
+            "ω": "角频率",
+            "t": "时间",
+            "φ": "初相位",
+            "meaning": "简谐振动的位移方程"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "v = -Aω sin(ωt + φ)",
+          "explanation": {
+            "v": "速度",
+            "A": "振幅",
+            "ω": "角频率",
+            "t": "时间",
+            "φ": "初相位",
+            "meaning": "简谐振动的速度方程"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "a = -Aω² cos(ωt + φ) = -ω²x",
+          "explanation": {
+            "a": "加速度",
+            "A": "振幅",
+            "ω": "角频率",
+            "x": "位移",
+            "meaning": "简谐振动的加速度方程"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "E = ½kA² = 常量",
+          "explanation": {
+            "E": "简谐振动总能量",
+            "k": "劲度系数",
+            "A": "振幅",
+            "meaning": "简谐振动的能量守恒"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "∂²y/∂t² = v² ∂²y/∂x²",
+          "explanation": {
+            "y": "振动位移",
+            "t": "时间",
+            "x": "位置",
+            "v": "波速",
+            "meaning": "波动方程"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "y = A cos[ω(t - x/v) + φ₀]",
+          "explanation": {
+            "y": "振动位移",
+            "A": "振幅",
+            "ω": "角频率",
+            "t": "时间",
+            "x": "位置",
+            "v": "波速",
+            "φ₀": "初相位",
+            "meaning": "平面简谐波的波动方程"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "I = <P>/S = ½ρvω²A²",
+          "explanation": {
+            "I": "波的强度",
+            "P": "功率",
+            "S": "面积",
+            "ρ": "介质密度",
+            "v": "波速",
+            "ω": "角频率",
+            "A": "振幅",
+            "meaning": "波的强度公式"
+          },
+          "course": "大学物理"
+        }
+      ]
+    },
+    "electromagnetism": {
+      "electrostatics": [
+        {
+          "formula": "E = (1/4πε₀) q/r² r̂",
+          "explanation": {
+            "E": "电场强度",
+            "ε₀": "真空介电常数",
+            "q": "点电荷电量",
+            "r": "距离",
+            "r̂": "单位矢量",
+            "meaning": "点电荷的电场强度"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "∮E·dS = qₑₙ₆/ε₀",
+          "explanation": {
+            "E": "电场强度",
+            "S": "闭合曲面",
+            "qₑₙ₆": "曲面内电荷量",
+            "ε₀": "真空介电常数",
+            "meaning": "高斯定理"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "∮E·dl = 0",
+          "explanation": {
+            "E": "电场强度",
+            "l": "闭合路径",
+            "meaning": "静电场的环路定理"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "U = ∫ₚ^∞ E·dl",
+          "explanation": {
+            "U": "电势",
+            "E": "电场强度",
+            "p": "场点",
+            "meaning": "电势的定义"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "C = ε₀εᵣS/d",
+          "explanation": {
+            "C": "电容",
+            "ε₀": "真空介电常数",
+            "εᵣ": "相对介电常数",
+            "S": "极板面积",
+            "d": "极板间距",
+            "meaning": "平行板电容器电容公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "W = ½CU² = ½Q²/C = ½QU",
+          "explanation": {
+            "W": "电容器储存的能量",
+            "C": "电容",
+            "U": "电压",
+            "Q": "电荷量",
+            "meaning": "电容器储能公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "uₑ = ½ε₀εᵣE²",
+          "explanation": {
+            "uₑ": "电场能量密度",
+            "ε₀": "真空介电常数",
+            "εᵣ": "相对介电常数",
+            "E": "电场强度",
+            "meaning": "电场能量密度公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "Wₑ = ∫uₑ dV",
+          "explanation": {
+            "Wₑ": "总电场能量",
+            "uₑ": "电场能量密度",
+            "V": "体积",
+            "meaning": "总电场能量的计算"
+          },
+          "course": "大学物理"
+        }
+      ],
+      "current_and_magnetism": [
+        {
+          "formula": "j = σE",
+          "explanation": {
+            "j": "电流密度",
+            "σ": "电导率",
+            "E": "电场强度",
+            "meaning": "欧姆定律的微分形式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "∮j·dS = -dq/dt",
+          "explanation": {
+            "j": "电流密度",
+            "S": "闭合曲面",
+            "q": "电荷量",
+            "t": "时间",
+            "meaning": "电流连续性方程"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "B = (μ₀/4π) (Idl × r̂)/r²",
+          "explanation": {
+            "B": "磁感应强度",
+            "μ₀": "真空磁导率",
+            "I": "电流",
+            "dl": "电流元",
+            "r": "距离",
+            "r̂": "单位矢量",
+            "meaning": "毕奥-萨伐尔定律"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "∮B·dS = 0",
+          "explanation": {
+            "B": "磁感应强度",
+            "S": "闭合曲面",
+            "meaning": "磁场的高斯定理"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "∮B·dl = μ₀Iₑₙ₆ + μ₀ε₀dΦₑ/dt",
+          "explanation": {
+            "B": "磁感应强度",
+            "l": "闭合路径",
+            "μ₀": "真空磁导率",
+            "Iₑₙ₆": "传导电流",
+            "ε₀": "真空介电常数",
+            "Φₑ": "电通量",
+            "t": "时间",
+            "meaning": "安培-麦克斯韦环路定理"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "dF = Idl × B",
+          "explanation": {
+            "dF": "电流元受到的安培力",
+            "I": "电流",
+            "dl": "电流元",
+            "B": "磁感应强度",
+            "meaning": "安培力公式的微分形式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "dF = qv × B",
+          "explanation": {
+            "dF": "洛伦兹力",
+            "q": "电荷量",
+            "v": "速度",
+            "B": "磁感应强度",
+            "meaning": "洛伦兹力公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "L = Φ/I",
+          "explanation": {
+            "L": "自感系数",
+            "Φ": "磁通量",
+            "I": "电流",
+            "meaning": "自感系数的定义"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "ε = -L dI/dt",
+          "explanation": {
+            "ε": "自感电动势",
+            "L": "自感系数",
+            "I": "电流",
+            "t": "时间",
+            "meaning": "自感电动势公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "Wₘ = ½LI²",
+          "explanation": {
+            "Wₘ": "自感储存的能量",
+            "L": "自感系数",
+            "I": "电流",
+            "meaning": "自感储能公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "uₘ = B²/(2μ₀μᵣ)",
+          "explanation": {
+            "uₘ": "磁场能量密度",
+            "B": "磁感应强度",
+            "μ₀": "真空磁导率",
+            "μᵣ": "相对磁导率",
+            "meaning": "磁场能量密度公式"
+          },
+          "course": "大学物理"
+        }
+      ],
+      "electromagnetic_induction_and_waves": [
+        {
+          "formula": "ε = -dΦ/dt",
+          "explanation": {
+            "ε": "感应电动势",
+            "Φ": "磁通量",
+            "t": "时间",
+            "meaning": "法拉第电磁感应定律的积分形式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "∮Eᵢ·dl = -dΦ/dt",
+          "explanation": {
+            "Eᵢ": "感生电场",
+            "l": "闭合路径",
+            "Φ": "磁通量",
+            "t": "时间",
+            "meaning": "感生电场的环路定理"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "M = Φ₂₁/I₁ = Φ₁₂/I₂",
+          "explanation": {
+            "M": "互感系数",
+            "Φ₂₁": "线圈2中的磁通量",
+            "I₁": "线圈1中的电流",
+            "meaning": "互感系数的定义"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "ε₂ = -M dI₁/dt",
+          "explanation": {
+            "ε₂": "线圈2中的互感电动势",
+            "M": "互感系数",
+            "I₁": "线圈1中的电流",
+            "t": "时间",
+            "meaning": "互感电动势公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "∇×E = -∂B/∂t",
+          "explanation": {
+            "E": "电场强度",
+            "B": "磁感应强度",
+            "t": "时间",
+            "∇×": "旋度算符",
+            "meaning": "麦克斯韦方程组-法拉第定律"
+          },
+          "course": "电磁学"
+        },
+        {
+          "formula": "∇×B = μ₀j + μ₀ε₀∂E/∂t",
+          "explanation": {
+            "B": "磁感应强度",
+            "j": "电流密度",
+            "E": "电场强度",
+            "t": "时间",
+            "meaning": "麦克斯韦方程组-安培-麦克斯韦定律"
+          },
+          "course": "电磁学"
+        },
+        {
+          "formula": "∇·E = ρ/ε₀",
+          "explanation": {
+            "E": "电场强度",
+            "ρ": "电荷密度",
+            "ε₀": "真空介电常数",
+            "∇·": "散度算符",
+            "meaning": "麦克斯韦方程组-高斯电场定律"
+          },
+          "course": "电磁学"
+        },
+        {
+          "formula": "∇·B = 0",
+          "explanation": {
+            "B": "磁感应强度",
+            "meaning": "麦克斯韦方程组-高斯磁场定律"
+          },
+          "course": "电磁学"
+        },
+        {
+          "formula": "∂²E/∂t² = c²∇²E",
+          "explanation": {
+            "E": "电场强度",
+            "t": "时间",
+            "c": "光速",
+            "∇²": "拉普拉斯算符",
+            "meaning": "电场的波动方程"
+          },
+          "course": "电磁学"
+        },
+        {
+          "formula": "∂²B/∂t² = c²∇²B",
+          "explanation": {
+            "B": "磁感应强度",
+            "t": "时间",
+            "c": "光速",
+            "meaning": "磁场的波动方程"
+          },
+          "course": "电磁学"
+        },
+        {
+          "formula": "c = 1/√(μ₀ε₀)",
+          "explanation": {
+            "c": "光速",
+            "μ₀": "真空磁导率",
+            "ε₀": "真空介电常数",
+            "meaning": "光速与电磁学常数的关系"
+          },
+          "course": "电磁学"
+        },
+        {
+          "formula": "S = (1/μ₀)E × B",
+          "explanation": {
+            "S": "坡印廷矢量",
+            "μ₀": "真空磁导率",
+            "E": "电场强度",
+            "B": "磁感应强度",
+            "meaning": "电磁波能流密度"
+          },
+          "course": "电磁学"
+        }
+      ],
+      "alternating_current": [
+        {
+          "formula": "Z = R + j(X_L - X_C)",
+          "explanation": {
+            "Z": "复阻抗",
+            "R": "电阻",
+            "j": "虚数单位",
+            "X_L": "感抗",
+            "X_C": "容抗",
+            "meaning": "RLC串联电路的复阻抗"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "X_L = ωL",
+          "explanation": {
+            "X_L": "感抗",
+            "ω": "角频率",
+            "L": "电感",
+            "meaning": "感抗公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "X_C = 1/(ωC)",
+          "explanation": {
+            "X_C": "容抗",
+            "ω": "角频率",
+            "C": "电容",
+            "meaning": "容抗公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "cosφ = R/Z",
+          "explanation": {
+            "cosφ": "功率因数",
+            "R": "电阻",
+            "Z": "阻抗",
+            "meaning": "功率因数公式"
+          },
+          "course": "大学物理"
+        },
+        {
+          "formula": "P = UI cosφ",
+          "explanation": {
+            "P": "有功功率",
+            "U": "电压有效值",
+            "I": "电流有效值",
+            "cosφ": "功率因数",
+            "meaning": "交流电有功功率公式"
+          },
+          "course": "大学物理"
+        }
+      ]
+    },
+    "thermodynamics_and_statistical_mechanics": {
+      "thermodynamics": [
+        {
+          "formula": "dU = TdS - PdV",
+          "explanation": {
+            "dU": "内能变化",
+            "T": "温度",
+            "dS": "熵变",
+            "P": "压强",
+            "dV": "体积变化",
+            "meaning": "热力学第一定律的微分形式"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "η = 1 - Q₂/Q₁ = 1 - T₂/T₁",
+          "explanation": {
+            "η": "卡诺热机效率",
+            "Q₁": "吸收的热量",
+            "Q₂": "放出的热量",
+            "T₁,T₂": "高低温热源温度",
+            "meaning": "卡诺热机效率公式"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "ΔS ≥ 0",
+          "explanation": {
+            "ΔS": "孤立系统的熵变",
+            "meaning": "热力学第二定律的熵表述"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "dS = dQ/T",
+          "explanation": {
+            "dS": "熵变",
+            "dQ": "可逆过程吸收的热量",
+            "T": "温度",
+            "meaning": "可逆过程的熵变公式"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "G = H - TS",
+          "explanation": {
+            "G": "吉布斯函数",
+            "H": "焓",
+            "T": "温度",
+            "S": "熵",
+            "meaning": "吉布斯函数的定义"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "dG = -SdT + VdP",
+          "explanation": {
+            "dG": "吉布斯函数变化",
+            "S": "熵",
+            "dT": "温度变化",
+            "V": "体积",
+            "dP": "压强变化",
+            "meaning": "吉布斯函数的微分形式"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "H = U + PV",
+          "explanation": {
+            "H": "焓",
+            "U": "内能",
+            "P": "压强",
+            "V": "体积",
+            "meaning": "焓的定义"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "dH = TdS + VdP",
+          "explanation": {
+            "dH": "焓变",
+            "T": "温度",
+            "dS": "熵变",
+            "V": "体积",
+            "dP": "压强变化",
+            "meaning": "焓的微分形式"
+          },
+          "course": "热力学与统计物理"
+        }
+      ],
+      "statistical_mechanics": [
+        {
+          "formula": "S = k lnΩ",
+          "explanation": {
+            "S": "熵",
+            "k": "玻尔兹曼常量",
+            "Ω": "微观状态数",
+            "meaning": "玻尔兹曼熵公式"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "<E> = (∑Eᵢe^(-βEᵢ))/(∑e^(-βEᵢ))",
+          "explanation": {
+            "<E>": "平均能量",
+            "Eᵢ": "能级",
+            "β": "1/(kT)",
+            "k": "玻尔兹曼常量",
+            "T": "温度",
+            "meaning": "玻尔兹曼分布的平均能量"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "Nᵢ = N Z⁻¹ e^(-βEᵢ)",
+          "explanation": {
+            "Nᵢ": "第i个能级的粒子数",
+            "N": "总粒子数",
+            "Z": "配分函数",
+            "β": "1/(kT)",
+            "Eᵢ": "能级",
+            "meaning": "玻尔兹曼分布"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "Z = ∑e^(-βEᵢ)",
+          "explanation": {
+            "Z": "配分函数",
+            "β": "1/(kT)",
+            "Eᵢ": "能级",
+            "meaning": "配分函数的定义"
+          },
+          "course": "热力学与统计物理"
+        },
+        {
+          "formula": "P(V,T) = (NkT)/V",
+          "explanation": {
+            "P": "压强",
+            "N": "分子数",
+            "k": "玻尔兹曼常量",
+            "T": "温度",
+            "V": "体积",
+            "meaning": "理想气体压强公式"
+          },
+          "course": "热学"
+        },
+        {
+          "formula": "<v> = √(8kT/(πm))",
+          "explanation": {
+            "<v>": "平均速率",
+            "k": "玻尔兹曼常量",
+            "T": "温度",
+            "m": "分子质量",
+            "meaning": "麦克斯韦速度分布的平均速率"
+          },
+          "course": "热学"
+        },
+        {
+          "formula": "vₚ = √(2kT/m)",
+          "explanation": {
+            "vₚ": "最概然速率",
+            "k": "玻尔兹曼常量",
+            "T": "温度",
+            "m": "分子质量",
+            "meaning": "麦克斯韦速度分布的最概然速率"
+          },
+          "course": "热学"
+        },
+        {
+          "formula": "<Eₖ> = (f/2)kT",
+          "explanation": {
+            "<Eₖ>": "分子平均动能",
+            "f": "自由度",
+            "k": "玻尔兹曼常量",
+            "T": "温度",
+            "meaning": "能量按自由度均分定理"
+          },
+          "course": "热学"
+        }
+      ]
+    },
+    "optics": [
+      {
+        "formula": "a sinθ = ±kλ",
+        "explanation": {
+          "a": "单缝宽度",
+          "θ": "衍射角",
+          "k": "整数",
+          "λ": "波长",
+          "meaning": "单缝夫琅禾费衍射暗纹条件"
+        },
+        "course": "大学物理"
+      },
+      {
+        "formula": "d sinθ = ±kλ",
+        "explanation": {
+          "d": "光栅常数",
+          "θ": "衍射角",
+          "k": "整数",
+          "λ": "波长",
+          "meaning": "光栅衍射主极大条件"
+        },
+        "course": "大学物理"
+      },
+      {
+        "formula": "Δx = Lλ/d",
+        "explanation": {
+          "Δx": "双缝干涉条纹间距",
+          "L": "双缝到屏的距离",
+          "λ": "波长",
+          "d": "双缝间距",
+          "meaning": "杨氏双缝干涉条纹间距公式"
+        },
+        "course": "大学物理"
+      },
+      {
+        "formula": "2ne + λ/2 = kλ",
+        "explanation": {
+          "n": "薄膜折射率",
+          "e": "薄膜厚度",
+          "λ": "光波长",
+          "k": "整数",
+          "meaning": "薄膜干涉明纹条件"
+        },
+        "course": "大学物理"
+      },
+      {
+        "formula": "I = I₀ cos²θ",
+        "explanation": {
+          "I": "透射光强",
+          "I₀": "入射光强",
+          "θ": "偏振片夹角",
+          "meaning": "马吕斯定律"
+        },
+        "course": "大学物理"
+      },
+      {
+        "formula": "n = tanθᵦ",
+        "explanation": {
+          "n": "介质折射率",
+          "θᵦ": "布儒斯特角",
+          "meaning": "布儒斯特定律"
+        },
+        "course": "大学物理"
+      },
+      {
+        "formula": "λₙ = λ₀/n",
+        "explanation": {
+          "λₙ": "介质中的波长",
+          "λ₀": "真空中的波长",
+          "n": "折射率",
+          "meaning": "光在介质中的波长公式"
+        },
+        "course": "大学物理"
+      }
+    ],
+    "modern_physics": {
+      "special_relativity": [
+        {
+          "formula": "x' = γ(x - vt)",
+          "explanation": {
+            "x',x": "坐标",
+            "γ": "洛伦兹因子",
+            "v": "相对速度",
+            "t": "时间",
+            "meaning": "洛伦兹变换-空间坐标"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "t' = γ(t - vx/c²)",
+          "explanation": {
+            "t',t": "时间",
+            "γ": "洛伦兹因子",
+            "v": "相对速度",
+            "x": "坐标",
+            "c": "光速",
+            "meaning": "洛伦兹变换-时间"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "γ = 1/√(1 - v²/c²)",
+          "explanation": {
+            "γ": "洛伦兹因子",
+            "v": "相对速度",
+            "c": "光速",
+            "meaning": "洛伦兹因子的定义"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "Δt = γΔt₀",
+          "explanation": {
+            "Δt": "运动参考系时间间隔",
+            "γ": "洛伦兹因子",
+            "Δt₀": "固有时间间隔",
+            "meaning": "时间膨胀效应"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "l = l₀/γ",
+          "explanation": {
+            "l": "运动参考系长度",
+            "l₀": "固有长度",
+            "γ": "洛伦兹因子",
+            "meaning": "长度收缩效应"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "v'ₓ = (vₓ - v)/(1 - vvₓ/c²)",
+          "explanation": {
+            "v'ₓ,vₓ": "x方向速度",
+            "v": "相对速度",
+            "c": "光速",
+            "meaning": "相对论速度变换"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "p = γmv",
+          "explanation": {
+            "p": "相对论动量",
+            "γ": "洛伦兹因子",
+            "m": "静止质量",
+            "v": "速度",
+            "meaning": "相对论动量公式"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "E = γmc² = E₀ + Eₖ",
+          "explanation": {
+            "E": "总能量",
+            "γ": "洛伦兹因子",
+            "m": "静止质量",
+            "c": "光速",
+            "E₀": "静能",
+            "Eₖ": "动能",
+            "meaning": "相对论总能量"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "E₀ = mc²",
+          "explanation": {
+            "E₀": "静能",
+            "m": "静止质量",
+            "c": "光速",
+            "meaning": "静止能量"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "E² = (pc)² + (mc²)²",
+          "explanation": {
+            "E": "总能量",
+            "p": "动量",
+            "c": "光速",
+            "m": "静止质量",
+            "meaning": "相对论能量-动量关系"
+          },
+          "course": "近代物理"
+        }
+      ],
+      "quantum_mechanics": [
+        {
+          "formula": "λ = h/p",
+          "explanation": {
+            "λ": "德布罗意波长",
+            "h": "普朗克常量",
+            "p": "动量",
+            "meaning": "德布罗意关系"
+          },
+          "course": "量子力学"
+        },
+        {
+          "formula": "iħ∂ψ/∂t = Ĥψ",
+          "explanation": {
+            "i": "虚数单位",
+            "ħ": "约化普朗克常量",
+            "ψ": "波函数",
+            "t": "时间",
+            "Ĥ": "哈密顿算符",
+            "meaning": "薛定谔方程"
+          },
+          "course": "量子力学"
+        },
+        {
+          "formula": "∫|ψ|² dV = 1",
+          "explanation": {
+            "ψ": "波函数",
+            "V": "体积",
+            "meaning": "波函数的归一化条件"
+          },
+          "course": "量子力学"
+        },
+        {
+          "formula": "[x, pₓ] = iħ",
+          "explanation": {
+            "x": "位置算符",
+            "pₓ": "动量算符",
+            "ħ": "约化普朗克常量",
+            "[]": "对易子",
+            "meaning": "位置和动量算符的对易关系"
+          },
+          "course": "量子力学"
+        },
+        {
+          "formula": "ΔxΔpₓ ≥ ħ/2",
+          "explanation": {
+            "Δx": "位置不确定度",
+            "Δpₓ": "动量不确定度",
+            "ħ": "约化普朗克常量",
+            "meaning": "海森堡不确定性原理"
+          },
+          "course": "量子力学"
+        },
+        {
+          "formula": "Eₙ = nħω (n=0,1,2,...)",
+          "explanation": {
+            "Eₙ": "谐振子能级",
+            "n": "量子数",
+            "ħ": "约化普朗克常量",
+            "ω": "角频率",
+            "meaning": "量子谐振子的能级"
+          },
+          "course": "量子力学"
+        },
+        {
+          "formula": "Eₙ = -13.6eV/n²",
+          "explanation": {
+            "Eₙ": "氢原子能级",
+            "n": "主量子数",
+            "meaning": "氢原子的能级公式"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "L = √[l(l+1)]ħ",
+          "explanation": {
+            "L": "轨道角动量大小",
+            "l": "角量子数",
+            "ħ": "约化普朗克常量",
+            "meaning": "轨道角动量的大小"
+          },
+          "course": "量子力学"
+        },
+        {
+          "formula": "L_z = m_lħ",
+          "explanation": {
+            "L_z": "轨道角动量z分量",
+            "m_l": "磁量子数",
+            "ħ": "约化普朗克常量",
+            "meaning": "轨道角动量的z分量"
+          },
+          "course": "量子力学"
+        }
+      ],
+      "nuclear_and_particle_physics": [
+        {
+          "formula": "N(t) = N₀e^(-λt)",
+          "explanation": {
+            "N(t)": "t时刻的原子核数",
+            "N₀": "初始原子核数",
+            "λ": "衰变常数",
+            "t": "时间",
+            "meaning": "放射性衰变定律"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "T₁/₂ = ln2/λ",
+          "explanation": {
+            "T₁/₂": "半衰期",
+            "λ": "衰变常数",
+            "meaning": "半衰期与衰变常数的关系"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "R = λN = R₀e^(-λt)",
+          "explanation": {
+            "R": "衰变率",
+            "λ": "衰变常数",
+            "N": "原子核数",
+            "R₀": "初始衰变率",
+            "t": "时间",
+            "meaning": "衰变率公式"
+          },
+          "course": "近代物理"
+        },
+        {
+          "formula": "B = Δmc²",
+          "explanation": {
+            "B": "核结合能",
+            "Δm": "质量亏损",
+            "c": "光速",
+            "meaning": "核结合能公式"
+          },
+          "course": "原子核物理"
+        }
+      ]
+    },
+    "solid_state_physics": [
+      {
+        "formula": "σ = neμₑ + peμₕ",
+        "explanation": {
+          "σ": "电导率",
+          "n,p": "电子和空穴浓度",
+          "e": "电子电荷",
+          "μₑ,μₕ": "电子和空穴迁移率",
+          "meaning": "半导体电导率公式"
+        },
+        "course": "固体物理"
+      },
+      {
+        "formula": "Eₖ = ħ²k²/(2m*)",
+        "explanation": {
+          "Eₖ": "电子动能",
+          "ħ": "约化普朗克常量",
+          "k": "波矢",
+          "m*": "有效质量",
+          "meaning": "晶体中电子的动能"
+        },
+        "course": "固体物理"
+      },
+      {
+        "formula": "λ = v_F τ",
+        "explanation": {
+          "λ": "电子平均自由程",
+          "v_F": "费米速度",
+          "τ": "弛豫时间",
+          "meaning": "电子平均自由程公式"
+        },
+        "course": "固体物理"
+      },
+      {
+        "formula": "n = 2/(3π²)k_F³",
+        "explanation": {
+          "n": "电子浓度",
+          "k_F": "费米波矢",
+          "meaning": "电子浓度与费米波矢的关系"
+        },
+        "course": "固体物理"
+      }
+    ],
+    "astrophysics_and_cosmology": [
+      {
+        "formula": "v = H₀d",
+        "explanation": {
+          "v": "星系退行速度",
+          "H₀": "哈勃常数",
+          "d": "距离",
+          "meaning": "哈勃定律"
+        },
+        "course": "天体物理"
+      },
+      {
+        "formula": "R = 2GM/c²",
+        "explanation": {
+          "R": "史瓦西半径",
+          "G": "引力常数",
+          "M": "质量",
+          "c": "光速",
+          "meaning": "黑洞的史瓦西半径"
+        },
+        "course": "天体物理"
+      },
+      {
+        "formula": "F = -GMm/r² r̂",
+        "explanation": {
+          "F": "万有引力",
+          "G": "引力常数",
+          "M,m": "两物体质量",
+          "r": "距离",
+          "r̂": "单位矢量",
+          "meaning": "万有引力定律的矢量形式"
+        },
+        "course": "大学物理"
+      }
+    ]
+  }
+}

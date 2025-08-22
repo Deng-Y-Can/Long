@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物理知识大全 - 从初中到大学的完整物理知识体系</title>
+    <!-- 引入外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 配置Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .transition-height {
+                transition: max-height 0.3s ease-in-out;
+            }
+
+            .formula-container {
+                font-family: 'Times New Roman', serif;
+                font-size: 1.1em;
+                overflow-x: auto;
+            }
+
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+
+                .card-hover:hover {
+                    transform: translateY(-5px);
+                }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-800">
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
+            <div class="flex items-center">
+                <i class="fa fa-flask text-primary text-2xl mr-3"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-dark">物理知识大全</h1>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="w-full md:w-auto mt-3 md:mt-0 flex-grow md:flex-grow-0 md:mx-4">
+                <div class="relative">
+                    <input type="text"
+                           id="search-input"
+                           placeholder="搜索物理公式或概念..."
+                           class="w-full md:w-64 pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- 移动端菜单按钮 -->
+            <button id="menu-toggle" class="md:hidden text-gray-600 focus:outline-none">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+
+            <!-- 导航菜单 -->
+            <nav id="main-nav" class="w-full md:w-auto hidden md:block mt-3 md:mt-0">
+                <ul class="flex flex-col md:flex-row md:space-x-6 space-y-2 md:space-y-0">
+                    <li><a href="#" class="nav-link active py-2 px-1 border-b-2 border-primary text-primary">首页</a></li>
+                    <li><a href="#middle-school" class="nav-link py-2 px-1 border-b-2 border-transparent hover:border-primary/50 hover:text-primary transition-colors">初中物理</a></li>
+                    <li><a href="#middle-school" class="nav-link py-2 px-1 border-b-2 border-transparent hover:border-primary/50 hover:text-primary transition-colors">高中物理</a></li>
+                    <li><a href="#university" class="nav-link py-2 px-1 border-b-2 border-transparent hover:border-primary/50 hover:text-primary transition-colors">大学物理</a></li>
+                    <li><a href="#" class="nav-link py-2 px-1 border-b-2 border-transparent hover:border-primary/50 hover:text-primary transition-colors">关于</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="bg-gradient-to-r from-primary to-accent text-white py-12 md:py-20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-shadow">从初中到大学的物理知识体系</h2>
+                <p class="text-lg md:text-xl opacity-90 mb-8">全面覆盖力学、热学、电磁学、光学等物理学分支的核心公式与概念</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#middle-school" class="bg-white text-primary px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-200">
+                        <i class="fa fa-graduation-cap mr-2"></i>初中高中物理
+                    </a>
+                    <a href="#university" class="bg-transparent border-2 border-white px-6 py-3 rounded-lg font-medium hover:bg-white/10 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 duration-200">
+                        <i class="fa fa-university mr-2"></i>大学物理
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 统计概览 -->
+    <section class="py-10 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-gray-50 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-primary text-3xl mb-2"><i class="fa fa-book"></i></div>
+                    <h3 class="text-xl font-bold mb-1" id="middle-school-count">0</h3>
+                    <p class="text-gray-600">初高中知识点</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-secondary text-3xl mb-2"><i class="fa fa-calculator"></i></div>
+                    <h3 class="text-xl font-bold mb-1" id="university-count">0</h3>
+                    <p class="text-gray-600">大学物理公式</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-accent text-3xl mb-2"><i class="fa fa-sitemap"></i></div>
+                    <h3 class="text-xl font-bold mb-1" id="branches-count">0</h3>
+                    <p class="text-gray-600">物理学分支</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-6 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-amber-500 text-3xl mb-2"><i class="fa fa-lightbulb-o"></i></div>
+                    <h3 class="text-xl font-bold mb-1">全阶段</h3>
+                    <p class="text-gray-600">覆盖完整学习路径</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 初中高中物理 -->
+        <section id="middle-school" class="mb-16">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white mr-3">
+                    <i class="fa fa-graduation-cap"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold">初中高中物理知识</h2>
+            </div>
+
+            <!-- 分类标签 -->
+            <div class="flex flex-wrap gap-2 mb-8" id="middle-school-filters">
+                <button class="filter-btn active px-4 py-2 rounded-full bg-primary text-white text-sm font-medium" data-category="all">全部</button>
+                <!-- 分类标签将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 知识点列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="middle-school-content">
+                <!-- 内容将通过JavaScript动态加载 -->
+                <div class="col-span-full text-center py-12">
+                    <i class="fa fa-circle-o-notch fa-spin text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-500">加载初中高中物理知识中...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 大学物理 -->
+        <section id="university" class="mb-16">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-white mr-3">
+                    <i class="fa fa-university"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold">大学物理知识</h2>
+            </div>
+
+            <!-- 分类标签 -->
+            <div class="flex flex-wrap gap-2 mb-8" id="university-filters">
+                <button class="filter-btn active px-4 py-2 rounded-full bg-accent text-white text-sm font-medium" data-category="all">全部</button>
+                <!-- 分类标签将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 知识点列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="university-content">
+                <!-- 内容将通过JavaScript动态加载 -->
+                <div class="col-span-full text-center py-12">
+                    <i class="fa fa-circle-o-notch fa-spin text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-500">加载大学物理知识中...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 搜索结果区域 -->
+        <section id="search-results" class="mb-16 hidden">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-white mr-3">
+                    <i class="fa fa-search"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold">搜索结果</h2>
+                <span class="ml-4 text-gray-500" id="results-count">(0 条结果)</span>
+            </div>
+
+            <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 搜索结果将通过JavaScript动态加载 -->
+            </div>
+
+            <div id="no-results" class="col-span-full text-center py-12 hidden">
+                <i class="fa fa-search-minus text-4xl text-gray-400 mb-4"></i>
+                <p class="text-gray-500">未找到匹配的内容</p>
+                <button id="reset-search" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                    返回全部内容
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- 知识详情模态框 -->
+    <div id="knowledge-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="modal-overlay"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 z-10">
+                <i class="fa fa-times text-xl"></i>
+            </button>
+            <div class="p-6 md:p-8" id="modal-content">
+                <!-- 模态框内容将通过JavaScript动态加载 -->
+                <div class="text-center py-12">
+                    <i class="fa fa-circle-o-notch fa-spin text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-500">加载内容中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fa fa-flask text-primary text-2xl mr-3"></i>
+                        <h3 class="text-xl font-bold">物理知识大全</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">全面覆盖从初中到大学的物理知识体系，助力物理学习与教学。</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fa fa-github text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fa fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fa fa-linkedin text-xl"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">快速导航</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="#middle-school" class="text-gray-400 hover:text-white transition-colors">初中高中物理</a></li>
+                        <li><a href="#university" class="text-gray-400 hover:text-white transition-colors">大学物理</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">关于我们</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">联系方式</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">物理学分支</h4>
+                    <ul class="space-y-2" id="footer-branches">
+                        <!-- 将通过JavaScript动态生成 -->
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">加载中...</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-500">
+                <p>&copy; 2023 物理知识大全 | 助力物理学习的专业资源平台</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 物理知识数据变量 - 将从外部JSON文件加载
+        let physicsData = null;
+        // JSON数据文件路径 - 用户应确保此路径正确
+        const jsonFilePath = 'physics.json'; // 请将实际JSON文件路径替换为此处
+        // 备选路径 - 如果主路径加载失败将尝试这些路径
+        const alternativePaths = [
+            './physics_data.json',
+            '/physics_data.json'
+        ];
+
+        // DOM元素加载完成后执行
+        document.addEventListener('DOMContentLoaded', function () {
+            // 加载物理知识数据
+            loadPhysicsDataWithFallback();
+
+            // 导航菜单切换
+            const menuToggle = document.getElementById('menu-toggle');
+            const mainNav = document.getElementById('main-nav');
+
+            menuToggle.addEventListener('click', function () {
+                mainNav.classList.toggle('hidden');
+            });
+
+            // 导航栏滚动效果
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('py-2', 'shadow-lg');
+                    navbar.classList.remove('py-3', 'shadow-md');
+                } else {
+                    navbar.classList.add('py-3', 'shadow-md');
+                    navbar.classList.remove('py-2', 'shadow-lg');
+                }
+            });
+
+            // 搜索功能
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+            const resultsContainer = document.getElementById('results-container');
+            const noResults = document.getElementById('no-results');
+            const resultsCount = document.getElementById('results-count');
+            const middleSchoolSection = document.getElementById('middle-school');
+            const universitySection = document.getElementById('university');
+            const resetSearchBtn = document.getElementById('reset-search');
+
+            searchInput.addEventListener('input', function (e) {
+                const searchTerm = e.target.value.trim().toLowerCase();
+
+                if (searchTerm.length > 0 && physicsData) {
+                    // 显示搜索结果区域，隐藏其他内容
+                    searchResults.classList.remove('hidden');
+                    middleSchoolSection.classList.add('hidden');
+                    universitySection.classList.add('hidden');
+
+                    // 执行搜索
+                    const results = performSearch(searchTerm);
+
+                    // 显示结果
+                    if (results.length > 0) {
+                        resultsContainer.innerHTML = '';
+                        noResults.classList.add('hidden');
+                        resultsCount.textContent = `(${results.length} 条结果)`;
+
+                        results.forEach(item => {
+                            resultsContainer.appendChild(createKnowledgeCard(item));
+                        });
+                    } else {
+                        resultsContainer.innerHTML = '';
+                        noResults.classList.remove('hidden');
+                        resultsCount.textContent = '(0 条结果)';
+                    }
+                } else {
+                    // 搜索词为空或数据未加载，显示原始内容
+                    searchResults.classList.add('hidden');
+                    if (physicsData) { // 只有数据加载成功才显示内容区域
+                        middleSchoolSection.classList.remove('hidden');
+                        universitySection.classList.remove('hidden');
+                    }
+                }
+            });
+
+            // 重置搜索按钮
+            resetSearchBtn.addEventListener('click', function () {
+                searchInput.value = '';
+                searchResults.classList.add('hidden');
+                if (physicsData) {
+                    middleSchoolSection.classList.remove('hidden');
+                    universitySection.classList.remove('hidden');
+                }
+            });
+
+            // 模态框相关
+            const knowledgeModal = document.getElementById('knowledge-modal');
+            const modalContent = document.getElementById('modal-content');
+            const closeModal = document.getElementById('close-modal');
+            const modalOverlay = document.getElementById('modal-overlay');
+
+            // 关闭模态框
+            closeModal.addEventListener('click', function () {
+                knowledgeModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
+
+            modalOverlay.addEventListener('click', function () {
+                knowledgeModal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
+
+            // 点击ESC键关闭模态框
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !knowledgeModal.classList.contains('hidden')) {
+                    knowledgeModal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+            });
+        });
+
+        // 带备选路径的JSON数据加载函数
+        async function loadPhysicsDataWithFallback() {
+            // 先尝试主路径
+            try {
+                const success = await tryLoadPhysicsData(jsonFilePath);
+                if (success) {
+                    return; // 加载成功，退出函数
+                }
+            } catch (error) {
+                console.log(`主路径 ${jsonFilePath} 加载失败，尝试备选路径...`);
+            }
+
+            // 尝试备选路径
+            for (const path of alternativePaths) {
+                try {
+                    const success = await tryLoadPhysicsData(path);
+                    if (success) {
+                        return; // 加载成功，退出函数
+                    }
+                } catch (error) {
+                    console.log(`备选路径 ${path} 加载失败，尝试下一个路径...`);
+                }
+            }
+
+            // 所有路径都失败
+            console.error('所有路径都无法加载物理知识数据');
+            showErrorInSection('middle-school-content', `物理数据加载失败，无法找到文件: ${jsonFilePath}`);
+            showErrorInSection('university-content', `物理数据加载失败，无法找到文件: ${jsonFilePath}`);
+
+            // 显示详细的错误提示和解决方案
+            const errorDetails = document.createElement('div');
+            errorDetails.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-lg max-w-md z-50';
+            errorDetails.innerHTML = `
+            <div class="flex items-start">
+              <i class="fa fa-exclamation-circle mt-1 mr-3 text-red-500"></i>
+              <div>
+                <h4 class="font-semibold mb-1">无法加载物理知识数据</h4>
+                <p class="text-sm mb-2">请检查以下事项：</p>
+                <ul class="text-sm list-disc list-inside space-y-1">
+                  <li>确保JSON文件 "${jsonFilePath}" 存在</li>
+                  <li>文件是否与HTML文件在同一目录</li>
+                  <li>文件名是否正确（区分大小写）</li>
+                  <li>如果使用本地文件，请通过Web服务器打开</li>
+                </ul>
+              </div>
+            </div>
+          `;
+            document.body.appendChild(errorDetails);
+
+            // 8秒后自动隐藏错误提示
+            setTimeout(() => {
+                errorDetails.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                setTimeout(() => errorDetails.remove(), 500);
+            }, 8000);
+        }
+
+        // 尝试从指定路径加载物理知识数据
+        async function tryLoadPhysicsData(path) {
+            try {
+                const response = await fetch(path);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const rawData = await response.json();
+
+                // 验证数据结构并修复可能的问题
+                const validatedData = validateAndFixDataStructure(rawData);
+                if (!validatedData) {
+                    throw new Error('JSON数据结构不符合要求');
+                }
+
+                physicsData = validatedData;
+                console.log(`物理知识数据从 ${path} 加载并验证成功`);
+
+                // 数据加载成功后初始化页面
+                initializePage();
+                return true;
+
+            } catch (error) {
+                console.error(`从 ${path} 加载物理知识数据失败:`, error);
+                return false;
+            }
+        }
+
+        // 验证并修复JSON数据结构
+        function validateAndFixDataStructure(data) {
+            try {
+                // 创建一个修复后的数据副本
+                const fixedData = { ...data };
+
+                // 验证初高中物理数据结构
+                if (!fixedData.middle_high_school_physics || typeof fixedData.middle_high_school_physics !== 'object') {
+                    fixedData.middle_high_school_physics = {};
+                    console.warn('修复数据: 缺少初高中物理数据，已创建空对象');
+                }
+
+                // 验证大学物理数据结构
+                if (!fixedData.university_physics || typeof fixedData.university_physics !== 'object') {
+                    fixedData.university_physics = {};
+                    console.warn('修复数据: 缺少大学物理数据，已创建空对象');
+                }
+
+                // 验证初高中物理分类下的数据结构
+                Object.keys(fixedData.middle_high_school_physics).forEach(category => {
+                    const categoryData = fixedData.middle_high_school_physics[category];
+
+                    // 确保分类是对象
+                    if (typeof categoryData !== 'object' || Array.isArray(categoryData)) {
+                        fixedData.middle_high_school_physics[category] = {};
+                        console.warn(`修复数据: 初高中物理分类 "${category}" 不是对象，已重置为空对象`);
+                        return;
+                    }
+
+                    // 验证子分类下的数据结构
+                    Object.keys(categoryData).forEach(subcategory => {
+                        const subData = categoryData[subcategory];
+
+                        // 确保子分类是数组
+                        if (!Array.isArray(subData)) {
+                            categoryData[subcategory] = [];
+                            console.warn(`修复数据: 初高中物理子分类 "${category}.${subcategory}" 不是数组，已重置为空数组`);
+                        }
+                    });
+                });
+
+                // 验证大学物理分类下的数据结构
+                Object.keys(fixedData.university_physics).forEach(category => {
+                    const categoryData = fixedData.university_physics[category];
+
+                    // 确保分类是对象
+                    if (typeof categoryData !== 'object' || Array.isArray(categoryData)) {
+                        fixedData.university_physics[category] = {};
+                        console.warn(`修复数据: 大学物理分类 "${category}" 不是对象，已重置为空对象`);
+                        return;
+                    }
+
+                    // 验证子分类下的数据结构
+                    Object.keys(categoryData).forEach(subcategory => {
+                        const subData = categoryData[subcategory];
+
+                        // 确保子分类是数组
+                        if (!Array.isArray(subData)) {
+                            categoryData[subcategory] = [];
+                            console.warn(`修复数据: 大学物理子分类 "${category}.${subcategory}" 不是数组，已重置为空数组`);
+                        }
+                    });
+                });
+
+                return fixedData;
+            } catch (error) {
+                console.error('验证和修复数据结构时出错:', error);
+                return null;
+            }
+        }
+
+        // 在指定区域显示错误信息
+        function showErrorInSection(sectionId, message) {
+            const section = document.getElementById(sectionId);
+            section.innerHTML = `
+            <div class="col-span-full text-center py-12 bg-red-50 border border-red-100 rounded-lg">
+              <i class="fa fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+              <p class="text-red-600">${message}</p>
+              <p class="text-gray-500 mt-4 text-sm">请检查文件是否存在并正确命名</p>
+            </div>
+          `;
+        }
+
+        // 初始化页面内容
+        function initializePage() {
+            try {
+                // 加载初高中物理内容
+                loadMiddleHighSchoolPhysics();
+
+                // 加载大学物理内容
+                loadUniversityPhysics();
+
+                // 更新统计数据
+                updateStatistics();
+
+                // 生成页脚的物理学分支
+                generateFooterBranches();
+            } catch (error) {
+                console.error('初始化页面时出错:', error);
+                showErrorInSection('middle-school-content', '初始化页面时发生错误，请查看控制台了解详情');
+                showErrorInSection('university-content', '初始化页面时发生错误，请查看控制台了解详情');
+            }
+        }
+
+        // 加载初高中物理内容
+        function loadMiddleHighSchoolPhysics() {
+            try {
+                const middleSchoolData = physicsData.middle_high_school_physics || {};
+                const filtersContainer = document.getElementById('middle-school-filters');
+                const contentContainer = document.getElementById('middle-school-content');
+
+                // 清除现有过滤器（保留"全部"按钮）
+                const allButton = filtersContainer.querySelector('.filter-btn[data-category="all"]');
+                filtersContainer.innerHTML = '';
+                filtersContainer.appendChild(allButton);
+
+                // 生成分类标签
+                Object.keys(middleSchoolData).forEach(category => {
+                    const categoryName = getCategoryDisplayName(category);
+                    const button = document.createElement('button');
+                    button.className = 'filter-btn px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 text-sm font-medium transition-colors';
+                    button.dataset.category = category;
+                    button.textContent = categoryName;
+
+                    // 添加过滤事件
+                    button.addEventListener('click', function () {
+                        // 更新活跃状态
+                        document.querySelectorAll('#middle-school-filters .filter-btn').forEach(btn => {
+                            btn.classList.remove('active', 'bg-primary', 'text-white');
+                            btn.classList.add('bg-gray-200');
+                        });
+                        this.classList.add('active', 'bg-primary', 'text-white');
+                        this.classList.remove('bg-gray-200');
+
+                        // 过滤内容
+                        filterContent('middle-school-content', middleSchoolData, this.dataset.category);
+                    });
+
+                    filtersContainer.appendChild(button);
+                });
+
+                // 初始显示所有内容
+                renderCategoryContent(middleSchoolData, contentContainer, 'middle_high');
+            } catch (error) {
+                console.error('加载初高中物理内容时出错:', error);
+                showErrorInSection('middle-school-content', '加载初高中物理内容时发生错误');
+            }
+        }
+
+        // 加载大学物理内容
+        function loadUniversityPhysics() {
+            try {
+                const universityData = physicsData.university_physics || {};
+                const filtersContainer = document.getElementById('university-filters');
+                const contentContainer = document.getElementById('university-content');
+
+                // 清除现有过滤器（保留"全部"按钮）
+                const allButton = filtersContainer.querySelector('.filter-btn[data-category="all"]');
+                filtersContainer.innerHTML = '';
+                filtersContainer.appendChild(allButton);
+
+                // 生成分类标签
+                Object.keys(universityData).forEach(category => {
+                    const categoryName = getCategoryDisplayName(category);
+                    const button = document.createElement('button');
+                    button.className = 'filter-btn px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300 text-sm font-medium transition-colors';
+                    button.dataset.category = category;
+                    button.textContent = categoryName;
+
+                    // 添加过滤事件
+                    button.addEventListener('click', function () {
+                        // 更新活跃状态
+                        document.querySelectorAll('#university-filters .filter-btn').forEach(btn => {
+                            btn.classList.remove('active', 'bg-accent', 'text-white');
+                            btn.classList.add('bg-gray-200');
+                        });
+                        this.classList.add('active', 'bg-accent', 'text-white');
+                        this.classList.remove('bg-gray-200');
+
+                        // 过滤内容
+                        filterContent('university-content', universityData, this.dataset.category);
+                    });
+
+                    filtersContainer.appendChild(button);
+                });
+
+                // 初始显示所有内容
+                renderCategoryContent(universityData, contentContainer, 'university');
+            } catch (error) {
+                console.error('加载大学物理内容时出错:', error);
+                showErrorInSection('university-content', '加载大学物理内容时发生错误');
+            }
+        }
+
+        // 渲染分类内容
+        function renderCategoryContent(data, container, educationLevel) {
+            try {
+                container.innerHTML = '';
+
+                let itemCount = 0;
+                const validItems = [];
+
+                // 遍历所有分类
+                Object.keys(data).forEach(category => {
+                    const categoryItems = data[category] || {};
+
+                    // 遍历分类下的所有子项
+                    Object.keys(categoryItems).forEach(subcategory => {
+                        // 确保子分类是数组，如果不是则转换为空数组
+                        const items = Array.isArray(categoryItems[subcategory]) ? categoryItems[subcategory] : [];
+
+                        // 为每个知识点创建卡片
+                        items.forEach(item => {
+                            // 验证item是否为有效的对象
+                            if (typeof item === 'object' && item !== null) {
+                                itemCount++;
+                                // 添加额外信息，用于详情展示
+                                item.category = category;
+                                item.subcategory = subcategory;
+                                item.educationLevel = educationLevel;
+
+                                validItems.push(item);
+                            } else {
+                                console.warn(`无效的知识点数据: ${JSON.stringify(item)}，已跳过`);
+                            }
+                        });
+                    });
+                });
+
+                // 添加有效卡片到容器
+                validItems.forEach(item => {
+                    const card = createKnowledgeCard(item);
+                    container.appendChild(card);
+                });
+
+                // 如果没有内容
+                if (itemCount === 0) {
+                    container.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                  <i class="fa fa-info-circle text-4xl text-gray-400 mb-4"></i>
+                  <p class="text-gray-500">没有找到相关物理知识内容</p>
+                </div>
+              `;
+                }
+            } catch (error) {
+                console.error('渲染分类内容时出错:', error);
+                container.innerHTML = `
+              <div class="col-span-full text-center py-12 bg-red-50 border border-red-100 rounded-lg">
+                <i class="fa fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+                <p class="text-red-600">加载内容时发生错误</p>
+              </div>
+            `;
+            }
+        }
+
+        // 过滤内容
+        function filterContent(containerId, data, category) {
+            try {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+
+                let itemCount = 0;
+                const validItems = [];
+                const educationLevel = containerId === 'middle-school-content' ? 'middle_high' : 'university';
+
+                // 如果选择"全部"，则显示所有内容
+                if (category === 'all') {
+                    renderCategoryContent(data, container, educationLevel);
+                    return;
+                }
+
+                // 只显示所选分类的内容
+                if (data[category]) {
+                    const categoryItems = data[category] || {};
+
+                    Object.keys(categoryItems).forEach(subcategory => {
+                        // 确保子分类是数组，如果不是则转换为空数组
+                        const items = Array.isArray(categoryItems[subcategory]) ? categoryItems[subcategory] : [];
+
+                        items.forEach(item => {
+                            // 验证item是否为有效的对象
+                            if (typeof item === 'object' && item !== null) {
+                                itemCount++;
+                                item.category = category;
+                                item.subcategory = subcategory;
+                                item.educationLevel = educationLevel;
+
+                                validItems.push(item);
+                            }
+                        });
+                    });
+                }
+
+                // 添加有效卡片到容器
+                validItems.forEach(item => {
+                    const card = createKnowledgeCard(item);
+                    container.appendChild(card);
+                });
+
+                // 如果没有匹配的内容
+                if (itemCount === 0) {
+                    container.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                  <i class="fa fa-search-minus text-4xl text-gray-400 mb-4"></i>
+                  <p class="text-gray-500">没有找到该分类下的物理知识内容</p>
+                </div>
+              `;
+                }
+            } catch (error) {
+                console.error('过滤内容时出错:', error);
+                document.getElementById(containerId).innerHTML = `
+              <div class="col-span-full text-center py-12 bg-red-50 border border-red-100 rounded-lg">
+                <i class="fa fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+                <p class="text-red-600">过滤内容时发生错误</p>
+              </div>
+            `;
+            }
+        }
+
+        // 创建知识点卡片
+        function createKnowledgeCard(item) {
+            try {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-sm hover:shadow-md p-5 card-hover border border-gray-100';
+
+                // 卡片标题（术语或公式）
+                const title = item.term ? item.term : (item.formula ? item.formula : '未命名知识点');
+
+                // 确定卡片图标
+                let icon = 'fa-book';
+                if (item.formula) icon = 'fa-calculator';
+                if (item.educationLevel === 'middle_high') {
+                    if (item.level === '初中') icon = 'fa-child';
+                    else if (item.level === '高中') icon = 'fa-graduation-cap';
+                } else {
+                    icon = 'fa-university';
+                }
+
+                // 确定卡片颜色
+                let borderColor = 'border-primary/20';
+                if (item.educationLevel === 'university') {
+                    borderColor = 'border-accent/20';
+                }
+
+                card.classList.add(borderColor);
+
+                card.innerHTML = `
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center">
+                  <i class="fa ${icon} text-primary mr-3 mt-1"></i>
+                  <h3 class="font-semibold text-lg">${title}</h3>
+                </div>
+                ${item.level ? `<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">${item.level}</span>` : ''}
+              </div>
+              <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                ${item.definition ? item.definition :
+                        (item.explanation && item.explanation.meaning ? formatExplanation(item.explanation) : '点击查看详情')}
+              </p>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-500">${getCategoryDisplayName(item.category)}</span>
+                <button class="text-primary hover:text-primary/80 text-sm font-medium view-details"
+                        data-id="${generateId(item)}">
+                  查看详情 <i class="fa fa-arrow-right ml-1"></i>
+                </button>
+              </div>
+            `;
+
+                // 添加点击事件，打开详情模态框
+                card.querySelector('.view-details').addEventListener('click', function () {
+                    openKnowledgeDetails(item);
+                });
+
+                return card;
+            } catch (error) {
+                console.error('创建知识点卡片时出错:', error, '问题数据:', item);
+                // 返回一个错误提示卡片
+                const errorCard = document.createElement('div');
+                errorCard.className = 'bg-red-50 rounded-xl p-5 border border-red-100';
+                errorCard.innerHTML = `
+              <div class="flex items-center">
+                <i class="fa fa-exclamation-circle text-red-500 mr-3"></i>
+                <h3 class="font-semibold text-red-700">数据加载错误</h3>
+              </div>
+              <p class="text-sm text-red-600 mt-2">该知识点数据格式有误，已跳过</p>
+            `;
+                return errorCard;
+            }
+        }
+
+        // 打开知识点详情
+        function openKnowledgeDetails(item) {
+            try {
+                const modalContent = document.getElementById('modal-content');
+                const knowledgeModal = document.getElementById('knowledge-modal');
+
+                // 生成详情HTML
+                let detailsHTML = `
+              <div class="border-b border-gray-200 pb-4 mb-4">
+                <div class="flex items-center mb-2">
+                  <span class="px-3 py-1 rounded-full text-xs font-medium ${item.educationLevel === 'middle_high' ?
+                        (item.level === '初中' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') :
+                        'bg-purple-100 text-purple-800'}">
+                    ${item.educationLevel === 'middle_high' ? (item.level || '初高中') : '大学'}
+                  </span>
+                  <span class="ml-2 text-sm text-gray-500">${getCategoryDisplayName(item.category)}</span>
+                </div>
+                <h3 class="text-2xl font-bold">${item.term ? item.term : (item.formula ? item.formula : '未命名知识点')}</h3>
+              </div>
+            `;
+
+                // 添加定义或公式解释
+                if (item.definition) {
+                    detailsHTML += `
+                <div class="mb-6">
+                  <h4 class="text-lg font-semibold mb-2">定义</h4>
+                  <p class="text-gray-700 leading-relaxed">${item.definition}</p>
+                </div>
+              `;
+                } else if (item.explanation) {
+                    detailsHTML += `
+                <div class="mb-6">
+                  <h4 class="text-lg font-semibold mb-2">公式</h4>
+                  <div class="formula-container bg-gray-50 p-4 rounded-lg mb-4">
+                    ${item.formula || '无公式'}
+                  </div>
+                  <h4 class="text-lg font-semibold mb-2">解释</h4>
+                  <p class="text-gray-700 mb-3">${item.explanation.meaning || '无解释'}</p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                    ${Object.entries(item.explanation).map(([key, value]) => {
+                        if (key !== 'meaning' && value) {
+                            return `
+                          <div class="bg-gray-50 p-2 rounded">
+                            <span class="font-medium">${key}:</span> ${value}
+                          </div>
+                        `;
+                        }
+                        return '';
+                    }).join('')}
+                  </div>
+                </div>
+              `;
+                }
+
+                // 添加相关说明（如果有）
+                if (item.notes) {
+                    detailsHTML += `
+                <div class="mb-6 bg-yellow-50 p-4 rounded-lg">
+                  <h4 class="text-lg font-semibold mb-2 flex items-center">
+                    <i class="fa fa-lightbulb-o text-yellow-500 mr-2"></i> 注意事项
+                  </h4>
+                  <p class="text-gray-700">${item.notes}</p>
+                </div>
+              `;
+                }
+
+                // 添加应用示例（如果有）
+                if (item.examples && Array.isArray(item.examples) && item.examples.length > 0) {
+                    detailsHTML += `
+                <div class="mb-6">
+                  <h4 class="text-lg font-semibold mb-2">应用示例</h4>
+                  <ul class="list-disc list-inside text-gray-700 space-y-2 pl-2">
+                    ${item.examples.map(example => `<li>${example}</li>`).join('')}
+                  </ul>
+                </div>
+              `;
+                }
+
+                // 添加相关知识点（如果有）
+                if (item.related && Array.isArray(item.related) && item.related.length > 0) {
+                    detailsHTML += `
+                <div>
+                  <h4 class="text-lg font-semibold mb-2">相关知识点</h4>
+                  <div class="flex flex-wrap gap-2">
+                    ${item.related.map(related => `
+                      <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">${related}</span>
+                    `).join('')}
+                  </div>
+                </div>
+              `;
+                }
+
+                // 更新模态框内容并显示
+                modalContent.innerHTML = detailsHTML;
+                knowledgeModal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            } catch (error) {
+                console.error('打开知识点详情时出错:', error);
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `
+              <div class="text-center py-12">
+                <i class="fa fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+                <p class="text-red-600">加载详情时发生错误</p>
+              </div>
+            `;
+                knowledgeModal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        // 执行搜索
+        function performSearch(searchTerm) {
+            try {
+                const results = [];
+
+                if (!physicsData) return results;
+
+                // 搜索初高中物理
+                const middleSchoolData = physicsData.middle_high_school_physics || {};
+                Object.keys(middleSchoolData).forEach(category => {
+                    const categoryItems = middleSchoolData[category] || {};
+
+                    Object.keys(categoryItems).forEach(subcategory => {
+                        const items = Array.isArray(categoryItems[subcategory]) ? categoryItems[subcategory] : [];
+
+                        items.forEach(item => {
+                            // 检查是否匹配搜索词
+                            if (isMatch(item, searchTerm)) {
+                                item.educationLevel = 'middle_high';
+                                item.category = category;
+                                item.subcategory = subcategory;
+                                results.push(item);
+                            }
+                        });
+                    });
+                });
+
+                // 搜索大学物理
+                const universityData = physicsData.university_physics || {};
+                Object.keys(universityData).forEach(category => {
+                    const categoryItems = universityData[category] || {};
+
+                    Object.keys(categoryItems).forEach(subcategory => {
+                        const items = Array.isArray(categoryItems[subcategory]) ? categoryItems[subcategory] : [];
+
+                        items.forEach(item => {
+                            // 检查是否匹配搜索词
+                            if (isMatch(item, searchTerm)) {
+                                item.educationLevel = 'university';
+                                item.category = category;
+                                item.subcategory = subcategory;
+                                results.push(item);
+                            }
+                        });
+                    });
+                });
+
+                return results;
+            } catch (error) {
+                console.error('执行搜索时出错:', error);
+                return [];
+            }
+        }
+
+        // 检查项目是否匹配搜索词
+        function isMatch(item, searchTerm) {
+            try {
+                // 检查术语
+                if (item.term && typeof item.term === 'string' && item.term.toLowerCase().includes(searchTerm)) {
+                    return true;
+                }
+
+                // 检查公式
+                if (item.formula && typeof item.formula === 'string' && item.formula.toLowerCase().includes(searchTerm)) {
+                    return true;
+                }
+
+                // 检查定义
+                if (item.definition && typeof item.definition === 'string' && item.definition.toLowerCase().includes(searchTerm)) {
+                    return true;
+                }
+
+                // 检查公式解释
+                if (item.explanation && typeof item.explanation === 'object') {
+                    if (item.explanation.meaning && typeof item.explanation.meaning === 'string' &&
+                        item.explanation.meaning.toLowerCase().includes(searchTerm)) {
+                        return true;
+                    }
+
+                    // 检查解释中的各个参数
+                    for (const key in item.explanation) {
+                        const value = item.explanation[key];
+                        if (typeof value === 'string' && value.toLowerCase().includes(searchTerm)) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            } catch (error) {
+                console.error('检查匹配时出错:', error);
+                return false;
+            }
+        }
+
+        // 更新统计数据
+        function updateStatistics() {
+            try {
+                let middleSchoolCount = 0;
+                let universityCount = 0;
+                const branches = new Set();
+
+                // 统计初高中物理
+                const middleSchoolData = physicsData.middle_high_school_physics || {};
+                Object.keys(middleSchoolData).forEach(category => {
+                    branches.add(category);
+                    const categoryItems = middleSchoolData[category] || {};
+
+                    Object.keys(categoryItems).forEach(subcategory => {
+                        const items = Array.isArray(categoryItems[subcategory]) ? categoryItems[subcategory] : [];
+                        middleSchoolCount += items.length;
+                    });
+                });
+
+                // 统计大学物理
+                const universityData = physicsData.university_physics || {};
+                Object.keys(universityData).forEach(category => {
+                    branches.add(category);
+                    const categoryItems = universityData[category] || {};
+
+                    Object.keys(categoryItems).forEach(subcategory => {
+                        const items = Array.isArray(categoryItems[subcategory]) ? categoryItems[subcategory] : [];
+                        universityCount += items.length;
+                    });
+                });
+
+                // 更新UI
+                document.getElementById('middle-school-count').textContent = middleSchoolCount;
+                document.getElementById('university-count').textContent = universityCount;
+                document.getElementById('branches-count').textContent = branches.size;
+            } catch (error) {
+                console.error('更新统计数据时出错:', error);
+                // 保持计数为0，不显示错误，避免影响用户体验
+            }
+        }
+
+        // 生成页脚的物理学分支
+        function generateFooterBranches() {
+            try {
+                const footerBranches = document.getElementById('footer-branches');
+                footerBranches.innerHTML = '';
+
+                const branches = new Set();
+
+                // 收集所有分支
+                const middleSchoolData = physicsData.middle_high_school_physics || {};
+                Object.keys(middleSchoolData).forEach(category => {
+                    branches.add(category);
+                });
+
+                const universityData = physicsData.university_physics || {};
+                Object.keys(universityData).forEach(category => {
+                    branches.add(category);
+                });
+
+                // 如果没有分支数据
+                if (branches.size === 0) {
+                    footerBranches.innerHTML = `
+                <li><a href="#" class="text-gray-400">暂无分支数据</a></li>
+              `;
+                    return;
+                }
+
+                // 生成链接
+                Array.from(branches).forEach(category => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.className = 'text-gray-400 hover:text-white transition-colors';
+                    a.textContent = getCategoryDisplayName(category);
+
+                    // 添加点击事件，跳转到相关内容
+                    a.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        // 先尝试在初高中物理中找到该分类
+                        if (middleSchoolData[category]) {
+                            document.getElementById('middle-school').scrollIntoView({ behavior: 'smooth' });
+
+                            // 激活对应分类
+                            const filterBtn = document.querySelector(`#middle-school-filters .filter-btn[data-category="${category}"]`);
+                            if (filterBtn) {
+                                filterBtn.click();
+                            }
+                        }
+                        // 如果初高中没有，尝试在大学物理中找
+                        else if (universityData[category]) {
+                            document.getElementById('university').scrollIntoView({ behavior: 'smooth' });
+
+                            // 激活对应分类
+                            const filterBtn = document.querySelector(`#university-filters .filter-btn[data-category="${category}"]`);
+                            if (filterBtn) {
+                                filterBtn.click();
+                            }
+                        }
+                    });
+
+                    li.appendChild(a);
+                    footerBranches.appendChild(li);
+                });
+            } catch (error) {
+                console.error('生成页脚分支时出错:', error);
+                document.getElementById('footer-branches').innerHTML = `
+              <li><a href="#" class="text-gray-400">加载分支数据时出错</a></li>
+            `;
+            }
+        }
+
+        // 生成唯一ID - 修复了非Latin1字符的问题
+        function generateId(item) {
+            try {
+                if (item.term && typeof item.term === 'string') {
+                    // 使用术语生成ID，移除特殊字符
+                    return item.term
+                        .replace(/[^\w\s]/gi, '')
+                        .replace(/\s+/g, '_')
+                        .toLowerCase();
+                } else if (item.formula && typeof item.formula === 'string') {
+                    // 对公式进行处理，使用更安全的哈希方式
+                    return 'formula_' + simpleHash(item.formula);
+                } else {
+                    // 生成随机ID
+                    return 'id_' + Math.random().toString(36).substring(2, 12);
+                }
+            } catch (error) {
+                console.error('生成ID时出错:', error);
+                // 生成一个保底的随机ID
+                return 'fallback_id_' + Math.random().toString(36).substring(2, 12);
+            }
+        }
+
+        // 简单的字符串哈希函数，替代btoa处理非Latin1字符
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 转换为32位整数
+            }
+            // 确保结果为正数并转换为十六进制
+            return Math.abs(hash).toString(16);
+        }
+
+        // 格式化解释文本
+        function formatExplanation(explanation) {
+            try {
+                if (explanation && explanation.meaning && typeof explanation.meaning === 'string') {
+                    return explanation.meaning.length > 100 ?
+                        explanation.meaning.substring(0, 100) + '...' :
+                        explanation.meaning;
+                }
+                return '点击查看公式详情';
+            } catch (error) {
+                console.error('格式化解释文本时出错:', error);
+                return '点击查看详情';
+            }
+        }
+
+        // 获取分类的显示名称
+        function getCategoryDisplayName(category) {
+            try {
+                // 分类名称映射表
+                const categoryMap = {
+                    'mechanics': '力学',
+                    'classical_mechanics': '经典力学',
+                    'thermodynamics': '热学',
+                    'thermodynamics_and_statistical_mechanics': '热力学与统计物理',
+                    'electromagnetism': '电磁学',
+                    'optics': '光学',
+                    'waves_and_acoustics': '波动与声学',
+                    'modern_physics': '近代物理',
+                    'solid_state_physics': '固体物理',
+                    'astrophysics_and_cosmology': '天体物理与宇宙学',
+                    'basic_concepts': '基本概念',
+                    'kinematics_formulas': '运动学公式',
+                    'dynamics_formulas': '动力学公式',
+                    'electricity': '电学',
+                    'magnetism': '磁学',
+                    'electromagnetic_induction': '电磁感应'
+                };
+
+                return categoryMap[category] || category.replace(/_/g, ' ');
+            } catch (error) {
+                console.error('获取分类显示名称时出错:', error);
+                return category || '未知分类';
+            }
+        }
+    </script>
+</body>
+</html>

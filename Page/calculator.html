@@ -1,215 +1,1287 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stylish Calculator with Multiple Themes</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强版科学计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
-   .calculator {
-      width: 300px;
-      margin: 50px auto;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // 科技风颜色
+                        'tech-dark': '#0F172A',
+                        'tech-darker': '#0A0F1C',
+                        'tech-accent': '#06B6D4',
+                        'tech-purple': '#8B5CF6',
+                        'tech-blue': '#3B82F6',
+                        'tech-green': '#10B981',
+                        'tech-red': '#EF4444',
+                        'glass': 'rgba(15, 23, 42, 0.7)',
+                        
+                        // 其他风格颜色保持不变
+                        'simple-light': '#F9FAFB',
+                        'simple-dark': '#1F2937',
+                        'simple-gray': '#E5E7EB',
+                        'simple-blue': '#3B82F6',
+                        'simple-orange': '#F97316',
+                        'simple-gray-dark': '#4B5563',
+                        
+                        'retro-bg': '#F5F1E4',
+                        'retro-dark': '#8B4513',
+                        'retro-red': '#D22B2B',
+                        'retro-green': '#228B22',
+                        'retro-yellow': '#F8C471',
+                        'retro-blue': '#1A5276',
+                        'retro-light': '#FDF6E3',
+                        
+                        'dark-bg': '#121212',
+                        'dark-card': '#1E1E1E',
+                        'dark-accent': '#BB86FC',
+                        'dark-primary': '#03DAC6',
+                        'dark-secondary': '#CF6679',
+                        
+                        'candy-pink': '#FF6B8B',
+                        'candy-blue': '#6B9FFF',
+                        'candy-yellow': '#FFD166',
+                        'candy-green': '#66D2A0',
+                        'candy-purple': '#C06C84',
+                        'candy-bg': '#FFF5F8',
+                        
+                        'biz-gray': '#2C3E50',
+                        'biz-light': '#ECF0F1',
+                        'biz-accent': '#3498DB',
+                        'biz-dark': '#1A252F',
+                        'biz-highlight': '#2980B9'
+                    },
+                    fontFamily: {
+                        'tech': ['Space Grotesk', 'Inter', 'sans-serif'],
+                        'simple': ['Inter', 'sans-serif'],
+                        'retro': ['Courier New', 'monospace'],
+                        'dark': ['Roboto', 'sans-serif'],
+                        'candy': ['Poppins', 'sans-serif'],
+                        'biz': ['Montserrat', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'neon': '0 0 5px theme("colors.tech-accent"), 0 0 20px theme("colors.tech-accent/30")',
+                        'neon-purple': '0 0 5px theme("colors.tech-purple"), 0 0 20px theme("colors.tech-purple/30")',
+                        'simple': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'retro': '3px 3px 0px rgba(139, 69, 19, 0.5)',
+                        'dark': '0 0 15px rgba(187, 134, 252, 0.2)',
+                        'candy': '0 5px 15px rgba(255, 107, 139, 0.2)',
+                        'biz': '0 2px 10px rgba(0, 0, 0, 0.1)'
+                    }
+                },
+            }
+        }
+    </script>
 
-   .display {
-      background-color: #f5f5f5;
-      border-radius: 5px;
-      height: 50px;
-      line-height: 50px;
-      text-align: right;
-      padding: 0 10px;
-      margin-bottom: 15px;
-      font-size: 24px;
-      overflow-x: auto;
-    }
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
 
-   .buttons {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-gap: 10px;
-    }
+            .calc-btn {
+                @apply flex items-center justify-center rounded-lg transition-all duration-200 active:scale-[0.96] font-medium;
+            }
 
-   .button {
-      background-color: #e0e0e0;
-      color: #333;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 18px;
-      transition: background-color 0.2s ease;
-    }
+            .glass-effect {
+                @apply bg-glass backdrop-blur-md border border-white/10;
+            }
 
-   .button:hover {
-      background-color: #d0d0d0;
-    }
+            .display-text {
+                @apply text-right overflow-x-auto whitespace-nowrap;
+            }
 
-   .operator {
-      background-color: #ff9966;
-      color: #fff;
-    }
+            .tab-indicator {
+                @apply absolute bottom-0 h-0.5 transition-all duration-300;
+            }
 
-   .equal {
-      background-color: #66ccff;
-      color: #fff;
-    }
+            .gradient-border {
+                position: relative;
+                border-radius: 0.75rem;
+                z-index: 0;
+            }
 
-   .clear {
-      background-color: #ff6666;
-      color: #fff;
-    }
-  </style>
+            .gradient-border::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: 0.75rem;
+                padding: 1px;
+                background: var(--gradient-color, linear-gradient(90deg, #06B6D4, #8B5CF6));
+                -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+                -webkit-mask-composite: xor;
+                mask-composite: exclude;
+                z-index: -1;
+            }
+
+            .pulse {
+                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+            }
+
+            .style-glow {
+                animation: style-glow 2s ease-in-out infinite alternate;
+            }
+
+            @keyframes style-glow {
+                from { box-shadow: var(--glow-from, 0 0 5px rgba(6, 182, 212, 0.5)); }
+                to { box-shadow: var(--glow-to, 0 0 15px rgba(6, 182, 212, 0.7)); }
+            }
+
+            .custom-scrollbar::-webkit-scrollbar {
+                height: 4px;
+                width: 4px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background-color: var(--scroll-color, rgba(6, 182, 212, 0.5));
+                border-radius: 2px;
+            }
+
+            select {
+                appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 0.7rem center;
+                background-size: 1em;
+            }
+        }
+    </style>
+
+    <!-- 导入字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;500;600&family=Poppins:wght@400;500&family=Roboto:wght@300;400;500&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-
-<body>
-  <div class="calculator" id="calculator">
-    <div class="display" id="display">0</div>
-    <div class="buttons" id="buttons">
-      <button class="button" onclick="appendNumber(7)">7</button>
-      <button class="button" onclick="appendNumber(8)">8</button>
-      <button class="button" onclick="appendNumber(9)">9</button>
-      <button class="button operator" onclick="appendOperator('/')">÷</button>
-      <button class="button" onclick="appendNumber(4)">4</button>
-      <button class="button" onclick="appendNumber(5)">5</button>
-      <button class="button" onclick="appendNumber(6)">6</button>
-      <button class="button operator" onclick="appendOperator('*')">×</button>
-      <button class="button" onclick="appendNumber(1)">1</button>
-      <button class="button" onclick="appendNumber(2)">2</button>
-      <button class="button" onclick="appendNumber(3)">3</button>
-      <button class="button operator" onclick="appendOperator('-')">-</button>
-      <button class="button" onclick="appendNumber(0)">0</button>
-      <button class="button" onclick="appendDecimal('.')">.</button>
-      <button class="button equal" onclick="calculate()">=</button>
-      <button class="button clear" onclick="clearDisplay()">C</button>
+<body class="theme-tech min-h-screen flex items-center justify-center p-4 font-tech text-gray-100 transition-all duration-500">
+    <!-- 风格选择器面板 -->
+    <div id="theme-selector" class="fixed top-4 right-4 z-50 glass-effect rounded-lg p-3 shadow-lg transition-all duration-500">
+        <h3 class="text-sm font-medium mb-2">选择风格</h3>
+        <div class="grid grid-cols-2 gap-2">
+            <button class="theme-btn active flex items-center gap-2 px-3 py-2 rounded text-xs transition-all duration-300" data-theme="tech">
+                <i class="fa fa-microchip"></i> 科技风
+            </button>
+            <button class="theme-btn flex items-center gap-2 px-3 py-2 rounded text-xs transition-all duration-300" data-theme="simple">
+                <i class="fa fa-square-o"></i> 简约风
+            </button>
+            <button class="theme-btn flex items-center gap-2 px-3 py-2 rounded text-xs transition-all duration-300" data-theme="retro">
+                <i class="fa fa-clock-o"></i> 复古风
+            </button>
+            <button class="theme-btn flex items-center gap-2 px-3 py-2 rounded text-xs transition-all duration-300" data-theme="dark">
+                <i class="fa fa-moon-o"></i> 暗黑风
+            </button>
+            <button class="theme-btn flex items-center gap-2 px-3 py-2 rounded text-xs transition-all duration-300" data-theme="candy">
+                <i class="fa fa-heart"></i> 糖果风
+            </button>
+            <button class="theme-btn flex items-center gap-2 px-3 py-2 rounded text-xs transition-all duration-300" data-theme="biz">
+                <i class="fa fa-briefcase"></i> 商务风
+            </button>
+        </div>
     </div>
-  </div>
-  <div>
-    <button onclick="toggleTheme('light')">Light Theme</button>
-    <button onclick="toggleTheme('dark')">Dark Theme</button>
-    <button onclick="toggleTheme('blue')">Blue Theme</button>
-    <button onclick="toggleTheme('green')">Green Theme</button>
-  </div>
-  <script>
-    let displayValue = '0';
-    let operator = '';
-    let firstOperand = '';
-    let waitingForSecondOperand = false;
 
-    function appendNumber(number) {
-      if (waitingForSecondOperand) {
-        displayValue = number.toString();
-        waitingForSecondOperand = false;
-      } else {
-        displayValue === '0'? displayValue = number.toString() : displayValue += number.toString();
-      }
-      document.getElementById('display').textContent = displayValue;
-    }
+    <!-- 计算器容器 -->
+    <div class="calculator w-full max-w-md gradient-border overflow-hidden transition-all duration-500 transform hover:scale-[1.01]">
+        <div class="calculator-inner glass-effect rounded-lg p-1 transition-all duration-500">
+            <!-- 标题栏 -->
+            <div class="flex justify-between items-center p-4 border-b border-white/10 transition-all duration-500">
+                <div class="flex items-center space-x-2">
+                    <div class="calculator-icon w-8 h-8 rounded-full bg-gradient-to-r from-tech-accent to-tech-purple flex items-center justify-center transition-all duration-500">
+                        <i class="fa fa-calculator"></i>
+                    </div>
+                    <h1 class="calculator-title text-lg font-semibold tracking-wide transition-all duration-500">科学计算器</h1>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="theme-toggle" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
+                        <i class="fa fa-moon-o"></i>
+                    </button>
+                    <button id="settings-btn" class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
+                        <i class="fa fa-cog"></i>
+                    </button>
+                </div>
+            </div>
 
-    function appendDecimal(decimal) {
-      if (!displayValue.includes('.')) {
-        appendNumber(decimal);
-      }
-    }
+            <!-- 模式选择标签 -->
+            <div class="relative border-b border-white/10 transition-all duration-500">
+                <div class="flex">
+                    <button class="mode-tab flex-1 py-4 px-2 text-sm font-medium transition-all duration-500" data-mode="standard">标准</button>
+                    <button class="mode-tab flex-1 py-4 px-2 text-sm font-medium transition-all duration-500" data-mode="scientific">科学</button>
+                    <button class="mode-tab flex-1 py-4 px-2 text-sm font-medium transition-all duration-500" data-mode="converter">转换</button>
+                </div>
+                <div class="tab-indicator w-[33.333%] transition-all duration-500"></div>
+            </div>
 
-    function appendOperator(op) {
-      if (operator!== '' &&!waitingForSecondOperand) {
-        calculate();
-      }
-      operator = op;
-      firstOperand = displayValue;
-      waitingForSecondOperand = true;
-    }
+            <!-- 标准计算器界面 -->
+            <div id="standard-panel" class="mode-panel">
+                <!-- 显示区域 -->
+                <div class="p-6 transition-all duration-500">
+                    <div id="standard-expression" class="expression-display text-gray-400 mb-2 min-h-[24px] text-lg display-text custom-scrollbar transition-all duration-500"></div>
+                    <div id="standard-result" class="result-display text-4xl font-light display-text custom-scrollbar tracking-tight style-glow transition-all duration-500">0</div>
+                </div>
 
-    function calculate() {
-      let result;
-      const secondOperand = displayValue;
-      switch (operator) {
-        case '+':
-          result = parseFloat(firstOperand) + parseFloat(secondOperand);
-          break;
-        case '-':
-          result = parseFloat(firstOperand) - parseFloat(secondOperand);
-          break;
-        case '*':
-          result = parseFloat(firstOperand) * parseFloat(secondOperand);
-          break;
-        case '/':
-          if (secondOperand === '0') {
-            result = 'Error';
-          } else {
-            result = parseFloat(firstOperand) / parseFloat(secondOperand);
-          }
-          break;
-        default:
-          return;
-      }
-      displayValue = result.toString();
-      operator = '';
-      waitingForSecondOperand = false;
-      document.getElementById('display').textContent = displayValue;
-    }
+                <!-- 按键区域 -->
+                <div class="p-4 grid grid-cols-4 gap-3 transition-all duration-500">
+                    <button class="calc-btn func-btn h-14 transition-all duration-500" data-action="clear">C</button>
+                    <button class="calc-btn func-btn h-14 transition-all duration-500" data-action="plus-minus">±</button>
+                    <button class="calc-btn func-btn h-14 transition-all duration-500" data-action="percent">%</button>
+                    <button class="calc-btn op-btn h-14 transition-all duration-500" data-action="divide">÷</button>
 
-    function clearDisplay() {
-      displayValue = '0';
-      operator = '';
-      firstOperand = '';
-      waitingForSecondOperand = false;
-      document.getElementById('display').textContent = displayValue;
-    }
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="7">7</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="8">8</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="9">9</button>
+                    <button class="calc-btn op-btn h-14 transition-all duration-500" data-action="multiply">×</button>
 
-    function toggleTheme(themeName) {
-      switch (themeName) {
-        case 'light':
-          document.body.style.backgroundColor = '#fff';
-          document.getElementById('calculator').style.backgroundColor = '#f5f5f5';
-          document.getElementById('display').style.backgroundColor = '#f5f5f5';
-          const buttons = document.querySelectorAll('.button');
-          buttons.forEach(button => {
-            button.style.backgroundColor = '#e0e0e0';
-            button.style.color = '#333';
-          });
-          break;
-        case 'dark':
-          document.body.style.backgroundColor = '#333';
-          document.getElementById('calculator').style.backgroundColor = '#444';
-          document.getElementById('display').style.backgroundColor = '#222';
-          const darkButtons = document.querySelectorAll('.button');
-          darkButtons.forEach(button => {
-            button.style.backgroundColor = '#555';
-            button.style.color = '#fff';
-          });
-          break;
-        case 'blue':
-          document.body.style.backgroundColor = '#0077b6';
-          document.getElementById('calculator').style.backgroundColor = '#005f87';
-          document.getElementById('display').style.backgroundColor = '#004c71';
-          const blueButtons = document.querySelectorAll('.button');
-          blueButtons.forEach(button => {
-            button.style.backgroundColor = '#006699';
-            button.style.color = '#fff';
-          });
-          break;
-        case 'green':
-          document.body.style.backgroundColor = '#4caf50';
-          document.getElementById('calculator').style.backgroundColor = '#388e3c';
-          document.getElementById('display').style.backgroundColor = '#2e7d32';
-          const greenButtons = document.querySelectorAll('.button');
-          greenButtons.forEach(button => {
-            button.style.backgroundColor = '#388e3c';
-            button.style.color = '#fff';
-          });
-          break;
-      }
-    }
-  </script>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="4">4</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="5">5</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="6">6</button>
+                    <button class="calc-btn op-btn h-14 transition-all duration-500" data-action="subtract">−</button>
+
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="1">1</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="2">2</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="3">3</button>
+                    <button class="calc-btn op-btn h-14 transition-all duration-500" data-action="add">+</button>
+
+                    <button class="calc-btn func-btn h-14 transition-all duration-500" data-action="backspace">
+                        <i class="fa fa-backspace"></i>
+                    </button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="0">0</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number=".">.</button>
+                    <button class="calc-btn eq-btn h-14 transition-all duration-500" data-action="equals">=</button>
+                </div>
+            </div>
+
+            <!-- 增强版科学计算器界面 -->
+            <div id="scientific-panel" class="mode-panel hidden">
+                <!-- 显示区域 -->
+                <div class="p-6 transition-all duration-500">
+                    <div id="scientific-expression" class="expression-display text-gray-400 mb-2 min-h-[24px] text-lg display-text custom-scrollbar transition-all duration-500"></div>
+                    <div id="scientific-result" class="result-display text-4xl font-light display-text custom-scrollbar tracking-tight style-glow transition-all duration-500">0</div>
+                </div>
+
+                <!-- 科学计算器特殊按键 - 第一行：三角函数 -->
+                <div class="px-4 pb-2 grid grid-cols-6 gap-2 transition-all duration-500">
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="sin">sin</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="cos">cos</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="tan">tan</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="asin">sin⁻¹</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="acos">cos⁻¹</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="atan">tan⁻¹</button>
+                </div>
+
+                <!-- 科学计算器特殊按键 - 第二行：对数和指数 -->
+                <div class="px-4 pb-2 grid grid-cols-6 gap-2 transition-all duration-500">
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="log">log</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="ln">ln</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="exp">eˣ</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="pow10">10ˣ</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="factorial">n!</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="mod">mod</button>
+                </div>
+
+                <!-- 科学计算器特殊按键 - 第三行：幂运算和根运算 -->
+                <div class="px-4 pb-4 grid grid-cols-6 gap-2 transition-all duration-500">
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="sqrt">√</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="cbrt">∛</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="square">x²</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="cube">x³</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="pow">xʸ</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="reciprocal">1/x</button>
+                </div>
+
+                <!-- 科学计算器特殊按键 - 第四行：常数和角度模式 -->
+                <div class="px-4 pb-4 grid grid-cols-6 gap-2 transition-all duration-500">
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="pi">π</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="e">e</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="deg">deg</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="rad">rad</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="rand">rand</button>
+                    <button class="calc-btn sci-btn h-12 text-sm transition-all duration-500" data-action="abs">abs</button>
+                </div>
+
+                <!-- 基本按键区域 -->
+                <div class="p-4 grid grid-cols-4 gap-3 transition-all duration-500">
+                    <button class="calc-btn func-btn h-14 transition-all duration-500" data-action="clear">C</button>
+                    <button class="calc-btn func-btn h-14 transition-all duration-500" data-action="clear-entry">CE</button>
+                    <button class="calc-btn func-btn h-14 transition-all duration-500" data-action="percent">%</button>
+                    <button class="calc-btn op-btn h-14 transition-all duration-500" data-action="divide">÷</button>
+
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="7">7</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="8">8</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="9">9</button>
+                    <button class="calc-btn op-btn h-14 transition-all duration-500" data-action="multiply">×</button>
+
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="4">4</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="5">5</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="6">6</button>
+                    <button class="calc-btn op-btn h-14 transition-all duration-500" data-action="subtract">−</button>
+
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="1">1</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="2">2</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="3">3</button>
+                    <button class="calc-btn op-btn h-14 transition-all duration-500" data-action="add">+</button>
+
+                    <button class="calc-btn func-btn h-14 transition-all duration-500" data-action="backspace">
+                        <i class="fa fa-backspace"></i>
+                    </button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number="0">0</button>
+                    <button class="calc-btn num-btn h-14 transition-all duration-500" data-number=".">.</button>
+                    <button class="calc-btn eq-btn h-14 transition-all duration-500" data-action="equals">=</button>
+                </div>
+            </div>
+
+            <!-- 转换模式界面 -->
+            <div id="converter-panel" class="mode-panel hidden">
+                <div class="p-6 transition-all duration-500">
+                    <div class="mb-6">
+                        <label class="block text-sm text-gray-400 mb-2">转换类型</label>
+                        <select id="converter-type" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 transition-all duration-300">
+                            <option value="length">长度转换</option>
+                            <option value="weight">重量转换</option>
+                            <option value="temperature">温度转换</option>
+                            <option value="time">时间转换</option>
+                            <option value="currency">货币转换</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">从</label>
+                            <div class="flex">
+                                <input type="number" id="convert-from-value" class="flex-1 bg-white/5 border border-white/10 rounded-l-lg px-4 py-3 focus:outline-none focus:ring-2 transition-all duration-300" value="1">
+                                <select id="convert-from-unit" class="bg-white/10 border-y border-white/10 rounded-r-lg px-4 py-3 focus:outline-none transition-all duration-300">
+                                    <option value="meter">米(m)</option>
+                                    <option value="kilometer">千米(km)</option>
+                                    <option value="centimeter">厘米(cm)</option>
+                                    <option value="millimeter">毫米(mm)</option>
+                                    <option value="inch">英寸(in)</option>
+                                    <option value="foot">英尺(ft)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button id="swap-units" class="w-10 h-10 mx-auto rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all duration-300">
+                            <i class="fa fa-exchange"></i>
+                        </button>
+
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">到</label>
+                            <div class="flex">
+                                <input type="text" id="convert-to-value" class="flex-1 bg-white/5 border border-white/10 rounded-l-lg px-4 py-3 focus:outline-none focus:ring-2 transition-all duration-300" readonly>
+                                <select id="convert-to-unit" class="bg-white/10 border-y border-white/10 rounded-r-lg px-4 py-3 focus:outline-none transition-all duration-300">
+                                    <option value="inch">英寸(in)</option>
+                                    <option value="foot">英尺(ft)</option>
+                                    <option value="meter">米(m)</option>
+                                    <option value="kilometer">千米(km)</option>
+                                    <option value="centimeter">厘米(cm)</option>
+                                    <option value="millimeter">毫米(mm)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-white/5 rounded-lg">
+                            <div id="conversion-result" class="text-2xl font-light text-center style-glow transition-all duration-500">1 米 = 39.3701 英寸</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 计算器核心逻辑
+        class Calculator {
+            constructor() {
+                this.currentMode = 'standard';
+                this.angleMode = 'deg'; // 默认角度模式为度
+                this.initializeCalculators();
+                this.setupEventListeners();
+                this.applyTheme('tech');
+                this.setupConverter();
+            }
+
+            // 初始化计算器状态
+            initializeCalculators() {
+                // 标准计算器状态
+                this.standard = {
+                    result: '0',
+                    expression: '',
+                    waitingForOperand: true,
+                    lastOperator: null
+                };
+
+                // 科学计算器状态
+                this.scientific = {
+                    result: '0',
+                    expression: '',
+                    waitingForOperand: true,
+                    lastOperator: null,
+                    pendingOperand: null, // 用于x^y等需要两个操作数的函数
+                    pendingFunction: null
+                };
+            }
+
+            // 设置事件监听器
+            setupEventListeners() {
+                // 数字按键
+                document.querySelectorAll('[data-number]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const number = button.getAttribute('data-number');
+                        this.inputNumber(number);
+                    });
+                });
+
+                // 操作按键
+                document.querySelectorAll('[data-action]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const action = button.getAttribute('data-action');
+                        this.handleAction(action);
+                    });
+                });
+
+                // 模式切换
+                document.querySelectorAll('.mode-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const mode = tab.getAttribute('data-mode');
+                        this.switchMode(mode);
+                    });
+                });
+
+                // 主题切换
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const theme = btn.getAttribute('data-theme');
+                        this.applyTheme(theme);
+                        
+                        // 更新活跃状态
+                        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                });
+
+                // 键盘支持
+                document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+            }
+
+            // 输入数字
+            inputNumber(number) {
+                const calc = this.getCurrentCalculator();
+                const display = document.getElementById(`${this.currentMode}-result`);
+                const exprDisplay = document.getElementById(`${this.currentMode}-expression`);
+
+                // 处理需要两个操作数的函数（如x^y）
+                if (this.currentMode === 'scientific' && calc.pendingFunction) {
+                    if (calc.pendingFunction === 'pow') {
+                        calc.pendingOperand = calc.result;
+                        calc.result = number;
+                        calc.expression += `^(${number}`;
+                    }
+                    calc.pendingFunction = null;
+                } else if (this.currentMode === 'scientific' && calc.waitingForOperand && 
+                          !['+', '-', '×', '÷'].includes(calc.expression.slice(-1))) {
+                    calc.expression += calc.result;
+                    exprDisplay.textContent = calc.expression;
+                    calc.result = number;
+                } else if (calc.waitingForOperand) {
+                    calc.result = number;
+                    calc.waitingForOperand = false;
+                } else {
+                    // 处理小数点
+                    if (number === '.' && calc.result.includes('.')) {
+                        return;
+                    }
+                    // 限制显示长度
+                    if (calc.result.length < 15) {
+                        calc.result += number;
+                    }
+                }
+
+                display.textContent = calc.result;
+                exprDisplay.textContent = calc.expression;
+            }
+
+            // 处理操作
+            handleAction(action) {
+                const calc = this.getCurrentCalculator();
+                const display = document.getElementById(`${this.currentMode}-result`);
+                const exprDisplay = document.getElementById(`${this.currentMode}-expression`);
+
+                switch (action) {
+                    case 'clear':
+                        this.initializeCalculators();
+                        display.textContent = '0';
+                        exprDisplay.textContent = '';
+                        break;
+                        
+                    case 'clear-entry':
+                        calc.result = '0';
+                        calc.waitingForOperand = true;
+                        display.textContent = calc.result;
+                        break;
+
+                    case 'backspace':
+                        if (calc.result.length > 1) {
+                            calc.result = calc.result.slice(0, -1);
+                        } else {
+                            calc.result = '0';
+                            calc.waitingForOperand = true;
+                        }
+                        display.textContent = calc.result;
+                        break;
+
+                    case 'plus-minus':
+                        calc.result = (parseFloat(calc.result) * -1).toString();
+                        display.textContent = calc.result;
+                        break;
+
+                    case 'percent':
+                        calc.result = (parseFloat(calc.result) / 100).toString();
+                        display.textContent = calc.result;
+                        break;
+
+                    case 'add':
+                    case 'subtract':
+                    case 'multiply':
+                    case 'divide':
+                    case 'mod':
+                        this.handleOperator(action);
+                        break;
+
+                    case 'equals':
+                        this.calculateResult();
+                        break;
+
+                    // 科学计算器功能
+                    case 'sin':
+                    case 'cos':
+                    case 'tan':
+                    case 'asin':
+                    case 'acos':
+                    case 'atan':
+                    case 'log':
+                    case 'ln':
+                    case 'sqrt':
+                    case 'cbrt':
+                    case 'pow10':
+                    case 'exp':
+                    case 'square':
+                    case 'cube':
+                    case 'reciprocal':
+                    case 'factorial':
+                    case 'pi':
+                    case 'e':
+                    case 'rand':
+                    case 'abs':
+                        this.handleScientificFunction(action);
+                        break;
+                        
+                    case 'pow':
+                        // 处理需要两个操作数的函数
+                        calc.pendingFunction = 'pow';
+                        calc.pendingOperand = calc.result;
+                        calc.expression += `${calc.result}^(`;
+                        calc.waitingForOperand = true;
+                        exprDisplay.textContent = calc.expression;
+                        break;
+                        
+                    case 'deg':
+                        this.angleMode = 'deg';
+                        // 高亮显示当前角度模式
+                        document.querySelectorAll('.sci-btn[data-action="deg"], .sci-btn[data-action="rad"]')
+                            .forEach(btn => btn.classList.remove('ring-2', 'ring-offset-2'));
+                        document.querySelector('.sci-btn[data-action="deg"]').classList.add('ring-2', 'ring-offset-2');
+                        break;
+                        
+                    case 'rad':
+                        this.angleMode = 'rad';
+                        // 高亮显示当前角度模式
+                        document.querySelectorAll('.sci-btn[data-action="deg"], .sci-btn[data-action="rad"]')
+                            .forEach(btn => btn.classList.remove('ring-2', 'ring-offset-2'));
+                        document.querySelector('.sci-btn[data-action="rad"]').classList.add('ring-2', 'ring-offset-2');
+                        break;
+                }
+            }
+
+            // 处理运算符
+            handleOperator(operator) {
+                const calc = this.getCurrentCalculator();
+                const exprDisplay = document.getElementById(`${this.currentMode}-expression`);
+                
+                // 转换为数学运算符表示
+                const mathOperators = {
+                    'add': '+',
+                    'subtract': '-',
+                    'multiply': '×',
+                    'divide': '÷',
+                    'mod': 'mod'
+                };
+                const displayOperator = mathOperators[operator];
+
+                if (calc.lastOperator && !calc.waitingForOperand) {
+                    // 如果已经有运算符且不在等待操作数，则先计算结果
+                    this.calculateResult(true);
+                    calc.expression = calc.result + displayOperator;
+                } else {
+                    // 否则直接添加运算符
+                    calc.expression += calc.result + displayOperator;
+                    calc.waitingForOperand = true;
+                }
+
+                calc.lastOperator = operator;
+                exprDisplay.textContent = calc.expression;
+            }
+
+            // 计算结果
+            calculateResult(keepExpression = false) {
+                const calc = this.getCurrentCalculator();
+                const display = document.getElementById(`${this.currentMode}-result`);
+                const exprDisplay = document.getElementById(`${this.currentMode}-expression`);
+
+                if (!calc.lastOperator && !calc.pendingFunction) return;
+
+                // 构建完整表达式
+                let fullExpression = calc.expression + calc.result;
+                
+                // 处理x^y等函数的闭合
+                if (fullExpression.includes('^(')) {
+                    fullExpression += ')';
+                }
+                
+                // 替换运算符为JavaScript可识别的
+                let jsExpression = fullExpression
+                    .replace(/×/g, '*')
+                    .replace(/÷/g, '/')
+                    .replace(/mod/g, '%')
+                    .replace(/\^/g, '**');
+
+                try {
+                    // 使用eval计算结果
+                    let result = eval(jsExpression);
+                    
+                    // 处理大数和小数
+                    if (Math.abs(result) > 1e12 || (Math.abs(result) < 1e-6 && result !== 0)) {
+                        result = result.toExponential(8);
+                    } else {
+                        // 限制小数位数
+                        result = Number(result.toFixed(8));
+                    }
+                    
+                    calc.result = result.toString();
+                    display.textContent = calc.result;
+                    
+                    if (!keepExpression) {
+                        exprDisplay.textContent = fullExpression + '=';
+                        calc.expression = '';
+                        calc.lastOperator = null;
+                        calc.pendingFunction = null;
+                        calc.pendingOperand = null;
+                    }
+                    
+                    calc.waitingForOperand = true;
+                } catch (e) {
+                    display.textContent = '错误';
+                    console.error('计算错误:', e);
+                }
+            }
+
+            // 处理科学函数
+            handleScientificFunction(func) {
+                if (this.currentMode !== 'scientific') return;
+                
+                const calc = this.scientific;
+                const display = document.getElementById('scientific-result');
+                const exprDisplay = document.getElementById('scientific-expression');
+                const value = parseFloat(calc.result);
+                let result, funcSymbol;
+
+                switch (func) {
+                    case 'sin':
+                        // 根据角度模式计算
+                        const radiansSin = this.angleMode === 'deg' ? value * Math.PI / 180 : value;
+                        result = Math.sin(radiansSin);
+                        funcSymbol = `sin(${this.angleMode === 'deg' ? '°' : 'rad'})`;
+                        break;
+                        
+                    case 'cos':
+                        const radiansCos = this.angleMode === 'deg' ? value * Math.PI / 180 : value;
+                        result = Math.cos(radiansCos);
+                        funcSymbol = `cos(${this.angleMode === 'deg' ? '°' : 'rad'})`;
+                        break;
+                        
+                    case 'tan':
+                        const radiansTan = this.angleMode === 'deg' ? value * Math.PI / 180 : value;
+                        result = Math.tan(radiansTan);
+                        funcSymbol = `tan(${this.angleMode === 'deg' ? '°' : 'rad'})`;
+                        break;
+                        
+                    case 'asin':
+                        result = Math.asin(value);
+                        // 转换为度或保持弧度
+                        result = this.angleMode === 'deg' ? result * 180 / Math.PI : result;
+                        funcSymbol = `sin⁻¹`;
+                        break;
+                        
+                    case 'acos':
+                        result = Math.acos(value);
+                        result = this.angleMode === 'deg' ? result * 180 / Math.PI : result;
+                        funcSymbol = `cos⁻¹`;
+                        break;
+                        
+                    case 'atan':
+                        result = Math.atan(value);
+                        result = this.angleMode === 'deg' ? result * 180 / Math.PI : result;
+                        funcSymbol = `tan⁻¹`;
+                        break;
+                        
+                    case 'log':
+                        result = Math.log10(value);
+                        funcSymbol = `log`;
+                        break;
+                        
+                    case 'ln':
+                        result = Math.log(value);
+                        funcSymbol = `ln`;
+                        break;
+                        
+                    case 'sqrt':
+                        result = Math.sqrt(value);
+                        funcSymbol = `√`;
+                        break;
+                        
+                    case 'cbrt':
+                        result = Math.cbrt(value);
+                        funcSymbol = `∛`;
+                        break;
+                        
+                    case 'pow10':
+                        result = Math.pow(10, value);
+                        funcSymbol = `10^`;
+                        break;
+                        
+                    case 'exp':
+                        result = Math.exp(value);
+                        funcSymbol = `e^`;
+                        break;
+                        
+                    case 'square':
+                        result = Math.pow(value, 2);
+                        funcSymbol = `²`;
+                        break;
+                        
+                    case 'cube':
+                        result = Math.pow(value, 3);
+                        funcSymbol = `³`;
+                        break;
+                        
+                    case 'reciprocal':
+                        result = 1 / value;
+                        funcSymbol = `1/`;
+                        break;
+                        
+                    case 'factorial':
+                        result = this.calculateFactorial(value);
+                        funcSymbol = `!`;
+                        break;
+                        
+                    case 'pi':
+                        result = Math.PI;
+                        funcSymbol = `π`;
+                        calc.expression += funcSymbol;
+                        calc.waitingForOperand = true;
+                        break;
+                        
+                    case 'e':
+                        result = Math.E;
+                        funcSymbol = `e`;
+                        calc.expression += funcSymbol;
+                        calc.waitingForOperand = true;
+                        break;
+                        
+                    case 'rand':
+                        result = Math.random();
+                        funcSymbol = `rand`;
+                        break;
+                        
+                    case 'abs':
+                        result = Math.abs(value);
+                        funcSymbol = `abs`;
+                        break;
+                }
+
+                // 处理特殊函数的表达式显示
+                if (func !== 'pi' && func !== 'e') {
+                    if (['square', 'cube', 'factorial'].includes(func)) {
+                        calc.expression += `(${calc.result})${funcSymbol}`;
+                    } else if (['sqrt', 'cbrt'].includes(func)) {
+                        calc.expression += `${funcSymbol}(${calc.result})`;
+                    } else if (['pow10', 'exp', 'reciprocal'].includes(func)) {
+                        calc.expression += `${funcSymbol}(${calc.result})`;
+                    } else {
+                        calc.expression += `${funcSymbol}(${calc.result})`;
+                    }
+                }
+
+                // 处理计算结果
+                if (isNaN(result) || !isFinite(result)) {
+                    calc.result = '错误';
+                } else {
+                    // 格式化结果
+                    if (Math.abs(result) > 1e12 || (Math.abs(result) < 1e-6 && result !== 0)) {
+                        result = result.toExponential(6);
+                    } else {
+                        result = Number(result.toFixed(8));
+                    }
+                    calc.result = result.toString();
+                }
+
+                display.textContent = calc.result;
+                exprDisplay.textContent = calc.expression;
+                calc.waitingForOperand = true;
+            }
+
+            // 计算阶乘
+            calculateFactorial(n) {
+                // 确保输入是整数
+                n = Math.floor(n);
+                
+                // 处理特殊情况
+                if (n < 0) return NaN; // 负数没有阶乘
+                if (n === 0 || n === 1) return 1;
+                
+                // 计算阶乘
+                let result = 1;
+                for (let i = 2; i <= n; i++) {
+                    result *= i;
+                    // 防止数值过大
+                    if (result > 1e308) return Infinity;
+                }
+                return result;
+            }
+
+            // 切换模式
+            switchMode(mode) {
+                if (mode === this.currentMode) return;
+
+                // 隐藏所有面板
+                document.querySelectorAll('.mode-panel').forEach(panel => {
+                    panel.classList.add('hidden');
+                });
+
+                // 显示选中面板
+                document.getElementById(`${mode}-panel`).classList.remove('hidden');
+
+                // 更新标签指示器
+                const tabIndex = ['standard', 'scientific', 'converter'].indexOf(mode);
+                const indicator = document.querySelector('.tab-indicator');
+                indicator.style.transform = `translateX(${tabIndex * 100}%)`;
+
+                // 更新活跃标签样式
+                document.querySelectorAll('.mode-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`.mode-tab[data-mode="${mode}"]`).classList.add('active');
+
+                this.currentMode = mode;
+            }
+
+            // 获取当前计算器
+            getCurrentCalculator() {
+                return this[this.currentMode] || this.standard;
+            }
+
+            // 应用主题
+            applyTheme(theme) {
+                // 移除所有主题类
+                document.body.className = document.body.className
+                    .split(' ')
+                    .filter(cls => !cls.startsWith('theme-'))
+                    .join(' ');
+                
+                // 添加新主题类
+                document.body.classList.add(`theme-${theme}`);
+
+                // 根据主题设置样式变量
+                const styles = {
+                    tech: {
+                        body: 'bg-tech-darker',
+                        calculatorInner: 'bg-tech-dark',
+                        textColor: 'text-gray-100',
+                        funcBtn: 'bg-tech-purple/20 hover:bg-tech-purple/30 text-tech-purple',
+                        numBtn: 'bg-white/5 hover:bg-white/10',
+                        opBtn: 'bg-tech-accent/20 hover:bg-tech-accent/30 text-tech-accent',
+                        eqBtn: 'bg-tech-accent hover:bg-tech-accent/90 text-white',
+                        sciBtn: 'bg-tech-blue/20 hover:bg-tech-blue/30 text-tech-blue',
+                        tabIndicator: 'bg-tech-accent',
+                        gradient: 'linear-gradient(90deg, #06B6D4, #8B5CF6)',
+                        glow: 'var(--glow-from: 0 0 5px rgba(6, 182, 212, 0.5); var(--glow-to: 0 0 15px rgba(6, 182, 212, 0.7);)',
+                        scrollColor: 'rgba(6, 182, 212, 0.5)'
+                    },
+                    simple: {
+                        body: 'bg-simple-light',
+                        calculatorInner: 'bg-white',
+                        textColor: 'text-simple-dark',
+                        funcBtn: 'bg-simple-gray hover:bg-simple-gray/80 text-simple-gray-dark',
+                        numBtn: 'bg-simple-light hover:bg-simple-gray/30 text-simple-dark',
+                        opBtn: 'bg-simple-blue/10 hover:bg-simple-blue/20 text-simple-blue',
+                        eqBtn: 'bg-simple-orange hover:bg-simple-orange/90 text-white',
+                        sciBtn: 'bg-simple-blue/10 hover:bg-simple-blue/20 text-simple-blue',
+                        tabIndicator: 'bg-simple-blue',
+                        gradient: 'linear-gradient(90deg, #3B82F6, #F97316)',
+                        glow: 'var(--glow-from: 0 0 5px rgba(59, 130, 246, 0.3); var(--glow-to: 0 0 10px rgba(59, 130, 246, 0.5);)',
+                        scrollColor: 'rgba(59, 130, 246, 0.5)'
+                    },
+                    retro: {
+                        body: 'bg-retro-bg',
+                        calculatorInner: 'bg-retro-light',
+                        textColor: 'text-retro-dark',
+                        funcBtn: 'bg-retro-yellow/70 hover:bg-retro-yellow text-retro-dark',
+                        numBtn: 'bg-white hover:bg-gray-100 text-retro-dark',
+                        opBtn: 'bg-retro-blue/80 hover:bg-retro-blue text-white',
+                        eqBtn: 'bg-retro-red hover:bg-retro-red/90 text-white',
+                        sciBtn: 'bg-retro-green/80 hover:bg-retro-green text-white',
+                        tabIndicator: 'bg-retro-dark',
+                        gradient: 'linear-gradient(90deg, #8B4513, #D22B2B)',
+                        glow: 'var(--glow-from: 0 0 3px rgba(139, 69, 19, 0.3); var(--glow-to: 0 0 8px rgba(139, 69, 19, 0.5);)',
+                        scrollColor: 'rgba(139, 69, 19, 0.5)'
+                    },
+                    dark: {
+                        body: 'bg-dark-bg',
+                        calculatorInner: 'bg-dark-card',
+                        textColor: 'text-gray-100',
+                        funcBtn: 'bg-white/10 hover:bg-white/20 text-dark-accent',
+                        numBtn: 'bg-white/5 hover:bg-white/10',
+                        opBtn: 'bg-dark-accent/20 hover:bg-dark-accent/30 text-dark-accent',
+                        eqBtn: 'bg-dark-primary hover:bg-dark-primary/90 text-dark-bg',
+                        sciBtn: 'bg-dark-secondary/20 hover:bg-dark-secondary/30 text-dark-secondary',
+                        tabIndicator: 'bg-dark-accent',
+                        gradient: 'linear-gradient(90deg, #BB86FC, #03DAC6)',
+                        glow: 'var(--glow-from: 0 0 5px rgba(187, 134, 252, 0.3); var(--glow-to: 0 0 15px rgba(187, 134, 252, 0.5);)',
+                        scrollColor: 'rgba(187, 134, 252, 0.5)'
+                    },
+                    candy: {
+                        body: 'bg-candy-bg',
+                        calculatorInner: 'bg-white',
+                        textColor: 'text-gray-800',
+                        funcBtn: 'bg-candy-purple/10 hover:bg-candy-purple/20 text-candy-purple',
+                        numBtn: 'bg-candy-pink/5 hover:bg-candy-pink/10',
+                        opBtn: 'bg-candy-blue/10 hover:bg-candy-blue/20 text-candy-blue',
+                        eqBtn: 'bg-candy-pink hover:bg-candy-pink/90 text-white',
+                        sciBtn: 'bg-candy-green/10 hover:bg-candy-green/20 text-candy-green',
+                        tabIndicator: 'bg-candy-pink',
+                        gradient: 'linear-gradient(90deg, #FF6B8B, #6B9FFF)',
+                        glow: 'var(--glow-from: 0 0 5px rgba(255, 107, 139, 0.3); var(--glow-to: 0 0 15px rgba(255, 107, 139, 0.5);)',
+                        scrollColor: 'rgba(255, 107, 139, 0.5)'
+                    },
+                    biz: {
+                        body: 'bg-biz-light',
+                        calculatorInner: 'bg-white',
+                        textColor: 'text-biz-gray',
+                        funcBtn: 'bg-biz-gray/10 hover:bg-biz-gray/20 text-biz-gray',
+                        numBtn: 'bg-biz-light hover:bg-biz-gray/5',
+                        opBtn: 'bg-biz-accent/10 hover:bg-biz-accent/20 text-biz-accent',
+                        eqBtn: 'bg-biz-accent hover:bg-biz-highlight text-white',
+                        sciBtn: 'bg-biz-accent/10 hover:bg-biz-accent/20 text-biz-accent',
+                        tabIndicator: 'bg-biz-accent',
+                        gradient: 'linear-gradient(90deg, #3498DB, #2980B9)',
+                        glow: 'var(--glow-from: 0 0 5px rgba(52, 152, 219, 0.3); var(--glow-to: 0 0 10px rgba(52, 152, 219, 0.5);)',
+                        scrollColor: 'rgba(52, 152, 219, 0.5)'
+                    }
+                };
+
+                const themeStyles = styles[theme];
+                
+                // 应用背景和文本颜色
+                document.body.classList.add(themeStyles.body);
+                document.body.classList.add(themeStyles.textColor);
+                
+                // 应用计算器内部样式
+                document.querySelector('.calculator-inner').className = 
+                    `calculator-inner ${themeStyles.calculatorInner} rounded-lg p-1 transition-all duration-500 shadow-${theme}`;
+                
+                // 应用按钮样式
+                document.querySelectorAll('.func-btn').forEach(btn => {
+                    btn.className = `calc-btn func-btn h-14 transition-all duration-500 ${themeStyles.funcBtn}`;
+                });
+                
+                document.querySelectorAll('.num-btn').forEach(btn => {
+                    btn.className = `calc-btn num-btn h-14 transition-all duration-500 ${themeStyles.numBtn}`;
+                });
+                
+                document.querySelectorAll('.op-btn').forEach(btn => {
+                    btn.className = `calc-btn op-btn h-14 transition-all duration-500 ${themeStyles.opBtn}`;
+                });
+                
+                document.querySelectorAll('.eq-btn').forEach(btn => {
+                    btn.className = `calc-btn eq-btn h-14 transition-all duration-500 ${themeStyles.eqBtn}`;
+                });
+                
+                document.querySelectorAll('.sci-btn').forEach(btn => {
+                    btn.className = `calc-btn sci-btn h-12 text-sm transition-all duration-500 ${themeStyles.sciBtn}`;
+                });
+                
+                // 应用标签指示器样式
+                document.querySelector('.tab-indicator').className = `tab-indicator w-[33.333%] transition-all duration-500 ${themeStyles.tabIndicator}`;
+                
+                // 应用渐变边框
+                document.documentElement.style.setProperty('--gradient-color', themeStyles.gradient);
+                
+                // 应用发光效果
+                document.documentElement.style.setProperty('--glow-from', themeStyles.glow.split(';')[0].split(':')[1]);
+                document.documentElement.style.setProperty('--glow-to', themeStyles.glow.split(';')[1].split(':')[1]);
+                
+                // 应用滚动条颜色
+                document.documentElement.style.setProperty('--scroll-color', themeStyles.scrollColor);
+                
+                // 表达式显示颜色
+                document.querySelectorAll('.expression-display').forEach(el => {
+                    el.className = `expression-display ${theme === 'simple' || theme === 'retro' || theme === 'candy' || theme === 'biz' ? 'text-gray-500' : 'text-gray-400'} mb-2 min-h-[24px] text-lg display-text custom-scrollbar transition-all duration-500`;
+                });
+            }
+
+            // 处理键盘输入
+            handleKeyPress(e) {
+                // 数字键
+                if (/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                    this.inputNumber(e.key);
+                }
+                
+                // 小数点
+                if (e.key === '.' || e.key === ',') {
+                    e.preventDefault();
+                    this.inputNumber('.');
+                }
+                
+                // 运算符
+                if (e.key === '+') {
+                    e.preventDefault();
+                    this.handleAction('add');
+                }
+                if (e.key === '-') {
+                    e.preventDefault();
+                    this.handleAction('subtract');
+                }
+                if (e.key === '*') {
+                    e.preventDefault();
+                    this.handleAction('multiply');
+                }
+                if (e.key === '/') {
+                    e.preventDefault();
+                    this.handleAction('divide');
+                }
+                if (e.key === '%') {
+                    e.preventDefault();
+                    this.handleAction('mod');
+                }
+                
+                // 回车键
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.handleAction('equals');
+                }
+                
+                // 删除键
+                if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    this.handleAction('backspace');
+                }
+                
+                // ESC键清除
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.handleAction('clear');
+                }
+            }
+
+            // 设置单位转换功能
+            setupConverter() {
+                const typeSelect = document.getElementById('converter-type');
+                const fromValue = document.getElementById('convert-from-value');
+                const fromUnit = document.getElementById('convert-from-unit');
+                const toValue = document.getElementById('convert-to-value');
+                const toUnit = document.getElementById('convert-to-unit');
+                const swapBtn = document.getElementById('swap-units');
+                const resultDisplay = document.getElementById('conversion-result');
+
+                // 转换因子数据库
+                const conversionFactors = {
+                    length: {
+                        meter: 1,
+                        kilometer: 0.001,
+                        centimeter: 100,
+                        millimeter: 1000,
+                        inch: 39.3701,
+                        foot: 3.28084
+                    },
+                    weight: {
+                        kilogram: 1,
+                        gram: 1000,
+                        pound: 2.20462,
+                        ounce: 35.274,
+                        ton: 0.00110231
+                    },
+                    temperature: {
+                        celsius: {
+                            toCelsius: (v) => v,
+                            fromCelsius: (v) => v
+                        },
+                        fahrenheit: {
+                            toCelsius: (v) => (v - 32) * 5/9,
+                            fromCelsius: (v) => v * 9/5 + 32
+                        },
+                        kelvin: {
+                            toCelsius: (v) => v - 273.15,
+                            fromCelsius: (v) => v + 273.15
+                        }
+                    },
+                    time: {
+                        second: 1,
+                        minute: 1/60,
+                        hour: 1/3600,
+                        day: 1/86400,
+                        week: 1/604800
+                    },
+                    currency: {
+                        cny: 1,
+                        usd: 0.14, // 示例汇率
+                        eur: 0.13, // 示例汇率
+                        jpy: 15.63 // 示例汇率
+                    }
+                };
+
+                // 单位标签
+                const unitLabels = {
+                    length: {
+                        meter: '米(m)',
+                        kilometer: '千米(km)',
+                        centimeter: '厘米(cm)',
+                        millimeter: '毫米(mm)',
+                        inch: '英寸(in)',
+                        foot: '英尺(ft)'
+                    },
+                    weight: {
+                        kilogram: '千克(kg)',
+                        gram: '克(g)',
+                        pound: '磅(lb)',
+                        ounce: '盎司(oz)',
+                        ton: '吨(ton)'
+                    },
+                    temperature: {
+                        celsius: '摄氏度(°C)',
+                        fahrenheit: '华氏度(°F)',
+                        kelvin: '开尔文(K)'
+                    },
+                    time: {
+                        second: '秒(s)',
+                        minute: '分钟(min)',
+                        hour: '小时(h)',
+                        day: '天(d)',
+                        week: '周(w)'
+                    },
+                    currency: {
+                        cny: '人民币(¥)',
+                        usd: '美元($)',
+                        eur: '欧元(€)',
+                        jpy: '日元(¥)'
+                    }
+                };
+
+                // 更新单位选择器
+                const updateUnitOptions = (type) => {
+                    const units = Object.keys(conversionFactors[type]);
+                    
+                    // 清空现有选项
+                    fromUnit.innerHTML = '';
+                    toUnit.innerHTML = '';
+                    
+                    // 添加新选项
+                    units.forEach(unit => {
+                        const fromOption = document.createElement('option');
+                        fromOption.value = unit;
+                        fromOption.textContent = unitLabels[type][unit];
+                        fromUnit.appendChild(fromOption);
+                        
+                        const toOption = document.createElement('option');
+                        toOption.value = unit;
+                        toOption.textContent = unitLabels[type][unit];
+                        toUnit.appendChild(toOption);
+                    });
+                    
+                    // 设置默认选项
+                    if (units.length > 1) {
+                        fromUnit.value = units[0];
+                        toUnit.value = units[1];
+                    }
+                    
+                    // 执行转换
+                    convertUnits();
+                };
+
+                // 转换单位
+                const convertUnits = () => {
+                    const type = typeSelect.value;
+                    const value = parseFloat(fromValue.value) || 0;
+                    const from = fromUnit.value;
+                    const to = toUnit.value;
+                    
+                    let result, formula;
+                    
+                    if (type === 'temperature') {
+                        // 温度转换
+                        const celsius = conversionFactors[type][from].toCelsius(value);
+                        result = conversionFactors[type][to].fromCelsius(celsius);
+                        formula = `${value} ${unitLabels[type][from]} = ${result.toFixed(2)} ${unitLabels[type][to]}`;
+                    } else {
+                        // 其他类型转换
+                        const baseValue = value / conversionFactors[type][from];
+                        result = baseValue * conversionFactors[type][to];
+                        formula = `${value} ${unitLabels[type][from]} = ${result.toFixed(6)} ${unitLabels[type][to]}`;
+                    }
+                    
+                    // 更新显示
+                    toValue.value = result.toFixed(6);
+                    resultDisplay.textContent = formula;
+                };
+
+                // 交换单位
+                const swapUnits = () => {
+                    const temp = fromUnit.value;
+                    fromUnit.value = toUnit.value;
+                    toUnit.value = temp;
+                    convertUnits();
+                };
+
+                // 事件监听
+                typeSelect.addEventListener('change', () => updateUnitOptions(typeSelect.value));
+                fromValue.addEventListener('input', convertUnits);
+                fromUnit.addEventListener('change', convertUnits);
+                toUnit.addEventListener('change', convertUnits);
+                swapBtn.addEventListener('click', swapUnits);
+
+                // 初始化
+                updateUnitOptions('length');
+            }
+        }
+
+        // 初始化计算器
+        document.addEventListener('DOMContentLoaded', () => {
+            const calculator = new Calculator();
+            // 默认高亮角度模式为度
+            document.querySelector('.sci-btn[data-action="deg"]').classList.add('ring-2', 'ring-offset-2');
+        });
+    </script>
 </body>
-
 </html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy导航</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#7C3AED',
+                        light: '#F3F4F6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .nav-active {
+                @apply text-primary border-b-2 border-primary;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 页面头部 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-compass text-primary text-2xl"></i>
+                    <h1 class="text-xl font-bold text-gray-800">导航中心</h1>
+                </div>
+                
+                <!-- 导航菜单 -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="nav-active font-medium py-1">首页</a>
+                    <a href="#" class="text-gray-600 hover:text-primary transition-colors py-1">关于</a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button class="md:hidden text-gray-600 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容区 -->
+    <main class="container mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-800 mb-4">Candy导航</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">学无止境</p>
+        </div>
+        
+        <!-- 导航卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            <!-- 网站导航卡片 -->
+			
+			<a href="chemistry/index2.html" class="block">
+                <div class="bg-white rounded-xl shadow p-6 card-hover border border-gray-100">
+                    <div class="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa fa-book text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">元素周期表</h3>
+                    <p class="text-gray-600">小小学习一下化学元素吧</p>
+                    <div class="mt-4 text-secondary font-medium flex items-center">
+                        <span>进入导航</span>
+                        <i class="fa fa-arrow-right ml-2"></i>
+                    </div>
+                </div>
+            </a>
+			
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-gray-300 py-8 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2025 Candy导航 - 随心导航</p>
+           
+        </div>
+    </footer>
+
+    <script>
+        // 简单的交互效果脚本
+        document.addEventListener('DOMContentLoaded', () => {
+            // 
+        });
+    </script>
+</body>
+</html>

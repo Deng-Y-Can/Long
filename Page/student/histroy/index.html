@@ -164,7 +164,7 @@
         async function init() {
             try {
                 // 从JSON文件加载数据
-                const response = await fetch('history.json');
+                const response = await fetch('histroy.json');
                 if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
                 
                 const data = await response.json();

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candy导航</title>
+    <title>Candy导航 - 知识学习中心</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script>
@@ -11,13 +11,21 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#4F46E5',
-                        secondary: '#7C3AED',
-                        light: '#F3F4F6',
+                        primary: '#4F46E5',      // 主色调：靛蓝色（科技感+知识感）
+                        secondary: '#7C3AED',    // 辅助色：深紫色
+                        chemistry: '#10B981',    // 化学主题色：绿色
+                        physics: '#3B82F6',      // 物理主题色：蓝色
+                        history: '#F59E0B',      // 历史主题色：橙色
+                        geography: '#EC4899',    // 地理主题色：粉色
+                        biology: '#14B8A6'       // 生物主题色：青色
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        sans: ['Inter', 'system-ui', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
                     },
+                    boxShadow: {
+                        'card': '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02)',
+                        'card-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    }
                 }
             }
         }
@@ -25,154 +33,303 @@
     <style type="text/tailwindcss">
         @layer utilities {
             .card-hover {
-                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+                @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-2 hover:scale-[1.02];
             }
             .nav-active {
                 @apply text-primary border-b-2 border-primary;
             }
+            .section-fade-in {
+                @apply opacity-0 translate-y-4 transition-all duration-700;
+            }
+            .icon-bg {
+                @apply w-16 h-16 rounded-xl flex items-center justify-center mb-5 transition-all duration-300;
+            }
+            .card-content {
+                @apply bg-white rounded-2xl shadow-card p-8 border border-gray-50 overflow-hidden relative;
+            }
+            .card-badge {
+                @apply absolute top-4 right-4 text-xs font-medium px-2.5 py-0.5 rounded-full;
+            }
+        }
+
+        /* 全局动画效果 */
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4eaf5 100%);
+        }
+        .title-gradient {
+            background: linear-gradient(90deg, #4F46E5, #7C3AED);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .card-arrow {
+            @apply inline-block transition-transform duration-300 group-hover:translate-x-1;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- 页面头部 -->
-    <header class="bg-white shadow-sm sticky top-0 z-10">
-        <div class="container mx-auto px-4 py-4">
+<body class="gradient-bg min-h-screen">
+    <!-- 页面头部 - 增强阴影和粘性效果 -->
+    <header class="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fa fa-compass text-primary text-2xl"></i>
-                    <h1 class="text-xl font-bold text-gray-800">导航中心</h1>
+                <!-- 品牌标识 - 增强视觉效果 -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                        <i class="fa fa-compass text-white text-xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-800">Candy导航</h1>
                 </div>
                 
-                <!-- 导航菜单 -->
+                <!-- 导航菜单 - 优化交互效果 -->
                 <nav class="hidden md:flex items-center space-x-8">
-                    <a href="#" class="nav-active font-medium py-1">首页</a>
-                    <a href="#" class="text-gray-600 hover:text-primary transition-colors py-1">关于</a>
+                    <a href="#" class="nav-active font-medium py-2 px-1 transition-all duration-300">首页</a>
+                    <a href="#" class="text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary/30 py-2 px-1 transition-all duration-300">关于</a>
+                    <a href="#" class="text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary/30 py-2 px-1 transition-all duration-300">反馈</a>
                 </nav>
                 
-                <!-- 移动端菜单按钮 -->
-                <button class="md:hidden text-gray-600 focus:outline-none">
+                <!-- 移动端菜单按钮 - 增强交互 -->
+                <button class="md:hidden text-gray-700 focus:outline-none hover:text-primary transition-colors duration-300" id="mobileMenuBtn">
                     <i class="fa fa-bars text-xl"></i>
                 </button>
+            </div>
+            
+            <!-- 移动端导航菜单 - 新增折叠菜单 -->
+            <div class="md:hidden hidden mt-4 pb-2 border-t border-gray-100" id="mobileMenu">
+                <a href="#" class="block nav-active font-medium py-2">首页</a>
+                <a href="#" class="block text-gray-600 hover:text-primary py-2 transition-colors">关于</a>
+                <a href="#" class="block text-gray-600 hover:text-primary py-2 transition-colors">反馈</a>
             </div>
         </div>
     </header>
 
-    <!-- 主要内容区 -->
-    <main class="container mx-auto px-4 py-12">
-        <div class="text-center mb-12">
-            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-800 mb-4">Candy导航</h2>
-            <p class="text-gray-600 max-w-2xl mx-auto">学无止境</p>
+    <!-- 主要内容区 - 优化布局和动画 -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <!-- 页面标题区 - 增强视觉层次 -->
+        <div class="text-center mb-16 section-fade-in" id="titleSection">
+            <div class="inline-block mb-4 px-4 py-1 bg-primary/10 rounded-full text-primary text-sm font-medium">
+                知识学习中心
+            </div>
+            <h2 class="text-[clamp(2rem,5vw,3rem)] font-bold mb-6 title-gradient">Candy导航</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed">
+                探索各学科知识的入口，在这里开启你的学习之旅。学无止境，知识改变世界。
+            </p>
+            
+            <!-- 装饰元素 - 增加页面精致度 -->
+            <div class="flex justify-center mt-10">
+                <div class="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+            </div>
         </div>
         
-        <!-- 导航卡片 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            <!-- 网站导航卡片 -->
-			
-			<a href="chemistry/index2.html" class="block">
-                <div class="bg-white rounded-xl shadow p-6 card-hover border border-gray-100">
-                    <div class="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-book text-secondary text-2xl"></i>
+        <!-- 导航卡片区 - 优化网格布局和间距 -->
+        <div class="max-w-5xl mx-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 化学导航卡片 - 学科专属配色 -->
+                <a href="chemistry/index2.html" class="block group section-fade-in" id="chemistryCard">
+                    <div class="card-content card-hover">
+                        <div class="card-badge bg-chemistry/10 text-chemistry">热门</div>
+                        <div class="icon-bg bg-chemistry/10 text-chemistry group-hover:bg-chemistry group-hover:text-white">
+                            <i class="fa fa-flask text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3">元素周期表</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            探索化学元素的奥秘，了解各元素的性质、用途和周期规律，为你的化学学习打下坚实基础。
+                        </p>
+                        <div class="mt-2 text-chemistry font-medium flex items-center">
+                            <span>进入学习</span>
+                            <i class="fa fa-arrow-right ml-2 card-arrow"></i>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">元素周期表</h3>
-                    <p class="text-gray-600">小小学习一下化学元素吧</p>
-                    <div class="mt-4 text-secondary font-medium flex items-center">
-                        <span>进入导航</span>
-                        <i class="fa fa-arrow-right ml-2"></i>
+                </a>
+
+                <!-- 物理导航卡片 - 学科专属配色 -->
+                <a href="physics/index.html" class="block group section-fade-in" id="physicsCard">
+                    <div class="card-content card-hover">
+                        <div class="icon-bg bg-physics/10 text-physics group-hover:bg-physics group-hover:text-white">
+                            <i class="fa fa-atom text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3">物理小知识</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            从经典力学到现代物理，探索物质、能量和宇宙的基本规律，感受物理世界的奇妙。
+                        </p>
+                        <div class="mt-2 text-physics font-medium flex items-center">
+                            <span>进入学习</span>
+                            <i class="fa fa-arrow-right ml-2 card-arrow"></i>
+                        </div>
                     </div>
-                </div>
-            </a>
-			
+                </a>
+
+                <!-- 历史导航卡片 - 学科专属配色 -->
+                <a href="histroy/index.html" class="block group section-fade-in" id="historyCard">
+                    <div class="card-content card-hover">
+                        <div class="icon-bg bg-history/10 text-history group-hover:bg-history group-hover:text-white">
+                            <i class="fa fa-university text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3">历史小知识</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            穿梭时空，了解古今中外的历史事件和人物，从历史中汲取智慧，开拓视野。
+                        </p>
+                        <div class="mt-2 text-history font-medium flex items-center">
+                            <span>进入学习</span>
+                            <i class="fa fa-arrow-right ml-2 card-arrow"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 地理导航卡片 - 学科专属配色 -->
+                <a href="geography/index.html" class="block group section-fade-in" id="geographyCard">
+                    <div class="card-content card-hover">
+                        <div class="icon-bg bg-geography/10 text-geography group-hover:bg-geography group-hover:text-white">
+                            <i class="fa fa-globe text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3">地理小知识</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            探索地球的地貌、气候、资源和人文地理，了解我们生活的这个蓝色星球的奥秘。
+                        </p>
+                        <div class="mt-2 text-geography font-medium flex items-center">
+                            <span>进入学习</span>
+                            <i class="fa fa-arrow-right ml-2 card-arrow"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 生物导航卡片 - 学科专属配色 -->
+                <a href="biology/index.html" class="block group section-fade-in" id="biologyCard">
+                    <div class="card-content card-hover">
+                        <div class="card-badge bg-biology/10 text-biology">推荐</div>
+                        <div class="icon-bg bg-biology/10 text-biology group-hover:bg-biology group-hover:text-white">
+                            <i class="fa fa-leaf text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3">生物小知识</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            探索生命的奥秘，了解生物的结构、功能和进化，感受生命世界的多样性和神奇。
+                        </p>
+                        <div class="mt-2 text-biology font-medium flex items-center">
+                            <span>进入学习</span>
+                            <i class="fa fa-arrow-right ml-2 card-arrow"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 更多学科卡片 - 预留扩展位置 -->
+                <a href="#" class="block group section-fade-in" id="moreCard">
+                    <div class="card-content card-hover border-dashed border-2 border-gray-200 flex flex-col items-center justify-center text-center p-8">
+                        <div class="w-16 h-16 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center mb-5 text-gray-400 group-hover:text-primary group-hover:border-primary transition-all duration-300">
+                            <i class="fa fa-plus text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-3">更多学科</h3>
+                        <p class="text-gray-500 mb-0">
+                            更多精彩学科内容正在建设中，敬请期待...
+                        </p>
+                    </div>
+                </a>
+            </div>
         </div>
-		
-		 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            <!-- 网站导航卡片 -->
-			
-			<a href="physics/index.html" class="block">
-                <div class="bg-white rounded-xl shadow p-6 card-hover border border-gray-100">
-                    <div class="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-book text-secondary text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">物理小知识</h3>
-                    <p class="text-gray-600">小小学习一下物理吧</p>
-                    <div class="mt-4 text-secondary font-medium flex items-center">
-                        <span>进入导航</span>
-                        <i class="fa fa-arrow-right ml-2"></i>
-                    </div>
+        
+        <!-- 学习提示区 - 新增内容增强页面价值 -->
+        <div class="max-w-3xl mx-auto mt-24 bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-card border border-gray-100 section-fade-in" id="tipsSection">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-6 md:mb-0 md:mr-6">
+                    <i class="fa fa-lightbulb-o text-2xl"></i>
                 </div>
-            </a>
-			
-        </div>
-		
-		 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            <!-- 网站导航卡片 -->
-			
-			<a href="histroy/index.html" class="block">
-                <div class="bg-white rounded-xl shadow p-6 card-hover border border-gray-100">
-                    <div class="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-book text-secondary text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">历史小知识</h3>
-                    <p class="text-gray-600">小小学习一下历史吧</p>
-                    <div class="mt-4 text-secondary font-medium flex items-center">
-                        <span>进入导航</span>
-                        <i class="fa fa-arrow-right ml-2"></i>
-                    </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">学习小贴士</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        建议按学科系统学习，每个学科的知识都有其内在逻辑。定期复习和实践，能让你更好地掌握所学知识。
+                    </p>
                 </div>
-            </a>
-			
-        </div>
-		
-		 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            <!-- 网站导航卡片 -->
-			
-			<a href="geography/index.html" class="block">
-                <div class="bg-white rounded-xl shadow p-6 card-hover border border-gray-100">
-                    <div class="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-book text-secondary text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">地理小知识</h3>
-                    <p class="text-gray-600">小小学习一下地理吧</p>
-                    <div class="mt-4 text-secondary font-medium flex items-center">
-                        <span>进入导航</span>
-                        <i class="fa fa-arrow-right ml-2"></i>
-                    </div>
-                </div>
-            </a>
-			
-        </div>
-		
-		 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            <!-- 网站导航卡片 -->
-			
-			<a href="biology/index.html" class="block">
-                <div class="bg-white rounded-xl shadow p-6 card-hover border border-gray-100">
-                    <div class="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
-                        <i class="fa fa-book text-secondary text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">生物小知识</h3>
-                    <p class="text-gray-600">小小学习一下生物吧</p>
-                    <div class="mt-4 text-secondary font-medium flex items-center">
-                        <span>进入导航</span>
-                        <i class="fa fa-arrow-right ml-2"></i>
-                    </div>
-                </div>
-            </a>
-			
+            </div>
         </div>
     </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-gray-800 text-gray-300 py-8 mt-16">
-        <div class="container mx-auto px-4 text-center">
-            <p>© 2025 Candy导航 - 随心导航</p>
-           
+    <!-- 页脚 - 增强信息和视觉效果 -->
+    <footer class="bg-gray-800 text-gray-300 py-12 mt-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-8 md:mb-0">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                            <i class="fa fa-compass text-white text-sm"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-white">Candy导航</h2>
+                    </div>
+                    <p class="text-gray-400 max-w-md">
+                        专注于提供优质的学科知识导航服务，助力你的学习之路更加顺畅。
+                    </p>
+                </div>
+                
+                <div class="flex flex-col items-center md:items-end">
+                    <div class="flex space-x-4 mb-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 hover:bg-primary hover:text-white transition-all duration-300">
+                            <i class="fa fa-question-circle"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 hover:bg-secondary hover:text-white transition-all duration-300">
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        © 2025 Candy导航 - 随心导航，快乐学习
+                    </p>
+                </div>
+            </div>
+            
+            <!-- 分隔线 -->
+            <div class="border-t border-gray-700 mt-10 pt-6 text-center text-gray-400 text-sm">
+                <p>本网站仅供学习交流使用，所有内容版权归原作者所有</p>
+            </div>
         </div>
     </footer>
 
     <script>
-        // 简单的交互效果脚本
         document.addEventListener('DOMContentLoaded', () => {
-            // 
+            // 移动端菜单切换
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                const icon = mobileMenuBtn.querySelector('i');
+                if (mobileMenu.classList.contains('hidden')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                }
+            });
+            
+            // 滚动时头部导航效果
+            window.addEventListener('scroll', () => {
+                const header = document.querySelector('header');
+                if (window.scrollY > 50) {
+                    header.classList.add('shadow-md');
+                    header.classList.remove('shadow-sm');
+                } else {
+                    header.classList.remove('shadow-md');
+                    header.classList.add('shadow-sm');
+                }
+            });
+            
+            // 元素渐入动画
+            const fadeElements = document.querySelectorAll('.section-fade-in');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            fadeElements.forEach(element => {
+                observer.observe(element);
+            });
+            
+            // 初始化第一个元素显示
+            if (fadeElements.length > 0) {
+                fadeElements[0].style.opacity = '1';
+                fadeElements[0].style.transform = 'translateY(0)';
+            }
         });
     </script>
 </body>

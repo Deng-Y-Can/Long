@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>初中地理学习平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    // Tailwind配置
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            neutral: '#F5F7FA',
+            dark: '#1D2129',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+      }
+      .importance-badge {
+        @apply px-2 py-1 rounded-full text-xs font-medium;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-dark">
+  <!-- 顶部导航栏 -->
+  <header class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-globe text-primary text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold text-primary">初中地理学习平台</h1>
+      </div>
+      
+      <!-- 搜索框 -->
+      <div class="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2 flex-1 max-w-md mx-8">
+        <i class="fa fa-search text-gray-400 mr-2"></i>
+        <input type="text" id="search-input" placeholder="搜索地理知识点..." 
+               class="bg-transparent w-full outline-none text-sm">
+      </div>
+      
+      <!-- 导航菜单 -->
+      <nav class="hidden md:block">
+        <ul class="flex space-x-6">
+          <li><a href="#" class="text-gray-700 hover:text-primary transition-colors font-medium">首页</a></li>
+          <li><a href="#natural-geography" class="text-gray-700 hover:text-primary transition-colors font-medium">自然地理</a></li>
+          <li><a href="#human-geography" class="text-gray-700 hover:text-primary transition-colors font-medium">人文地理</a></li>
+          <li><a href="#regional-geography" class="text-gray-700 hover:text-primary transition-colors font-medium">区域地理</a></li>
+        </ul>
+      </nav>
+      
+      <!-- 移动端菜单按钮 -->
+      <button id="menu-toggle" class="md:hidden text-gray-700 focus:outline-none">
+        <i class="fa fa-bars text-xl"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端搜索框 -->
+    <div class="md:hidden px-4 pb-3">
+      <div class="flex items-center bg-gray-100 rounded-full px-4 py-2">
+        <i class="fa fa-search text-gray-400 mr-2"></i>
+        <input type="text" id="mobile-search-input" placeholder="搜索地理知识点..." 
+               class="bg-transparent w-full outline-none text-sm">
+      </div>
+    </div>
+    
+    <!-- 移动端菜单 -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+      <ul class="px-4 py-2">
+        <li><a href="#" class="block py-2 text-gray-700 hover:text-primary">首页</a></li>
+        <li><a href="#natural-geography" class="block py-2 text-gray-700 hover:text-primary">自然地理</a></li>
+        <li><a href="#human-geography" class="block py-2 text-gray-700 hover:text-primary">人文地理</a></li>
+        <li><a href="#regional-geography" class="block py-2 text-gray-700 hover:text-primary">区域地理</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- 英雄区域 -->
+  <section class="bg-gradient-to-r from-primary to-accent text-white py-12 md:py-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl">
+        <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold leading-tight text-shadow mb-4">
+          探索地球奥秘，<br>掌握地理知识
+        </h2>
+        <p class="text-lg md:text-xl opacity-90 mb-8">
+          全面系统的初中地理知识点，助你轻松学习，掌握核心概念
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="#natural-geography" class="bg-white text-primary px-6 py-3 rounded-full font-medium hover:bg-opacity-90 transition-all shadow-lg">
+            开始学习 <i class="fa fa-arrow-right ml-2"></i>
+          </a>
+          <a href="#" class="bg-transparent border-2 border-white px-6 py-3 rounded-full font-medium hover:bg-white hover:bg-opacity-10 transition-all">
+            学习路径
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 主要内容区域 -->
+  <main class="container mx-auto px-4 py-12">
+    <!-- 知识分类统计 -->
+    <section class="mb-16">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl shadow-sm p-6 text-center card-hover">
+          <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa fa-map text-primary text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-lg mb-1">地球与地图</h3>
+          <p class="text-gray-500" id="count-earth-and-map">0 个概念</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-6 text-center card-hover">
+          <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa fa-cloud text-secondary text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-lg mb-1">大气与天气</h3>
+          <p class="text-gray-500" id="count-atmosphere">0 个概念</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-6 text-center card-hover">
+          <div class="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa fa-tint text-accent text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-lg mb-1">水圈</h3>
+          <p class="text-gray-500" id="count-hydrosphere">0 个概念</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-6 text-center card-hover">
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa fa-users text-green-600 text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-lg mb-1">人口与聚落</h3>
+          <p class="text-gray-500" id="count-population">0 个概念</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 自然地理部分 -->
+    <section id="natural-geography" class="mb-16">
+      <div class="flex items-center mb-8">
+        <div class="w-10 h-1 bg-primary mr-3"></div>
+        <h2 class="text-2xl md:text-3xl font-bold">自然地理</h2>
+      </div>
+      
+      <!-- 地球与地图 -->
+      <div class="mb-12">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <div class="bg-primary/5 px-6 py-4 border-l-4 border-primary">
+            <h3 class="text-xl font-bold flex items-center">
+              <i class="fa fa-map-o mr-3 text-primary"></i>
+              地球与地图
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="filter-btn active px-4 py-2 bg-primary text-white rounded-full text-sm" data-category="earth_and_map" data-importance="all">全部概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="earth_and_map" data-importance="核心概念">核心概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="earth_and_map" data-importance="重要概念">重要概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="earth_and_map" data-importance="了解概念">了解概念</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="earth-and-map-container">
+              <!-- 地球与地图的知识点将通过JS动态加载 -->
+              <div class="text-center text-gray-500 py-12">
+                <i class="fa fa-circle-o-notch fa-spin text-2xl mb-4"></i>
+                <p>加载中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 大气与天气 -->
+      <div class="mb-12">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <div class="bg-secondary/5 px-6 py-4 border-l-4 border-secondary">
+            <h3 class="text-xl font-bold flex items-center">
+              <i class="fa fa-cloud mr-3 text-secondary"></i>
+              大气与天气
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="filter-btn active px-4 py-2 bg-secondary text-white rounded-full text-sm" data-category="atmosphere_and_weather" data-importance="all">全部概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="atmosphere_and_weather" data-importance="核心概念">核心概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="atmosphere_and_weather" data-importance="重要概念">重要概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="atmosphere_and_weather" data-importance="了解概念">了解概念</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="atmosphere-container">
+              <!-- 大气与天气的知识点将通过JS动态加载 -->
+              <div class="text-center text-gray-500 py-12">
+                <i class="fa fa-circle-o-notch fa-spin text-2xl mb-4"></i>
+                <p>加载中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 水圈 -->
+      <div class="mb-12">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <div class="bg-accent/5 px-6 py-4 border-l-4 border-accent">
+            <h3 class="text-xl font-bold flex items-center">
+              <i class="fa fa-tint mr-3 text-accent"></i>
+              水圈
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="filter-btn active px-4 py-2 bg-accent text-white rounded-full text-sm" data-category="hydrosphere" data-importance="all">全部概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="hydrosphere" data-importance="核心概念">核心概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="hydrosphere" data-importance="重要概念">重要概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="hydrosphere" data-importance="了解概念">了解概念</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="hydrosphere-container">
+              <!-- 水圈的知识点将通过JS动态加载 -->
+              <div class="text-center text-gray-500 py-12">
+                <i class="fa fa-circle-o-notch fa-spin text-2xl mb-4"></i>
+                <p>加载中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 岩石圈与地形 -->
+      <div class="mb-12">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <div class="bg-amber-50 px-6 py-4 border-l-4 border-amber-500">
+            <h3 class="text-xl font-bold flex items-center">
+              <i class="fa fa-mountain mr-3 text-amber-500"></i>
+              岩石圈与地形
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="filter-btn active px-4 py-2 bg-amber-500 text-white rounded-full text-sm" data-category="lithosphere_and_landforms" data-importance="all">全部概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="lithosphere_and_landforms" data-importance="核心概念">核心概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="lithosphere_and_landforms" data-importance="重要概念">重要概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="lithosphere_and_landforms" data-importance="了解概念">了解概念</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="lithosphere-container">
+              <!-- 岩石圈与地形的知识点将通过JS动态加载 -->
+              <div class="text-center text-gray-500 py-12">
+                <i class="fa fa-circle-o-notch fa-spin text-2xl mb-4"></i>
+                <p>加载中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 人文地理部分 -->
+    <section id="human-geography" class="mb-16">
+      <div class="flex items-center mb-8">
+        <div class="w-10 h-1 bg-accent mr-3"></div>
+        <h2 class="text-2xl md:text-3xl font-bold">人文地理</h2>
+      </div>
+      
+      <!-- 人口与聚落 -->
+      <div class="mb-12">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <div class="bg-purple-50 px-6 py-4 border-l-4 border-purple-500">
+            <h3 class="text-xl font-bold flex items-center">
+              <i class="fa fa-users mr-3 text-purple-500"></i>
+              人口与聚落
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="filter-btn active px-4 py-2 bg-purple-500 text-white rounded-full text-sm" data-category="population_and_settlement" data-importance="all">全部概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="population_and_settlement" data-importance="核心概念">核心概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="population_and_settlement" data-importance="重要概念">重要概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="population_and_settlement" data-importance="了解概念">了解概念</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="population-container">
+              <!-- 人口与聚落的知识点将通过JS动态加载 -->
+              <div class="text-center text-gray-500 py-12">
+                <i class="fa fa-circle-o-notch fa-spin text-2xl mb-4"></i>
+                <p>加载中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 经济与交通 -->
+      <div class="mb-12">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <div class="bg-blue-50 px-6 py-4 border-l-4 border-blue-500">
+            <h3 class="text-xl font-bold flex items-center">
+              <i class="fa fa-briefcase mr-3 text-blue-500"></i>
+              经济与交通
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="filter-btn active px-4 py-2 bg-blue-500 text-white rounded-full text-sm" data-category="economy_and_transportation" data-importance="all">全部概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="economy_and_transportation" data-importance="核心概念">核心概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="economy_and_transportation" data-importance="重要概念">重要概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="economy_and_transportation" data-importance="了解概念">了解概念</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="economy-container">
+              <!-- 经济与交通的知识点将通过JS动态加载 -->
+              <div class="text-center text-gray-500 py-12">
+                <i class="fa fa-circle-o-notch fa-spin text-2xl mb-4"></i>
+                <p>加载中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 区域地理部分 -->
+    <section id="regional-geography" class="mb-16">
+      <div class="flex items-center mb-8">
+        <div class="w-10 h-1 bg-green-500 mr-3"></div>
+        <h2 class="text-2xl md:text-3xl font-bold">区域地理</h2>
+      </div>
+      
+      <!-- 世界地理 -->
+      <div class="mb-12">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <div class="bg-indigo-50 px-6 py-4 border-l-4 border-indigo-500">
+            <h3 class="text-xl font-bold flex items-center">
+              <i class="fa fa-globe mr-3 text-indigo-500"></i>
+              世界地理
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="filter-btn active px-4 py-2 bg-indigo-500 text-white rounded-full text-sm" data-category="world_geography" data-importance="all">全部概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="world_geography" data-importance="核心概念">核心概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="world_geography" data-importance="重要概念">重要概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="world_geography" data-importance="了解概念">了解概念</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="world-geography-container">
+              <!-- 世界地理的知识点将通过JS动态加载 -->
+              <div class="text-center text-gray-500 py-12">
+                <i class="fa fa-circle-o-notch fa-spin text-2xl mb-4"></i>
+                <p>加载中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 中国地理 -->
+      <div class="mb-12">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <div class="bg-red-50 px-6 py-4 border-l-4 border-red-500">
+            <h3 class="text-xl font-bold flex items-center">
+              <i class="fa fa-flag mr-3 text-red-500"></i>
+              中国地理
+            </h3>
+          </div>
+          <div class="p-6">
+            <div class="flex flex-wrap gap-3 mb-6">
+              <button class="filter-btn active px-4 py-2 bg-red-500 text-white rounded-full text-sm" data-category="china_geography" data-importance="all">全部概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="china_geography" data-importance="核心概念">核心概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="china_geography" data-importance="重要概念">重要概念</button>
+              <button class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm" data-category="china_geography" data-importance="了解概念">了解概念</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="china-geography-container">
+              <!-- 中国地理的知识点将通过JS动态加载 -->
+              <div class="text-center text-gray-500 py-12">
+                <i class="fa fa-circle-o-notch fa-spin text-2xl mb-4"></i>
+                <p>加载中...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 搜索结果区域 -->
+    <section id="search-results" class="hidden mb-16">
+      <div class="flex items-center mb-8">
+        <div class="w-10 h-1 bg-primary mr-3"></div>
+        <h2 class="text-2xl md:text-3xl font-bold">搜索结果</h2>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <p id="search-query" class="mb-6"></p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="search-results-container">
+          <!-- 搜索结果将通过JS动态加载 -->
+        </div>
+        <div id="no-results" class="hidden py-12 text-center">
+          <i class="fa fa-search text-4xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">没有找到匹配的知识点</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <i class="fa fa-globe text-primary text-2xl"></i>
+            <h3 class="text-xl font-bold">初中地理学习平台</h3>
+          </div>
+          <p class="text-gray-400 mb-4">
+            提供全面系统的初中地理知识点，帮助学生轻松掌握地理知识，提升地理素养。
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fa fa-weixin text-xl"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fa fa-weibo text-xl"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fa fa-qq text-xl"></i></a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-4">快速链接</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+            <li><a href="#natural-geography" class="text-gray-400 hover:text-white transition-colors">自然地理</a></li>
+            <li><a href="#human-geography" class="text-gray-400 hover:text-white transition-colors">人文地理</a></li>
+            <li><a href="#regional-geography" class="text-gray-400 hover:text-white transition-colors">区域地理</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">关于我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-4">联系我们</h4>
+          <ul class="space-y-2">
+            <li class="flex items-start">
+              <i class="fa fa-envelope text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">contact@geography-learning.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-phone text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">400-123-4567</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+        <p>&copy; 2023 初中地理学习平台 版权所有</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 知识点详情模态框 -->
+  <div id="term-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b">
+        <div class="flex justify-between items-center">
+          <h3 id="modal-term" class="text-xl font-bold"></h3>
+          <span id="modal-importance" class="importance-badge"></span>
+        </div>
+      </div>
+      <div class="p-6">
+        <p id="modal-definition" class="text-gray-700 leading-relaxed"></p>
+        
+        <!-- 分类信息 -->
+        <div class="mt-4 pt-4 border-t">
+          <h4 class="font-semibold text-gray-800 mb-2">所属分类：</h4>
+          <p id="modal-category" class="text-gray-600 text-sm"></p>
+        </div>
+      </div>
+      <div class="p-6 border-t flex justify-end">
+        <button id="close-modal" class="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors">
+          关闭
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 全局变量存储地理数据
+    let geographyData = null;
+    // 存储所有知识点用于搜索
+    let allTerms = [];
+    
+    // DOM元素
+    const navbar = document.getElementById('navbar');
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const searchInput = document.getElementById('search-input');
+    const mobileSearchInput = document.getElementById('mobile-search-input');
+    const searchResults = document.getElementById('search-results');
+    const searchQuery = document.getElementById('search-query');
+    const searchResultsContainer = document.getElementById('search-results-container');
+    const noResults = document.getElementById('no-results');
+    const termModal = document.getElementById('term-modal');
+    const modalTerm = document.getElementById('modal-term');
+    const modalDefinition = document.getElementById('modal-definition');
+    const modalImportance = document.getElementById('modal-importance');
+    const modalCategory = document.getElementById('modal-category');
+    const closeModal = document.getElementById('close-modal');
+    
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', () => {
+      // 从JSON加载数据
+      loadGeographyData();
+      
+      // 监听滚动事件，改变导航栏样式
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+          navbar.classList.add('py-2', 'shadow');
+          navbar.classList.remove('py-3');
+        } else {
+          navbar.classList.add('py-3');
+          navbar.classList.remove('py-2', 'shadow');
+        }
+      });
+      
+      // 移动端菜单切换
+      menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+      
+      // 搜索功能
+      searchInput.addEventListener('input', handleSearch);
+      mobileSearchInput.addEventListener('input', handleSearch);
+      
+      // 关闭模态框
+      closeModal.addEventListener('click', () => {
+        termModal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      });
+      
+      // 点击模态框外部关闭
+      termModal.addEventListener('click', (e) => {
+        if (e.target === termModal) {
+          termModal.classList.add('hidden');
+          document.body.classList.remove('overflow-hidden');
+        }
+      });
+      
+      // 筛选按钮事件委托
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('filter-btn')) {
+          // 移除同组按钮的active类
+          const category = e.target.dataset.category;
+          document.querySelectorAll(`.filter-btn[data-category="${category}"]`).forEach(btn => {
+            btn.classList.remove('active', 'bg-primary', 'text-white');
+            btn.classList.add('bg-gray-100');
+          });
+          
+          // 给当前点击的按钮添加active类
+          e.target.classList.add('active', 'bg-primary', 'text-white');
+          e.target.classList.remove('bg-gray-100');
+          
+          // 筛选知识点
+          const importance = e.target.dataset.importance;
+          filterTerms(category, importance);
+        }
+      });
+    });
+    
+    // 从JSON加载地理数据
+    async function loadGeographyData() {
+      try {
+        // 这里假设JSON文件路径是'geography.json'，实际使用时请替换为正确路径
+        const response = await fetch('geography.json');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        geographyData = await response.json();
+        console.log('地理数据加载成功:', geographyData);
+        
+        // 处理并显示数据
+        processGeographyData();
+        
+      } catch (error) {
+        console.error('加载地理数据失败:', error);
+        showErrorMessages();
+      }
+    }
+    
+    // 处理地理数据并显示
+    function processGeographyData() {
+      // 提取初中地理数据
+      const middleSchoolGeo = geographyData.middle_school_geography;
+      
+      // 处理自然地理
+      const naturalGeo = middleSchoolGeo.natural_geography;
+      
+      // 地球与地图
+      renderTerms(
+        naturalGeo.earth_and_map?.basic_concepts || [], 
+        'earth-and-map-container', 
+        '地球与地图',
+        'earth_and_map'
+      );
+      
+      // 大气与天气
+      renderTerms(
+        naturalGeo.atmosphere_and_weather?.basic_concepts || [], 
+        'atmosphere-container', 
+        '大气与天气',
+        'atmosphere_and_weather'
+      );
+      
+      // 水圈
+      renderTerms(
+        naturalGeo.hydrosphere?.basic_concepts || [], 
+        'hydrosphere-container', 
+        '水圈',
+        'hydrosphere'
+      );
+      
+      // 岩石圈与地形
+      renderTerms(
+        naturalGeo.lithosphere_and_landforms?.basic_concepts || [], 
+        'lithosphere-container', 
+        '岩石圈与地形',
+        'lithosphere_and_landforms'
+      );
+      
+      // 处理人文地理
+      const humanGeo = middleSchoolGeo.human_geography;
+      
+      // 人口与聚落
+      renderTerms(
+        humanGeo.population_and_settlement?.basic_concepts || [], 
+        'population-container', 
+        '人口与聚落',
+        'population_and_settlement'
+      );
+      
+      // 经济与交通
+      renderTerms(
+        humanGeo.economy_and_transportation?.basic_concepts || [], 
+        'economy-container', 
+        '经济与交通',
+        'economy_and_transportation'
+      );
+      
+      // 处理区域地理
+      const regionalGeo = middleSchoolGeo.regional_geography;
+      
+      // 世界地理
+      renderTerms(
+        regionalGeo.world_geography?.major_countries_and_regions || [], 
+        'world-geography-container', 
+        '世界地理',
+        'world_geography'
+      );
+      
+      // 中国地理
+      renderTerms(
+        regionalGeo.china_geography?.regional_differences || [], 
+        'china-geography-container', 
+        '中国地理',
+        'china_geography'
+      );
+      
+      // 处理高中地理数据（如果需要）
+      const highSchoolGeo = geographyData.high_school_geography;
+      
+      // 例如：处理高中地理中的大气环流
+      if (highSchoolGeo?.natural_geography?.atmospheric_circulation?.basic_concepts) {
+        // 将高中地理概念添加到相应的容器
+        const containerId = 'atmosphere-container';
+        const categoryName = '大气与天气';
+        const categoryKey = 'atmosphere_and_weather';
+        
+        highSchoolGeo.natural_geography.atmospheric_circulation.basic_concepts.forEach(term => {
+          // 添加到现有列表中
+          const termsList = naturalGeo.atmosphere_and_weather?.basic_concepts || [];
+          termsList.push(term);
+        });
+        
+        // 重新渲染以包含高中地理概念
+        renderTerms(
+          naturalGeo.atmosphere_and_weather?.basic_concepts || [], 
+          containerId, 
+          categoryName,
+          categoryKey
+        );
+      }
+      
+      // 更新统计数字
+      updateCounters();
+    }
+    
+    // 渲染知识点到指定容器
+    function renderTerms(terms, containerId, categoryName, categoryKey) {
+      const container = document.getElementById(containerId);
+      
+      // 清空容器
+      container.innerHTML = '';
+      
+      if (!terms || terms.length === 0) {
+        container.innerHTML = `
+          <div class="text-center text-gray-500 py-12 col-span-full">
+            <i class="fa fa-info-circle text-xl mb-2"></i>
+            <p>没有找到相关知识点</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 为每个知识点创建卡片
+      terms.forEach(term => {
+        // 为搜索功能收集所有知识点
+        allTerms.push({
+          ...term,
+          category: categoryName,
+          categoryKey: categoryKey
+        });
+        
+        // 创建知识点卡片
+        const card = document.createElement('div');
+        card.className = 'bg-gray-50 rounded-lg p-5 shadow-sm card-hover cursor-pointer term-card';
+        card.dataset.term = term.term;
+        card.dataset.definition = term.definition;
+        card.dataset.importance = term.importance;
+        card.dataset.category = categoryName;
+        
+        // 根据重要性设置不同的标签颜色
+        let badgeClass = '';
+        switch(term.importance) {
+          case '核心概念':
+            badgeClass = 'bg-red-100 text-red-800';
+            break;
+          case '重要概念':
+            badgeClass = 'bg-yellow-100 text-yellow-800';
+            break;
+          case '了解概念':
+            badgeClass = 'bg-green-100 text-green-800';
+            break;
+          default:
+            badgeClass = 'bg-gray-100 text-gray-800';
+        }
+        
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="font-semibold text-gray-800">${term.term}</h4>
+            <span class="importance-badge ${badgeClass}">${term.importance}</span>
+          </div>
+          <p class="text-gray-600 text-sm line-clamp-2">${term.definition}</p>
+        `;
+        
+        // 添加点击事件，显示详情
+        card.addEventListener('click', () => {
+          showTermDetails(term.term, term.definition, term.importance, categoryName);
+        });
+        
+        container.appendChild(card);
+      });
+    }
+    
+    // 显示知识点详情
+    function showTermDetails(term, definition, importance, category) {
+      modalTerm.textContent = term;
+      modalDefinition.textContent = definition;
+      modalCategory.textContent = category;
+      
+      // 设置重要性标签样式
+      let badgeClass = '';
+      switch(importance) {
+        case '核心概念':
+          badgeClass = 'bg-red-100 text-red-800';
+          break;
+        case '重要概念':
+          badgeClass = 'bg-yellow-100 text-yellow-800';
+          break;
+        case '了解概念':
+          badgeClass = 'bg-green-100 text-green-800';
+          break;
+        default:
+          badgeClass = 'bg-gray-100 text-gray-800';
+      }
+      
+      modalImportance.className = `importance-badge ${badgeClass}`;
+      modalImportance.textContent = importance;
+      
+      // 显示模态框
+      termModal.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
+    
+    // 筛选知识点
+    function filterTerms(categoryKey, importance) {
+      // 获取对应的容器ID
+      const containerMap = {
+        'earth_and_map': 'earth-and-map-container',
+        'atmosphere_and_weather': 'atmosphere-container',
+        'hydrosphere': 'hydrosphere-container',
+        'lithosphere_and_landforms': 'lithosphere-container',
+        'population_and_settlement': 'population-container',
+        'economy_and_transportation': 'economy-container',
+        'world_geography': 'world-geography-container',
+        'china_geography': 'china-geography-container'
+      };
+      
+      const containerId = containerMap[categoryKey];
+      if (!containerId) return;
+      
+      const container = document.getElementById(containerId);
+      const cards = container.querySelectorAll('.term-card');
+      
+      // 获取分类名称
+      const categoryNameMap = {
+        'earth_and_map': '地球与地图',
+        'atmosphere_and_weather': '大气与天气',
+        'hydrosphere': '水圈',
+        'lithosphere_and_landforms': '岩石圈与地形',
+        'population_and_settlement': '人口与聚落',
+        'economy_and_transportation': '经济与交通',
+        'world_geography': '世界地理',
+        'china_geography': '中国地理'
+      };
+      const categoryName = categoryNameMap[categoryKey];
+      
+      // 筛选卡片
+      let visibleCount = 0;
+      cards.forEach(card => {
+        if (importance === 'all' || card.dataset.importance === importance) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+      
+      // 如果没有可见卡片，显示提示
+      if (visibleCount === 0) {
+        container.innerHTML = `
+          <div class="text-center text-gray-500 py-12 col-span-full">
+            <i class="fa fa-search text-xl mb-2"></i>
+            <p>没有找到符合条件的知识点</p>
+          </div>
+        `;
+      }
+    }
+    
+    // 处理搜索
+    function handleSearch(e) {
+      const query = e.target.value.trim().toLowerCase();
+      
+      if (query.length < 1) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+      
+      // 显示搜索结果区域
+      searchResults.classList.remove('hidden');
+      searchQuery.textContent = `搜索关键词: "${query}"`;
+      
+      // 清空搜索结果容器
+      searchResultsContainer.innerHTML = '';
+      
+      // 搜索匹配的知识点
+      const matchedTerms = allTerms.filter(term => 
+        term.term.toLowerCase().includes(query) || 
+        term.definition.toLowerCase().includes(query)
+      );
+      
+      if (matchedTerms.length === 0) {
+        noResults.classList.remove('hidden');
+        return;
+      }
+      
+      noResults.classList.add('hidden');
+      
+      // 显示匹配的结果
+      matchedTerms.forEach(term => {
+        // 根据重要性设置不同的标签颜色
+        let badgeClass = '';
+        switch(term.importance) {
+          case '核心概念':
+            badgeClass = 'bg-red-100 text-red-800';
+            break;
+          case '重要概念':
+            badgeClass = 'bg-yellow-100 text-yellow-800';
+            break;
+          case '了解概念':
+            badgeClass = 'bg-green-100 text-green-800';
+            break;
+          default:
+            badgeClass = 'bg-gray-100 text-gray-800';
+        }
+        
+        const resultCard = document.createElement('div');
+        resultCard.className = 'bg-gray-50 rounded-lg p-5 shadow-sm card-hover cursor-pointer';
+        resultCard.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="font-semibold text-gray-800">${term.term}</h4>
+            <span class="importance-badge ${badgeClass}">${term.importance}</span>
+          </div>
+          <p class="text-gray-600 text-sm line-clamp-2 mb-2">${term.definition}</p>
+          <p class="text-gray-500 text-xs">${term.category}</p>
+        `;
+        
+        // 添加点击事件
+        resultCard.addEventListener('click', () => {
+          showTermDetails(term.term, term.definition, term.importance, term.category);
+        });
+        
+        searchResultsContainer.appendChild(resultCard);
+      });
+    }
+    
+    // 更新各分类的统计数字
+    function updateCounters() {
+      // 计算每个分类的知识点数量
+      const counts = {
+        'earth_and_map': allTerms.filter(term => term.categoryKey === 'earth_and_map').length,
+        'atmosphere_and_weather': allTerms.filter(term => term.categoryKey === 'atmosphere_and_weather').length,
+        'hydrosphere': allTerms.filter(term => term.categoryKey === 'hydrosphere').length,
+        'population_and_settlement': allTerms.filter(term => term.categoryKey === 'population_and_settlement').length
+      };
+      
+      // 更新显示
+      document.getElementById('count-earth-and-map').textContent = `${counts.earth_and_map} 个概念`;
+      document.getElementById('count-atmosphere').textContent = `${counts.atmosphere_and_weather} 个概念`;
+      document.getElementById('count-hydrosphere').textContent = `${counts.hydrosphere} 个概念`;
+      document.getElementById('count-population').textContent = `${counts.population_and_settlement} 个概念`;
+    }
+    
+    // 显示加载错误信息
+    function showErrorMessages() {
+      const containers = [
+        'earth-and-map-container',
+        'atmosphere-container',
+        'hydrosphere-container',
+        'lithosphere-container',
+        'population-container',
+        'economy-container',
+        'world-geography-container',
+        'china-geography-container'
+      ];
+      
+      containers.forEach(containerId => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = `
+          <div class="text-center text-gray-500 py-12 col-span-full">
+            <i class="fa fa-exclamation-triangle text-xl mb-2 text-yellow-500"></i>
+            <p>数据加载失败，请稍后重试</p>
+          </div>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>

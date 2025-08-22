@@ -1,99 +1,294 @@
 ﻿<!DOCTYPE html>
-
 <html>
-
 <head>
-		
-<meta charset="utf-8">
-	
-<title></title>
-	         <style type="text/css">
-			body,p{
-				margin: 0;
-			}
-			body{
-				background-color: #000;
-			}
-			div{
-				position: relative;
-				width: 50px;
-				height: 150px;
-				margin: 100px auto;
-				animation: change 1s infinite alternate;
-			}
-			div p{
-				position: absolute;
-				top: 0;
-				width: 100px;
-				height: 120px;
-				background-color: #f00;
-				border-radius: 50px 50px 0 0;
-				transform: rotate(60deg);
-				animation: changeshadow 1s infinite alternate;
-			}
-			div .right{
-				left: -54px;
-				transform: rotate(-60deg);
-			}
-			@keyframes change{
-				
-				to{
-					transform: scale(1.2);
-				}
-			}
-			@keyframes changeshadow{
-				from{
-					box-shadow: 0 0 10px red;
-				}
-				to{
-					box-shadow: 0 0 180px red;
-				}
-			}
-			h1{
-				font-size: 100px;
-				color: red;
-				text-align: center;
-				text-shadow: 0 15px 50px red;
-			}
-			.dropdown-container {
-    position: absolute; /* 将下拉菜单容器设置为绝对定位 */
-    top: 0; /* 使其距离页面顶部为0，靠上布局 */
-    right: 0; /* 使其距离页面右边为0，靠右布局 */
-    /* 可根据实际需求设置宽度等其他样式 */
-		</style>
-	
-        </head>
-	     
+    <meta charset="utf-8">
+    <title>熊二，加油哦！</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style type="text/css">
+        body, p {
+            margin: 0;
+            transition: background-color 1s ease; /* 背景色过渡动画 */
+        }
+        body {
+            background-color: #000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .logo-container {
+            position: relative;
+            width: 50px;
+            height: 150px;
+            margin: 50px auto;
+            animation: change 1s infinite alternate;
+        }
+        .logo-container p {
+            position: absolute;
+            top: 0;
+            width: 100px;
+            height: 120px;
+            background-color: #f00;
+            border-radius: 50px 50px 0 0;
+            transform: rotate(60deg);
+            animation: changeshadow 1s infinite alternate;
+        }
+        .logo-container .right {
+            left: -54px;
+            transform: rotate(-60deg);
+        }
+        @keyframes change {
+            to {
+                transform: scale(1.2);
+            }
+        }
+        @keyframes changeshadow {
+            from {
+                box-shadow: 0 0 10px red;
+            }
+            to {
+                box-shadow: 0 0 180px red;
+            }
+        }
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            text-align: center;
+            margin: 30px 0;
+            font-weight: bold;
+            transition: all 1s ease;
+            background-size: 200% auto;
+            animation: textShine 3s linear infinite;
+        }
+        @keyframes textShine {
+            to {
+                background-position: 200% center;
+            }
+        }
+        /* 下拉菜单样式优化 */
+        .dropdown-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000; /* 确保下拉框在最上层 */
+        }
+        .custom-select {
+            position: relative;
+            font-family: 'Arial', sans-serif;
+            width: 180px;
+        }
+        .custom-select select {
+            display: none; /* 隐藏原始select */
+        }
+        .select-selected {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            padding: 12px 20px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .select-selected:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .select-selected:after {
+            content: "\f078";
+            font-family: "FontAwesome";
+            transition: transform 0.3s ease;
+        }
+        .select-selected.select-arrow-active:after {
+            transform: rotate(180deg);
+        }
+        .select-items {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 99;
+            margin-top: 5px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .select-hide {
+            display: none;
+        }
+        .select-items div {
+            color: white;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .select-items div:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .select-selected.select-arrow-active ~ .select-items {
+            max-height: 300px;
+        }
+        /* 当前选中项样式 */
+        .same-as-selected {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
 <body>
-        <div class="dropdown-container">
-         
-        <select class="horizontal-dropdown" id="menu1">
-		    <option value="index.html">主页</option>
-			<option value="Page/tetris.html">俄罗斯方块</option>  
-            <option value="Page/calculator.html">计算器</option>
-            <option value="Page/Brithday/Dad/index.html">老爸，生日快乐</option>  
-            <option value="books-navigation.html">阅读</option> 
-            <option value="Page\student\index.html">Candy学习小平台</option> 			
-        </select>      
-       </div>
-		<div>
-			<p class="left"></p>
-			<p class="right"></p>
-		</div>
-		<h1>
-			 熊二，加油哦！
-		</h1>
-		<script>
-		    // 当DOM内容加载完成后执行以下函数
-      document.addEventListener('DOMContentLoaded', function () {
-    // 获取id为menu1的select下拉菜单元素
-    var menu1 = document.getElementById('menu1');
-    // 为其添加change事件监听器，当菜单选项改变时
-    menu1.addEventListener('change', function () {
-        // 将页面的URL设置为所选选项的值，实现页面跳转
-        window.location.href = menu1.value;
-    });
-});
-		</script>
-	</body>
+    <div class="dropdown-container">
+        <div class="custom-select" id="customSelect">
+            <select id="menu1">
+                <option value="index.html">主页</option>
+                <option value="Page/tetris.html">俄罗斯方块</option>  
+                <option value="Page/calculator.html">计算器</option>
+                <option value="Page/Brithday/Dad/index.html">老爸，生日快乐</option>  
+                <option value="books-navigation.html">阅读</option> 
+                <option value="Page\student\index.html">Candy学习小平台</option> 			
+            </select>
+        </div>
+    </div>
+    
+    <div class="logo-container">
+        <p class="left"></p>
+        <p class="right"></p>
+    </div>
+    
+    <h1 id="mainTitle">熊二，加油哦！</h1>
+
+    <script>
+        // 自定义下拉菜单功能 - 修复选择问题
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取自定义选择器和原生select元素
+            const customSelect = document.getElementById("customSelect");
+            const selectElement = customSelect.querySelector("select");
+            
+            // 创建选中项显示元素
+            const selectedDiv = document.createElement("div");
+            selectedDiv.className = "select-selected";
+            selectedDiv.textContent = selectElement.options[selectElement.selectedIndex].text;
+            customSelect.appendChild(selectedDiv);
+            
+            // 创建选项列表容器
+            const itemsDiv = document.createElement("div");
+            itemsDiv.className = "select-items select-hide";
+            customSelect.appendChild(itemsDiv);
+            
+            // 生成所有选项
+            for (let i = 0; i < selectElement.length; i++) {
+                const itemDiv = document.createElement("div");
+                itemDiv.textContent = selectElement.options[i].text;
+                itemDiv.setAttribute("data-value", selectElement.options[i].value);
+                itemDiv.setAttribute("data-index", i);
+                
+                // 为当前选中项添加特殊样式
+                if (i === selectElement.selectedIndex) {
+                    itemDiv.classList.add("same-as-selected");
+                }
+                
+                // 点击选项时的处理函数 - 修复核心问题
+                itemDiv.addEventListener("click", function() {
+                    const value = this.getAttribute("data-value");
+                    const index = this.getAttribute("data-index");
+                    
+                    // 更新原生select的值和选中状态
+                    selectElement.value = value;
+                    selectElement.selectedIndex = index;
+                    
+                    // 更新显示文本
+                    selectedDiv.textContent = this.textContent;
+                    
+                    // 更新选项高亮状态
+                    const allItems = itemsDiv.querySelectorAll("div");
+                    allItems.forEach(item => item.classList.remove("same-as-selected"));
+                    this.classList.add("same-as-selected");
+                    
+                    // 关闭下拉框
+                    selectedDiv.classList.remove("select-arrow-active");
+                    itemsDiv.classList.add("select-hide");
+                    
+                    // 执行页面跳转
+                    window.location.href = value;
+                });
+                
+                itemsDiv.appendChild(itemDiv);
+            }
+            
+            // 点击下拉框显示/隐藏选项
+            selectedDiv.addEventListener("click", function(e) {
+                e.stopPropagation();
+                this.classList.toggle("select-arrow-active");
+                
+                // 手动控制选项框显示/隐藏
+                if (this.classList.contains("select-arrow-active")) {
+                    itemsDiv.classList.remove("select-hide");
+                } else {
+                    itemsDiv.classList.add("select-hide");
+                }
+            });
+            
+            // 点击页面其他地方关闭下拉框
+            document.addEventListener("click", function() {
+                selectedDiv.classList.remove("select-arrow-active");
+                itemsDiv.classList.add("select-hide");
+            });
+            
+            // 阻止事件冒泡，避免点击选项时关闭下拉框
+            itemsDiv.addEventListener("click", function(e) {
+                e.stopPropagation();
+            });
+        });
+
+        // 生成随机颜色的函数
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // 生成随机渐变颜色组合
+        function getRandomGradient() {
+            const color1 = getRandomColor();
+            const color2 = getRandomColor();
+            return `linear-gradient(45deg, ${color1}, ${color2})`;
+        }
+
+        // 更新背景颜色
+        function updateBackgroundColor() {
+            document.body.style.backgroundColor = getRandomColor();
+        }
+
+        // 更新文字渐变色
+        function updateTextGradient() {
+            const title = document.getElementById('mainTitle');
+            const gradient = getRandomGradient();
+            title.style.background = gradient;
+            title.style.webkitBackgroundClip = 'text';
+            title.style.webkitTextFillColor = 'transparent';
+            title.style.backgroundSize = '200% auto';
+        }
+
+        // 初始设置
+        updateBackgroundColor();
+        updateTextGradient();
+
+        // 定时更新（3秒一次）
+        setInterval(() => {
+            updateBackgroundColor();
+            updateTextGradient();
+        }, 3000);
+    </script>
+</body>
 </html>

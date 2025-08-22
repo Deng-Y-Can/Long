@@ -4,63 +4,212 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tetris Game with Scores and Game Over</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+  <title>Fixed Tetris Game</title>
+  <!-- 使用稳定的CDN链接 -->
+  <script src="https://cdn.tailwindcss.com?v=3.3.2"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            dark: '#1E293B',
+            light: '#F8FAFC',
+            tetris: {
+              I: '#00FFFF',
+              J: '#0000FF',
+              L: '#FFA500',
+              O: '#FFFF00',
+              S: '#00FF00',
+              T: '#FF00FF',
+              Z: '#FF0000'
+            }
+          }
+        }
+      }
     }
-
-    body {
-      background-color: #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-  .game-container {
-      width: 400px;
-      height: 800px;
-      margin: 0 auto;
-      position: relative;
-      overflow: hidden;
-    }
-
-  .grid {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      grid-template-rows: repeat(20, 1fr);
-      width: 400px;
-      height: 800px;
-      background-color: #111;
-    }
-
-  .cell {
-      width: 40px;
-      height: 40px;
-      border: 1px solid #333;
-    }
-
-  .tetromino {
-      background-color: #fff;
-    }
-
-  .scoreboard {
-      margin-top: 20px;
-      color: #fff;
-      font-size: 24px;
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .grid-cell {
+        @apply w-full h-full border border-gray-700 transition-all duration-200;
+      }
+      .btn-game {
+        @apply bg-primary hover:bg-primary/80 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50;
+      }
+      .btn-game-secondary {
+        @apply bg-dark hover:bg-dark/80 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500/50;
+      }
+      .pulse-effect {
+        animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      .line-clear {
+        animation: lineClear 0.3s ease-out;
+      }
+      @keyframes lineClear {
+        0% { background-color: rgba(255, 255, 255, 0.3); }
+        100% { background-color: transparent; }
+      }
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
     }
   </style>
+  <!-- 备用字体加载方式 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 
-<body>
-  <button onclick="startGame()">Start Game</button>
-  <div class="game-container" id="gameContainer">
-    <div class="grid" id="grid"></div>
+<body class="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen text-light flex flex-col items-center justify-center p-4">
+  <!-- Game Container -->
+  <div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 items-center lg:items-start justify-center mt-4">
+    
+    <!-- Game Info Panel -->
+    <div class="w-full lg:w-64 flex flex-col gap-4">
+      <div class="bg-dark/80 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-gray-700">
+        <h1 class="text-2xl font-game text-center mb-4 text-primary text-shadow">TETRIS</h1>
+        
+        <div class="space-y-4">
+          <div class="bg-gray-800/80 rounded-lg p-3">
+            <p class="text-sm text-gray-400 mb-1">SCORE</p>
+            <p class="text-xl font-bold text-center" id="score">0</p>
+          </div>
+          
+          <div class="bg-gray-800/80 rounded-lg p-3">
+            <p class="text-sm text-gray-400 mb-1">LEVEL</p>
+            <p class="text-xl font-bold text-center" id="level">1</p>
+          </div>
+          
+          <div class="bg-gray-800/80 rounded-lg p-3">
+            <p class="text-sm text-gray-400 mb-1">HIGH SCORE</p>
+            <p class="text-xl font-bold text-center" id="highScore">0</p>
+          </div>
+        </div>
+        
+        <div class="mt-6 flex flex-col gap-2">
+          <button id="startBtn" class="btn-game w-full">
+            <i class="fa fa-play mr-2"></i>Start
+          </button>
+          <button id="pauseBtn" class="btn-game-secondary w-full" disabled>
+            <i class="fa fa-pause mr-2"></i>Pause
+          </button>
+        </div>
+      </div>
+      
+      <!-- Next Piece Preview -->
+      <div class="bg-dark/80 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-gray-700">
+        <p class="text-center text-sm mb-3">NEXT PIECE</p>
+        <div id="nextPieceContainer" class="w-full aspect-square max-w-[120px] mx-auto grid grid-cols-4 grid-rows-4 gap-0.5">
+          <!-- Next piece will be drawn here -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Game Area -->
+    <div class="relative">
+      <div id="gameOverScreen" class="absolute inset-0 bg-dark/90 backdrop-blur-md rounded-xl flex flex-col items-center justify-center z-10 hidden fade-in">
+        <h2 class="text-3xl font-game text-red-500 mb-4 text-shadow">GAME OVER</h2>
+        <p class="text-xl mb-6">Score: <span id="finalScore">0</span></p>
+        <button id="restartBtn" class="btn-game pulse-effect">
+          <i class="fa fa-refresh mr-2"></i>Play Again
+        </button>
+      </div>
+      
+      <div id="pauseScreen" class="absolute inset-0 bg-dark/80 backdrop-blur-md rounded-xl flex flex-col items-center justify-center z-10 hidden fade-in">
+        <h2 class="text-3xl font-game text-yellow-400 mb-6 text-shadow">PAUSED</h2>
+        <button id="resumeBtn" class="btn-game">
+          <i class="fa fa-play mr-2"></i>Resume
+        </button>
+      </div>
+      
+      <div class="game-container relative bg-dark/80 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700 overflow-hidden">
+        <div id="grid" class="grid grid-cols-10 gap-0.5"></div>
+      </div>
+      
+      <!-- Mobile Controls -->
+      <div class="lg:hidden mt-4 grid grid-cols-3 gap-2 w-full max-w-[300px] mx-auto">
+        <div></div>
+        <button id="mobileRotate" class="btn-game-secondary flex items-center justify-center h-16">
+          <i class="fa fa-rotate-right text-xl"></i>
+        </button>
+        <div></div>
+        
+        <button id="mobileLeft" class="btn-game-secondary flex items-center justify-center h-16">
+          <i class="fa fa-arrow-left text-xl"></i>
+        </button>
+        <button id="mobileDown" class="btn-game-secondary flex items-center justify-center h-16">
+          <i class="fa fa-arrow-down text-xl"></i>
+        </button>
+        <button id="mobileRight" class="btn-game-secondary flex items-center justify-center h-16">
+          <i class="fa fa-arrow-right text-xl"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Controls Info -->
+    <div class="w-full lg:w-64 bg-dark/80 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-gray-700 hidden lg:block">
+      <h3 class="text-center text-lg mb-4">CONTROLS</h3>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="bg-gray-800 px-2 py-1 rounded">← →</span>
+          <span>Move Left/Right</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="bg-gray-800 px-2 py-1 rounded">↓</span>
+          <span>Move Down</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="bg-gray-800 px-2 py-1 rounded">↑</span>
+          <span>Rotate</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="bg-gray-800 px-2 py-1 rounded">Space</span>
+          <span>Hard Drop</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="bg-gray-800 px-2 py-1 rounded">P</span>
+          <span>Pause Game</span>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <h3 class="text-center text-lg mb-4">LEVEL PROGRESS</h3>
+        <div class="w-full bg-gray-800 rounded-full h-2.5">
+          <div id="levelProgress" class="bg-secondary h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+        <p class="text-xs text-center mt-2 text-gray-400">
+          <span id="nextLevel">100</span> points to next level
+        </p>
+      </div>
+    </div>
   </div>
-  <div class="scoreboard" id="scoreboard">Score: 0 | High Score: 0</div>
+  
+  <!-- How to Play (Mobile) -->
+  <div class="mt-6 lg:hidden max-w-md w-full bg-dark/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-gray-700">
+    <h3 class="text-center text-lg mb-3">HOW TO PLAY</h3>
+    <p class="text-sm text-gray-300 mb-2">
+      Move and rotate the falling pieces to create complete lines. Complete lines will clear and earn points. The game ends when pieces stack to the top.
+    </p>
+    <p class="text-sm text-gray-400">
+      Level increases with score, making the game faster and more challenging!
+    </p>
+  </div>
+
   <script>
     // 定义方块类型和颜色
     const tetrominos = {
@@ -75,112 +224,309 @@
 
     // 游戏状态
     let grid = [];
-    for (let row = 0; row < 20; row++) {
-      grid[row] = [];
-      for (let col = 0; col < 10; col++) {
-        grid[row][col] = 0;
-      }
-    }
-
+    const ROWS = 20;
+    const COLS = 10;
+    let cellSize;
+    
     let currentTetromino = null;
     let currentRow = 0;
     let currentCol = 0;
+    let nextTetromino = null;
+    
     let timerId = null;
+    let dropInterval = 1000; // 初始下落速度（毫秒）
+    let lastTime = 0;
+    let dropCounter = 0;
+    
     let score = 0;
+    let level = 1;
+    let linesCleared = 0;
     let highScore = localStorage.getItem('tetrisHighScore') || 0;
+    
     let gameOver = false;
+    let isPaused = false;
 
-    function drawGrid() {
-      const gridElement = document.getElementById('grid');
+    // DOM 元素
+    const gridElement = document.getElementById('grid');
+    const scoreElement = document.getElementById('score');
+    const levelElement = document.getElementById('level');
+    const highScoreElement = document.getElementById('highScore');
+    const nextPieceContainer = document.getElementById('nextPieceContainer');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const pauseScreen = document.getElementById('pauseScreen');
+    const finalScoreElement = document.getElementById('finalScore');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const levelProgress = document.getElementById('levelProgress');
+    const nextLevelElement = document.getElementById('nextLevel');
+    
+    // 移动控制按钮
+    const mobileLeft = document.getElementById('mobileLeft');
+    const mobileRight = document.getElementById('mobileRight');
+    const mobileDown = document.getElementById('mobileDown');
+    const mobileRotate = document.getElementById('mobileRotate');
+
+    // 初始化游戏网格 - 修复潜在的未定义问题
+    function initializeGrid() {
+      grid = new Array(ROWS);
+      for (let row = 0; row < ROWS; row++) {
+        grid[row] = new Array(COLS).fill(0);
+      }
+    }
+
+    // 创建网格单元格
+    function createGridCells() {
       gridElement.innerHTML = '';
-      for (let row = 0; row < 20; row++) {
-        for (let col = 0; col < 10; col++) {
+      gridElement.style.width = `${COLS * cellSize}px`;
+      gridElement.style.height = `${ROWS * cellSize}px`;
+      
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
           const cell = document.createElement('div');
-          cell.classList.add('cell');
-          if (grid[row][col]) {
-            cell.style.backgroundColor = grid[row][col];
-          }
+          cell.classList.add('grid-cell');
+          cell.dataset.row = row;
+          cell.dataset.col = col;
           gridElement.appendChild(cell);
         }
       }
     }
 
+    // 计算单元格大小（响应式）
+    function calculateCellSize() {
+      const maxWidth = window.innerWidth < 768 ? window.innerWidth * 0.9 : 300;
+      cellSize = Math.floor(maxWidth / COLS);
+      return cellSize;
+    }
+
+    // 绘制网格 - 修复了未定义问题
+    function drawGrid() {
+      const cells = document.querySelectorAll('.grid-cell');
+      cells.forEach(cell => {
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+        
+        // 确保grid[row]存在
+        if (grid[row] && grid[row][col]) {
+          cell.style.backgroundColor = grid[row][col];
+          cell.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        } else {
+          cell.style.backgroundColor = 'transparent';
+          cell.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+        }
+      });
+    }
+
+    // 绘制当前方块
     function drawTetromino() {
-      if (currentTetromino &&!gameOver) {
+      if (currentTetromino && !gameOver && !isPaused) {
         for (let row = 0; row < currentTetromino.shape.length; row++) {
           for (let col = 0; col < currentTetromino.shape[row].length; col++) {
             if (currentTetromino.shape[row][col]) {
-              const cellIndex = (currentRow + row) * 10 + currentCol + col;
-              const cell = document.querySelectorAll('.cell')[cellIndex];
-              cell.style.backgroundColor = currentTetromino.color;
+              const actualRow = currentRow + row;
+              const actualCol = currentCol + col;
+              
+              if (actualRow >= 0 && actualRow < ROWS && actualCol >= 0 && actualCol < COLS) {
+                const cellIndex = actualRow * COLS + actualCol;
+                const cell = document.querySelectorAll('.grid-cell')[cellIndex];
+                if (cell) { // 确保单元格存在
+                  cell.style.backgroundColor = currentTetromino.color;
+                  cell.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                }
+              }
             }
           }
         }
       }
     }
 
-    function spawnTetromino() {
-      if (gameOver) return;
-      const keys = Object.keys(tetrominos);
-      const randomKey = keys[Math.floor(Math.random() * keys.length)];
-      currentTetromino = tetrominos[randomKey];
-      currentRow = 0;
-      currentCol = Math.floor(10 / 2 - currentTetromino.shape[0].length / 2);
+    // 绘制下一个方块预览
+    function drawNextPiece() {
+      nextPieceContainer.innerHTML = '';
+      
+      if (!nextTetromino) return;
+      
+      // 创建预览网格
+      const previewSize = 4; // 4x4 预览区域
+      for (let i = 0; i < previewSize * previewSize; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('grid-cell');
+        nextPieceContainer.appendChild(cell);
+      }
+      
+      // 计算居中偏移
+      const offsetX = Math.floor((previewSize - nextTetromino.shape[0].length) / 2);
+      const offsetY = Math.floor((previewSize - nextTetromino.shape.length) / 2);
+      
+      // 绘制下一个方块
+      for (let row = 0; row < nextTetromino.shape.length; row++) {
+        // 确保行存在
+        if (!nextTetromino.shape[row]) continue;
+        
+        for (let col = 0; col < nextTetromino.shape[row].length; col++) {
+          if (nextTetromino.shape[row][col]) {
+            const cellIndex = (row + offsetY) * previewSize + (col + offsetX);
+            const cell = nextPieceContainer.querySelectorAll('div')[cellIndex];
+            if (cell) { // 确保单元格存在
+              cell.style.backgroundColor = nextTetromino.color;
+              cell.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            }
+          }
+        }
+      }
     }
 
-    function moveDown() {
-      if (!checkCollision(0, 1) &&!gameOver) {
-        currentRow++;
-      } else {
-        lockTetromino();
-        checkLines();
-        spawnTetromino();
+    // 生成新方块
+    function spawnTetromino() {
+      if (gameOver) return;
+      
+      // 如果没有下一个方块，先生成一个
+      if (!nextTetromino) {
+        const keys = Object.keys(tetrominos);
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        nextTetromino = JSON.parse(JSON.stringify(tetrominos[randomKey]));
       }
+      
+      // 将下一个方块设为当前方块
+      currentTetromino = nextTetromino;
+      
+      // 生成新的下一个方块
+      const keys = Object.keys(tetrominos);
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      nextTetromino = JSON.parse(JSON.stringify(tetrominos[randomKey]));
+      
+      // 重置当前方块位置
+      currentRow = 0;
+      currentCol = Math.floor(COLS / 2 - currentTetromino.shape[0].length / 2);
+      
+      // 绘制下一个方块预览
+      drawNextPiece();
+      
+      // 检查游戏是否结束（新方块与已有方块重叠）
+      if (checkCollision(0, 0)) {
+        gameOver = true;
+        endGame();
+      }
+    }
+
+    // 移动方块
+    function moveDown(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const deltaTime = timestamp - lastTime;
+      
+      dropCounter += deltaTime;
+      if (dropCounter > dropInterval) {
+        if (!checkCollision(0, 1) && !gameOver && !isPaused) {
+          currentRow++;
+          drawGrid();
+          drawTetromino();
+        } else if (!gameOver && !isPaused) {
+          lockTetromino();
+          const lines = checkLines();
+          updateScore(lines);
+          updateLevel();
+          spawnTetromino();
+          drawGrid();
+          drawTetromino();
+        }
+        dropCounter = 0;
+      }
+      
+      lastTime = timestamp;
+      if (!gameOver) {
+        requestAnimationFrame(moveDown);
+      }
+    }
+
+    // 移动左/右
+    function moveHorizontal(direction) {
+      if (!checkCollision(direction) && !gameOver && !isPaused) {
+        currentCol += direction;
+        drawGrid();
+        drawTetromino();
+      }
+    }
+
+    // 快速下落（硬降落）
+    function hardDrop() {
+      if (gameOver || isPaused) return;
+      
+      let dropDistance = 0;
+      while (!checkCollision(0, dropDistance + 1)) {
+        dropDistance++;
+      }
+      
+      if (dropDistance > 0) {
+        currentRow += dropDistance;
+        score += dropDistance; // 每下落一行加1分
+        updateScoreDisplay();
+        drawGrid();
+        drawTetromino();
+      }
+      
+      lockTetromino();
+      const lines = checkLines();
+      updateScore(lines);
+      updateLevel();
+      spawnTetromino();
       drawGrid();
       drawTetromino();
     }
 
-    function moveLeft() {
-      if (!checkCollision(-1) &&!gameOver) {
-        currentCol--;
-        drawGrid();
-        drawTetromino();
-      }
-    }
-
-    function moveRight() {
-      if (!checkCollision(1) &&!gameOver) {
-        currentCol++;
-        drawGrid();
-        drawTetromino();
-      }
-    }
-
+    // 旋转方块
     function rotateTetromino() {
-      if (!gameOver) {
-        const rotatedShape = [];
-        for (let col = 0; col < currentTetromino.shape[0].length; col++) {
-          const newRow = [];
-          for (let row = currentTetromino.shape.length - 1; row >= 0; row--) {
-            newRow.push(currentTetromino.shape[row][col]);
-          }
-          rotatedShape.push(newRow);
+      if (gameOver || isPaused || !currentTetromino) return;
+      
+      // 保存当前形状
+      const originalShape = JSON.parse(JSON.stringify(currentTetromino.shape));
+      
+      // 旋转逻辑：转置矩阵并反转每一行
+      const rotatedShape = [];
+      for (let col = 0; col < originalShape[0].length; col++) {
+        const newRow = [];
+        for (let row = originalShape.length - 1; row >= 0; row--) {
+          newRow.push(originalShape[row][col]);
         }
-        if (!checkCollision(0, 0, rotatedShape)) {
+        rotatedShape.push(newRow);
+      }
+      
+      // 尝试墙踢（wall kick）：如果旋转后碰撞，尝试微调位置
+      const offsets = [0, -1, 1, -2, 2]; // 可能的偏移量
+      
+      for (const offset of offsets) {
+        if (!checkCollision(offset, 0, rotatedShape)) {
           currentTetromino.shape = rotatedShape;
+          currentCol += offset;
+          drawGrid();
+          drawTetromino();
+          return;
         }
-        drawGrid();
-        drawTetromino();
       }
     }
 
-    function checkCollision(offsetX, offsetY, newShape = currentTetromino.shape) {
-      for (let row = 0; row < newShape.length; row++) {
-        for (let col = 0; col < newShape[row].length; col++) {
-          if (newShape[row][col]) {
+    // 检查碰撞
+    function checkCollision(offsetX, offsetY = 0, shape = currentTetromino?.shape) {
+      // 确保形状存在
+      if (!shape) return false;
+      
+      for (let row = 0; row < shape.length; row++) {
+        // 确保行存在
+        if (!shape[row]) continue;
+        
+        for (let col = 0; col < shape[row].length; col++) {
+          if (shape[row][col]) {
             const newRow = currentRow + row + offsetY;
             const newCol = currentCol + col + offsetX;
-            if (newRow < 0 || newRow >= 20 || newCol < 0 || newCol >= 10 || (grid[newRow] && grid[newRow][newCol])) {
+            
+            // 检查是否超出边界或与已有方块碰撞
+            if (
+              newRow < 0 || 
+              newRow >= ROWS || 
+              newCol < 0 || 
+              newCol >= COLS || 
+              (grid[newRow] && grid[newRow][newCol])
+            ) {
               return true;
             }
           }
@@ -189,21 +535,37 @@
       return false;
     }
 
+    // 锁定方块到网格
     function lockTetromino() {
-      if (!gameOver) {
+      if (!gameOver && !isPaused && currentTetromino) {
         for (let row = 0; row < currentTetromino.shape.length; row++) {
+          // 确保行存在
+          if (!currentTetromino.shape[row]) continue;
+          
           for (let col = 0; col < currentTetromino.shape[row].length; col++) {
             if (currentTetromino.shape[row][col]) {
-              grid[currentRow + row][currentCol + col] = currentTetromino.color;
+              const actualRow = currentRow + row;
+              const actualCol = currentCol + col;
+              
+              if (actualRow >= 0 && actualRow < ROWS && actualCol >= 0 && actualCol < COLS) {
+                grid[actualRow][actualCol] = currentTetromino.color;
+              }
             }
           }
         }
       }
     }
 
+    // 检查并消除完整行
     function checkLines() {
       let linesCleared = 0;
+      const linesToClear = [];
+      
+      // 找出所有完整行
       for (let row = grid.length - 1; row >= 0; row--) {
+        // 确保行存在
+        if (!grid[row]) continue;
+        
         let isFull = true;
         for (let col = 0; col < grid[row].length; col++) {
           if (!grid[row][col]) {
@@ -211,84 +573,244 @@
             break;
           }
         }
+        
         if (isFull) {
-          grid.splice(row, 1);
-          grid.unshift(new Array(10).fill(0));
+          linesToClear.push(row);
           linesCleared++;
-          row++;
         }
       }
-      score += calculateScore(linesCleared);
-      updateScoreboard();
+      
+      // 为要消除的行添加动画效果
+      if (linesToClear.length > 0) {
+        linesToClear.forEach(row => {
+          for (let col = 0; col < COLS; col++) {
+            const cellIndex = row * COLS + col;
+            const cell = document.querySelectorAll('.grid-cell')[cellIndex];
+            if (cell) { // 确保单元格存在
+              cell.classList.add('line-clear');
+              
+              // 移除动画类
+              setTimeout(() => {
+                cell.classList.remove('line-clear');
+              }, 300);
+            }
+          }
+        });
+      }
+      
+      // 移除完整行并在顶部添加新行
+      setTimeout(() => {
+        linesToClear.forEach(row => {
+          grid.splice(row, 1);
+          grid.unshift(new Array(COLS).fill(0));
+        });
+      }, 300);
+      
+      return linesCleared;
+    }
+
+    // 计算分数
+    function calculateScore(lines) {
+      const lineScores = [0, 100, 300, 500, 800]; // 分别对应消除1-4行的分数
+      return lineScores[lines] * level;
+    }
+
+    // 更新分数
+    function updateScore(lines) {
+      if (lines > 0) {
+        const lineScore = calculateScore(lines);
+        score += lineScore;
+        linesCleared += lines;
+        updateScoreDisplay();
+      }
+    }
+
+    // 更新分数显示
+    function updateScoreDisplay() {
+      scoreElement.textContent = score;
+      
+      // 更新最高分
       if (score > highScore) {
         highScore = score;
+        highScoreElement.textContent = highScore;
         localStorage.setItem('tetrisHighScore', highScore);
       }
-      checkGameOver();
     }
 
-    function calculateScore(lines) {
-      switch (lines) {
-        case 1:
-          return 100;
-        case 2:
-          return 300;
-        case 3:
-          return 500;
-        case 4:
-          return 800;
-        default:
-          return 0;
+    // 更新等级
+    function updateLevel() {
+      const newLevel = Math.floor(linesCleared / 10) + 1;
+      
+      if (newLevel !== level) {
+        level = newLevel;
+        levelElement.textContent = level;
+        
+        // 随着等级提高，加快下落速度（最低100ms）
+        dropInterval = Math.max(1000 - (level - 1) * 100, 100);
       }
+      
+      // 更新等级进度
+      const linesForNextLevel = (level * 10);
+      const progress = ((linesCleared % 10) / 10) * 100;
+      levelProgress.style.width = `${progress}%`;
+      nextLevelElement.textContent = (linesForNextLevel - linesCleared) * 10;
     }
 
-    function updateScoreboard() {
-      document.getElementById('scoreboard').textContent = `Score: ${score} | High Score: ${highScore}`;
-    }
-
+    // 开始游戏
     function startGame() {
-      grid = [];
-      for (let row = 0; row < 20; row++) {
-        grid[row] = [];
-        for (let col = 0; col < 10; col++) {
-          grid[row][col] = 0;
-        }
-      }
-      currentTetromino = null;
-      currentRow = 0;
-      currentCol = 0;
+      initializeGrid();
+      calculateCellSize();
+      createGridCells();
+      
       score = 0;
+      level = 1;
+      linesCleared = 0;
       gameOver = false;
-      updateScoreboard();
+      isPaused = false;
+      dropInterval = 1000;
+      
+      // 更新显示
+      scoreElement.textContent = score;
+      levelElement.textContent = level;
+      highScoreElement.textContent = highScore;
+      gameOverScreen.classList.add('hidden');
+      pauseScreen.classList.add('hidden');
+      
+      // 更新按钮状态
+      startBtn.disabled = true;
+      startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      startBtn.classList.remove('hover:scale-105');
+      pauseBtn.disabled = false;
+      
+      // 生成方块
+      nextTetromino = null;
       spawnTetromino();
-      timerId = setInterval(moveDown, 1000);
-      drawGrid();
-      drawTetromino();
+      
+      // 开始游戏循环
+      lastTime = 0;
+      dropCounter = 0;
+      requestAnimationFrame(moveDown);
+      
+      // 更新等级进度
+      updateLevel();
     }
 
-    function checkGameOver() {
-      for (let col = 0; col < 10; col++) {
-        if (grid[0][col]) {
-          gameOver = true;
-          clearInterval(timerId);
-          alert('Game Over!');
-          startGame();
-          break;
+    // 暂停游戏
+    function pauseGame() {
+      if (gameOver) return;
+      
+      isPaused = true;
+      pauseScreen.classList.remove('hidden');
+      pauseBtn.disabled = true;
+    }
+
+    // 继续游戏
+    function resumeGame() {
+      isPaused = false;
+      pauseScreen.classList.add('hidden');
+      pauseBtn.disabled = false;
+      lastTime = 0; // 重置计时器，避免暂停期间积累的时间导致快速下落
+    }
+
+    // 结束游戏
+    function endGame() {
+      gameOver = true;
+      finalScoreElement.textContent = score;
+      gameOverScreen.classList.remove('hidden');
+      
+      // 更新按钮状态
+      startBtn.disabled = false;
+      startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      startBtn.classList.add('hover:scale-105');
+      pauseBtn.disabled = true;
+    }
+
+    // 事件监听 - 使用更安全的事件处理方式
+    function setupEventListeners() {
+      // 按钮事件
+      startBtn.addEventListener('click', startGame);
+      pauseBtn.addEventListener('click', pauseGame);
+      resumeBtn.addEventListener('click', resumeGame);
+      restartBtn.addEventListener('click', startGame);
+      
+      // 移动控制按钮
+      mobileLeft.addEventListener('click', () => moveHorizontal(-1));
+      mobileRight.addEventListener('click', () => moveHorizontal(1));
+      mobileDown.addEventListener('click', () => {
+        if (!checkCollision(0, 1) && !gameOver && !isPaused) {
+          currentRow++;
+          score += 1; // 手动下移加分
+          updateScoreDisplay();
+          drawGrid();
+          drawTetromino();
         }
+      });
+      mobileRotate.addEventListener('click', rotateTetromino);
+      
+      // 键盘控制 - 添加防抖动和事件验证
+      document.addEventListener('keydown', function(event) {
+        // 避免重复处理
+        if (event.repeat) return;
+        
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          if (!checkCollision(0, 1) && !gameOver && !isPaused) {
+            currentRow++;
+            score += 1;
+            updateScoreDisplay();
+            drawGrid();
+            drawTetromino();
+          }
+        } else if (event.key === 'ArrowLeft') {
+          event.preventDefault();
+          moveHorizontal(-1);
+        } else if (event.key === 'ArrowRight') {
+          event.preventDefault();
+          moveHorizontal(1);
+        } else if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          rotateTetromino();
+        } else if (event.key === ' ') { // 空格键硬降落
+          event.preventDefault();
+          hardDrop();
+        } else if (event.key.toLowerCase() === 'p') { // P键暂停
+          event.preventDefault();
+          if (gameOver) return;
+          isPaused ? resumeGame() : pauseGame();
+        }
+      }, { passive: false });
+      
+      // 窗口大小变化时重新计算单元格大小
+      window.addEventListener('resize', () => {
+        if (!gameOver) {
+          calculateCellSize();
+          createGridCells();
+          drawGrid();
+          drawTetromino();
+        }
+      });
+    }
+
+    // 初始化游戏
+    function init() {
+      try {
+        calculateCellSize();
+        createGridCells();
+        setupEventListeners();
+        
+        // 显示保存的最高分
+        highScoreElement.textContent = highScore;
+        
+        // 初始化下一个方块预览区域
+        drawNextPiece();
+      } catch (error) {
+        console.error("Initialization error:", error);
+        alert("Failed to initialize game. Please try again.");
       }
     }
 
-    document.addEventListener('keydown', function(event) {
-      if (event.key === 'ArrowDown') {
-        moveDown();
-      } else if (event.key === 'ArrowLeft') {
-        moveLeft();
-      } else if (event.key === 'ArrowRight') {
-        moveRight();
-      } else if (event.key === 'ArrowUp') {
-        rotateTetromino();
-      }
-    });
+    // 启动游戏
+    window.onload = init;
   </script>
 </body>
 

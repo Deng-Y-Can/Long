@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy小转盘</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 配置 Tailwind 自定义颜色和字体 - 精致浅暖色方案 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#E87722',    // 主色调：温暖橙色
+                        secondary: '#F5A623',  // 辅助色：明亮暖黄
+                        accent: '#D05A00',     // 强调色：深橙色
+                        neutral: '#FFF8F0',    // 中性色：米白色
+                        divider: '#C8A27A',    // 分隔线颜色：暖棕色
+                        panel: '#FFFFFF80',    // 面板背景：半透明白色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Poppins', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px rgba(232, 119, 34, 0.08)',
+                        'warm': '0 6px 25px rgba(245, 166, 35, 0.12)',
+                        'glow': '0 0 15px rgba(245, 166, 35, 0.3)',
+                    }
+                },
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .perspective-1000 {
+                perspective: 1000px;
+            }
+
+            .preserve-3d {
+                transform-style: preserve-3d;
+            }
+
+            .backface-hidden {
+                backface-visibility: hidden;
+            }
+
+            .rotate-y-180 {
+                transform: rotateY(180deg);
+            }
+
+            .wheel-gradient {
+                background: conic-gradient( var(--color-0) var(--angle-0), var(--color-1) var(--angle-0) var(--angle-1), var(--color-2) var(--angle-1) var(--angle-2), var(--color-3) var(--angle-2) var(--angle-3), var(--color-4) var(--angle-3) var(--angle-4), var(--color-5) var(--angle-4) var(--angle-5), var(--color-6) var(--angle-5) var(--angle-6), var(--color-7) var(--angle-6) 360deg );
+            }
+
+            .pointer-bounce {
+                animation: pointerBounce 2s infinite ease-in-out;
+            }
+
+            @keyframes pointerBounce {
+                0%, 100% {
+                    transform: translateY(0);
+                }
+
+                50% {
+                    transform: translateY(-5px);
+                }
+            }
+
+            .shine-effect {
+                position: relative;
+                overflow: hidden;
+            }
+
+                .shine-effect::after {
+                    content: '';
+                    position: absolute;
+                    top: -50%;
+                    left: -50%;
+                    width: 200%;
+                    height: 200%;
+                    background: linear-gradient( to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0) 100% );
+                    transform: rotate(30deg);
+                    animation: shine 7s infinite;
+                }
+
+            @keyframes shine {
+                0% {
+                    transform: translateX(-100%) rotate(30deg);
+                }
+
+                100% {
+                    transform: translateX(100%) rotate(30deg);
+                }
+            }
+
+            .text-shadow {
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            }
+
+            .wheel-divider {
+                position: absolute;
+                top: 0;
+                left: 50%;
+                width: 2px;
+                height: 50%;
+                transform-origin: bottom center;
+                background-color: theme('colors.divider');
+                z-index: 5;
+            }
+
+                .wheel-divider::after {
+                    content: '';
+                    position: absolute;
+                    top: -4px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background-color: theme('colors.divider');
+                }
+
+            .pulse-effect {
+                animation: pulse 3s infinite;
+            }
+
+            @keyframes pulse {
+                0%, 100% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.02);
+                }
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-neutral via-amber-50 to-neutral min-h-screen font-sans text-gray-800">
+    <!-- 页面容器 -->
+    <div class="container mx-auto px-4 py-6 md:py-10 max-w-7xl">
+        <!-- 标题部分 -->
+        <header class="text-center mb-6 md:mb-10">
+            <div class="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-full px-6 py-2.5 shadow-warm mb-4 pulse-effect">
+                <i class="fa fa-refresh text-accent text-2xl"></i>
+                <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+                    精致比例转盘
+                </h1>
+            </div>
+            <p class="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
+                清晰分隔每个选项，按比例随机选择，优雅视觉体验
+            </p>
+        </header>
+
+        <!-- 主要内容区 -->
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
+            <!-- 左侧：转盘设置面板 -->
+            <section class="lg:col-span-1 bg-panel backdrop-blur-sm rounded-2xl shadow-soft p-5 md:p-6 transition-all duration-300 hover:shadow-warm border border-amber-100/80">
+                <h2 class="text-xl font-bold mb-5 flex items-center font-display text-gray-800">
+                    <i class="fa fa-sliders mr-2 text-accent"></i> 选项设置
+                </h2>
+
+                <!-- 方案保存和加载区域 -->
+                <div class="mb-6 p-4 bg-amber-50/80 rounded-xl border border-amber-100/90">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                        <i class="fa fa-save text-primary mr-2"></i> 方案管理
+                    </h3>
+
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="schemeName" placeholder="方案名称" class="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+                        <button id="saveScheme" type="button" class="bg-primary hover:bg-primary/90 text-white px-3 py-2 rounded-md transition-all transform hover:scale-105">
+                            <i class="fa fa-floppy-o"></i>
+                        </button>
+                    </div>
+
+                    <div class="relative">
+                        <select id="loadScheme" class="w-full px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none text-gray-800 transition-all">
+                            <option value="">-- 选择保存的方案 --</option>
+                            <!-- 保存的方案将在这里动态显示 -->
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                            <i class="fa fa-chevron-down text-gray-500 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 mt-3">
+                        <button id="deleteScheme" type="button" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-md transition-colors transform hover:scale-105">
+                            <i class="fa fa-trash-o mr-1"></i> 删除方案
+                        </button>
+                        <button id="clearAllSchemes" type="button" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md transition-colors transform hover:scale-105">
+                            <i class="fa fa-trash mr-1"></i> 清空所有
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 选项设置区域 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                        <i class="fa fa-list-ul text-secondary mr-2"></i> 内容列表
+                        <span class="ml-2 text-sm font-normal text-gray-600">(比例决定概率)</span>
+                    </h3>
+
+                    <!-- 选项列表 -->
+                    <div id="optionList" class="space-y-3 mb-4 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/30">
+                        <!-- 初始选项项 -->
+                        <div class="option-item flex items-center gap-3 p-3 bg-amber-50/80 rounded-xl border border-amber-100/90 transition-all hover:shadow-md">
+                            <input type="text" placeholder="选项内容" value="电影" class="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+                            <input type="number" placeholder="概率" value="1" min="1" max="10" class="w-16 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+                            <button type="button" class="delete-option text-red-500 hover:text-red-600 transition-colors p-1 transform hover:scale-110">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="option-item flex items-center gap-3 p-3 bg-amber-50/80 rounded-xl border border-amber-100/90 transition-all hover:shadow-md">
+                            <input type="text" placeholder="选项内容" value="游戏" class="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+                            <input type="number" placeholder="概率" value="2" min="1" max="10" class="w-16 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+                            <button type="button" class="delete-option text-red-500 hover:text-red-600 transition-colors p-1 transform hover:scale-110">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="option-item flex items-center gap-3 p-3 bg-amber-50/80 rounded-xl border border-amber-100/90 transition-all hover:shadow-md">
+                            <input type="text" placeholder="选项内容" value="看书" class="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+                            <input type="number" placeholder="概率" value="1" min="1" max="10" class="w-16 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+                            <button type="button" class="delete-option text-red-500 hover:text-red-600 transition-colors p-1 transform hover:scale-110">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="option-item flex items-center gap-3 p-3 bg-amber-50/80 rounded-xl border border-amber-100/90 transition-all hover:shadow-md">
+                            <input type="text" placeholder="选项内容" value="运动" class="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+                            <input type="number" placeholder="概率" value="3" min="1" max="10" class="w-16 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+                            <button type="button" class="delete-option text-red-500 hover:text-red-600 transition-colors p-1 transform hover:scale-110">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 添加选项按钮 -->
+                    <button id="addOption" type="button" class="w-full py-2.5 px-4 bg-gradient-to-r from-primary to-secondary hover:opacity-95 text-white rounded-lg transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-warm transform hover:scale-[1.02]">
+                        <i class="fa fa-plus-circle"></i> 添加选项
+                    </button>
+                </div>
+
+                <!-- 功能设置 -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                        <i class="fa fa-cog text-secondary mr-2"></i> 旋转设置
+                    </h3>
+
+                    <!-- 防重复抽取选项 -->
+                    <div class="flex items-center gap-2 p-3 bg-amber-50/80 rounded-lg border border-amber-100/90 transition-all hover:shadow-md">
+                        <input type="checkbox" id="preventDuplicates" class="w-5 h-5 text-primary rounded focus:ring-primary/50">
+                        <label for="preventDuplicates" class="cursor-pointer text-gray-700">不重复选择已抽选项</label>
+                    </div>
+
+                    <!-- 旋转强度设置 -->
+                    <div class="p-3 bg-amber-50/80 rounded-lg border border-amber-100/90 transition-all hover:shadow-md">
+                        <label for="spinIntensity" class="block text-sm font-medium text-gray-700 mb-1">旋转强度</label>
+                        <input type="range" id="spinIntensity" min="3" max="10" value="7" class="w-full h-2 bg-amber-100 rounded-lg appearance-none cursor-pointer accent-primary">
+                        <div class="flex justify-between text-xs text-gray-600 mt-1">
+                            <span>轻柔</span>
+                            <span id="intensityValue">中等</span>
+                            <span>强劲</span>
+                        </div>
+                    </div>
+
+                    <!-- 应用设置按钮 -->
+                    <button id="applySettings" type="button" class="w-full py-3 bg-gradient-to-r from-primary to-accent text-white rounded-xl transition-all duration-300 transform hover:scale-[1.02] font-medium shadow-warm hover:shadow-glow font-display text-lg">
+                        应用设置
+                    </button>
+                </div>
+            </section>
+
+            <!-- 中间：转盘区域 - 完善分隔线 -->
+            <section class="lg:col-span-1 flex flex-col items-center">
+                <!-- 立体转盘容器 -->
+                <div class="relative w-full max-w-md aspect-square mx-auto perspective-1000">
+                    <!-- 转盘底座阴影 -->
+                    <div class="absolute inset-[10%] rounded-full bg-gradient-to-br from-amber-300/30 to-transparent blur-xl transform rotate-3 scale-105 -z-10"></div>
+
+                    <!-- 转盘容器 - 3D效果 -->
+                    <div class="absolute inset-0 flex items-center justify-center preserve-3d">
+                        <!-- 转盘背面（仅视觉效果） -->
+                        <div class="absolute w-[85%] h-[85%] rounded-full bg-amber-100 shadow-inner backface-hidden rotate-y-180"></div>
+
+                        <!-- 转盘正面 - 带完善的分隔线 -->
+                        <div id="wheel" class="absolute w-[85%] h-[85%] rounded-full shadow-warm backface-hidden shine-effect overflow-hidden cursor-pointer transition-all hover:shadow-glow">
+                            <!-- 分隔线容器 -->
+                            <div id="wheelDividers" class="absolute inset-0 rounded-full"></div>
+
+                            <!-- 转盘中心装饰 -->
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-16 h-16 rounded-full bg-white border-4 border-amber-200 shadow-lg flex items-center justify-center z-10">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center text-white font-bold transform transition-transform hover:scale-110">
+                                        <i class="fa fa-play"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 转盘上的文本标签将通过JS动态生成 -->
+                            <div id="wheelLabels" class="absolute inset-0 rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <!-- 固定指针 - 精致设计 -->
+                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/4 z-20 pointer-bounce">
+                        <div class="relative">
+                            <!-- 指针阴影 -->
+                            <div class="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-full blur-md opacity-70"></div>
+                            <!-- 指针主体 -->
+                            <div class="relative w-8 h-16 bg-gradient-to-b from-primary to-accent rounded-t-full flex items-start justify-center p-1 shadow-warm">
+                                <div class="w-3 h-3 bg-white rounded-full z-10"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 旋转按钮 -->
+                <button id="spinButton" class="mt-10 py-3 px-8 bg-gradient-to-r from-primary to-accent text-white rounded-full shadow-warm hover:shadow-glow transition-all duration-300 transform hover:scale-105 font-bold text-lg font-display">
+                    <i class="fa fa-refresh mr-2"></i> 开始旋转
+                </button>
+
+                <!-- 结果显示 - 带有弹出动画 -->
+                <div id="resultDisplay" class="mt-6 text-center opacity-0 scale-90 transition-all duration-500">
+                    <div class="p-4 bg-white/90 backdrop-blur-sm rounded-xl shadow-warm border border-amber-100 inline-block transform transition-all hover:scale-105">
+                        <h3 class="text-xl font-bold text-accent mb-1 font-display">选中结果</h3>
+                        <p id="resultText" class="text-lg font-medium text-gray-800">推荐活动：电影</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 右侧：选择记录和概率说明 -->
+            <section class="lg:col-span-1 bg-panel backdrop-blur-sm rounded-2xl shadow-soft p-5 md:p-6 transition-all duration-300 hover:shadow-warm border border-amber-100/80">
+                <h2 class="text-xl font-bold mb-5 flex items-center font-display text-gray-800">
+                    <i class="fa fa-history mr-2 text-accent"></i> 选择记录
+                </h2>
+
+                <!-- 清空记录按钮 -->
+                <button id="clearHistory" type="button" class="text-sm text-gray-600 hover:text-red-600 transition-colors mb-4 flex items-center transform hover:scale-105">
+                    <i class="fa fa-trash-o mr-1"></i> 清空记录
+                </button>
+
+                <!-- 记录列表 -->
+                <div id="historyList" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-primary/30">
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fa fa-clipboard-list text-4xl mb-2 text-amber-200"></i>
+                        <p>暂无选择记录</p>
+                    </div>
+                </div>
+
+                <!-- 概率说明 -->
+                <div class="mt-6 p-4 bg-amber-50/80 rounded-xl border border-amber-100/90 transition-all hover:shadow-md">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                        <i class="fa fa-pie-chart text-secondary mr-2"></i> 概率分布
+                    </h3>
+                    <div id="probabilityDistribution" class="space-y-2 text-sm">
+                        <!-- 概率分布将通过JS动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 已选选项 -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800 flex items-center">
+                        <i class="fa fa-check-square-o text-secondary mr-2"></i> 已选选项
+                    </h3>
+                    <div id="selectedOptions" class="flex flex-wrap gap-2">
+                        <!-- 已选选项将通过JS动态生成 -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="mt-10 text-center text-gray-600 text-sm py-4">
+            <p>🎡 精致分隔线设计 · 按比例随机选择 🎡</p>
+        </footer>
+    </div>
+
+    <!-- 提示框 -->
+    <div id="toast" class="fixed top-4 right-4 bg-white/95 backdrop-blur-sm text-gray-800 px-4 py-2.5 rounded-lg shadow-warm transform translate-x-full transition-transform duration-300 flex items-center gap-2 z-50 border-l-4 border-primary">
+        <i class="fa fa-info-circle text-primary"></i>
+        <span id="toastMessage">提示信息</span>
+    </div>
+
+    <script>
+        // 生成精致浅暖色方案
+        function generateWarmColors(count) {
+            const warmColors = [
+                '#FFE0B2', // 浅橙色
+                '#FFCC80', // 暖橙色
+                '#FFEFD5', // 浅米色
+                '#FFF3E0', // 极浅橙色
+                '#FFD54F', // 金黄色
+                '#FFCCBC', // 浅红棕色
+                '#FFE0B2', // 浅橙黄色
+                '#FFB74D'  // 中橙色
+            ];
+
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                colors.push(warmColors[i % warmColors.length]);
+            }
+            return colors;
+        }
+
+        // 生成高亮颜色
+        function getHighlightColor(color) {
+            const highlightMap = {
+                '#FFE0B2': '#FFCC80',
+                '#FFCC80': '#FFB74D',
+                '#FFEFD5': '#FFE0B2',
+                '#FFF3E0': '#FFE0B2',
+                '#FFD54F': '#FFC107',
+                '#FFCCBC': '#FFB74D',
+                '#FFB74D': '#FF9800'
+            };
+
+            return highlightMap[color] || color;
+        }
+
+        // 全局变量
+        let options = [];          // 选项列表
+        let selectedOptions = [];  // 已选择的选项
+        let isSpinning = false;    // 转盘是否正在旋转
+        let spinIntensity = 7;     // 旋转强度
+        let currentRotation = 0;   // 当前旋转角度
+        let colors = [];           // 颜色方案
+        const SCHEME_STORAGE_KEY = 'finalSpinningWheelSchemes'; // 存储方案的localStorage键名
+
+        // DOM元素
+        const wheel = document.getElementById('wheel');
+        const wheelLabels = document.getElementById('wheelLabels');
+        const wheelDividers = document.getElementById('wheelDividers');
+        const spinButton = document.getElementById('spinButton');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const resultText = document.getElementById('resultText');
+        const optionList = document.getElementById('optionList');
+        const addOptionButton = document.getElementById('addOption');
+        const applySettingsButton = document.getElementById('applySettings');
+        const preventDuplicatesCheckbox = document.getElementById('preventDuplicates');
+        const spinIntensitySlider = document.getElementById('spinIntensity');
+        const intensityValueDisplay = document.getElementById('intensityValue');
+        const historyList = document.getElementById('historyList');
+        const selectedOptionsContainer = document.getElementById('selectedOptions');
+        const clearHistoryButton = document.getElementById('clearHistory');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const probabilityDistribution = document.getElementById('probabilityDistribution');
+        // 方案管理元素
+        const schemeNameInput = document.getElementById('schemeName');
+        const saveSchemeButton = document.getElementById('saveScheme');
+        const loadSchemeSelect = document.getElementById('loadScheme');
+        const deleteSchemeButton = document.getElementById('deleteScheme');
+        const clearAllSchemesButton = document.getElementById('clearAllSchemes');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 加载初始选项
+            loadInitialOptions();
+            // 应用设置（确保分隔线正确显示）
+            applySettings();
+            // 加载保存的方案
+            loadSavedSchemes();
+
+            // 事件监听
+            spinButton.addEventListener('click', spinWheel);
+            wheel.addEventListener('click', spinWheel); // 点击转盘也可以旋转
+            addOptionButton.addEventListener('click', addOptionField);
+            applySettingsButton.addEventListener('click', applySettings);
+            spinIntensitySlider.addEventListener('input', updateIntensityDisplay);
+            clearHistoryButton.addEventListener('click', clearHistory);
+
+            // 方案管理事件
+            saveSchemeButton.addEventListener('click', saveCurrentScheme);
+            loadSchemeSelect.addEventListener('change', loadSelectedScheme);
+            deleteSchemeButton.addEventListener('click', deleteSelectedScheme);
+            clearAllSchemesButton.addEventListener('click', clearAllSchemes);
+
+            // 为初始选项项添加删除事件
+            document.querySelectorAll('.delete-option').forEach(button => {
+                button.addEventListener('click', function () {
+                    if (document.querySelectorAll('.option-item').length > 2) {
+                        this.closest('.option-item').remove();
+                    } else {
+                        showToast('至少保留2个选项');
+                    }
+                });
+            });
+        });
+
+        // 加载初始选项
+        function loadInitialOptions() {
+            const optionItems = document.querySelectorAll('.option-item');
+            options = Array.from(optionItems).map((item, index) => {
+                const nameInput = item.querySelector('input[type="text"]');
+                const ratioInput = item.querySelector('input[type="number"]');
+                return {
+                    name: nameInput.value,
+                    ratio: parseInt(ratioInput.value)
+                };
+            });
+        }
+
+        // 添加选项输入框
+        function addOptionField() {
+            const newOptionItem = document.createElement('div');
+            newOptionItem.className = 'option-item flex items-center gap-3 p-3 bg-amber-50/80 rounded-xl border border-amber-100/90 transition-all hover:shadow-md';
+            newOptionItem.innerHTML = `
+            <input type="text" placeholder="选项内容" class="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+            <input type="number" placeholder="概率" value="1" min="1" max="10" class="w-16 px-3 py-2 bg-white border border-amber-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-800 transition-all">
+            <button type="button" class="delete-option text-red-500 hover:text-red-600 transition-colors p-1 transform hover:scale-110">
+              <i class="fa fa-trash"></i>
+            </button>
+          `;
+
+            // 添加删除事件
+            newOptionItem.querySelector('.delete-option').addEventListener('click', function () {
+                if (document.querySelectorAll('.option-item').length > 2) {
+                    newOptionItem.remove();
+                } else {
+                    showToast('至少保留2个选项');
+                }
+            });
+
+            optionList.appendChild(newOptionItem);
+        }
+
+        // 更新旋转强度显示
+        function updateIntensityDisplay() {
+            spinIntensity = parseInt(spinIntensitySlider.value);
+
+            // 显示对应的强度文本
+            let intensityText = '轻柔';
+            if (spinIntensity > 3 && spinIntensity < 7) intensityText = '适中';
+            if (spinIntensity >= 7 && spinIntensity < 9) intensityText = '中等';
+            if (spinIntensity >= 9) intensityText = '强劲';
+
+            intensityValueDisplay.textContent = intensityText;
+        }
+
+        // 应用设置 - 修复分隔线问题
+        function applySettings() {
+            // 收集选项数据
+            const optionItems = document.querySelectorAll('.option-item');
+
+            if (optionItems.length < 2) {
+                showToast('至少需要2个选项');
+                return;
+            }
+
+            // 生成新的浅暖色方案
+            colors = generateWarmColors(optionItems.length);
+
+            // 更新选项列表
+            options = Array.from(optionItems).map((item, index) => {
+                const nameInput = item.querySelector('input[type="text"]');
+                const ratioInput = item.querySelector('input[type="number"]');
+
+                // 验证输入
+                if (!nameInput.value.trim()) {
+                    nameInput.value = `选项${index + 1}`;
+                }
+
+                if (!ratioInput.value || ratioInput.value < 1) {
+                    ratioInput.value = 1;
+                }
+
+                return {
+                    name: nameInput.value.trim(),
+                    ratio: parseInt(ratioInput.value),
+                    color: colors[index],
+                    highlightColor: getHighlightColor(colors[index])
+                };
+            });
+
+            // 重新绘制转盘和分隔线（确保所有分隔线都显示）
+            renderWheel();
+            // 更新概率分布显示
+            updateProbabilityDistribution();
+
+            showToast('设置已应用');
+        }
+
+        // 渲染转盘 - 确保所有选项间都有分隔线
+        function renderWheel() {
+            // 清空现有标签和分隔线
+            wheelLabels.innerHTML = '';
+            wheelDividers.innerHTML = '';
+
+            // 计算总比例
+            const totalRatio = options.reduce((sum, option) => sum + option.ratio, 0);
+
+            // 计算每个选项的角度和渐变变量
+            let cumulativeAngle = 0;
+            options.forEach((option, index) => {
+                const sliceAngle = (option.ratio / totalRatio) * 360;
+                const endAngle = cumulativeAngle + sliceAngle;
+
+                // 设置CSS变量用于锥形渐变
+                wheel.style.setProperty(`--color-${index}`, option.color);
+                wheel.style.setProperty(`--angle-${index}`, `${cumulativeAngle}deg`);
+
+                // 创建文本标签
+                createWheelLabel(option, cumulativeAngle + sliceAngle / 2, sliceAngle);
+
+                // 为每个选项添加分隔线（包括最后一个选项，确保闭合）
+                createWheelDivider(endAngle);
+
+                cumulativeAngle = endAngle;
+            });
+
+            // 设置最后一个角度为360度
+            wheel.style.setProperty(`--angle-${options.length - 1}`, '360deg');
+
+            // 应用锥形渐变
+            wheel.className = `absolute w-[85%] h-[85%] rounded-full shadow-warm backface-hidden shine-effect overflow-hidden cursor-pointer wheel-gradient transition-all hover:shadow-glow`;
+
+            // 应用当前旋转角度
+            wheel.style.transform = `rotate(${currentRotation}deg)`;
+        }
+
+        // 创建转盘扇区间的分隔线 - 确保所有选项间都有分隔
+        function createWheelDivider(angle) {
+            // 转换角度为0-360度范围
+            const normalizedAngle = angle % 360;
+
+            const divider = document.createElement('div');
+            divider.className = 'wheel-divider';
+
+            // 设置分隔线旋转角度
+            divider.style.transform = `rotate(${normalizedAngle}deg)`;
+
+            wheelDividers.appendChild(divider);
+        }
+
+        // 创建转盘上的文本标签
+        function createWheelLabel(option, angle, sliceAngle) {
+            const label = document.createElement('div');
+
+            // 计算文本位置和旋转角度
+            const radians = angle * Math.PI / 180;
+            const radius = 42; // 距离中心的百分比
+            const x = 50 + radius * Math.cos(radians);
+            const y = 50 + radius * Math.sin(radians);
+
+            // 文本旋转角度（确保文字始终朝上）
+            let textRotation = angle;
+            if (angle > 90 && angle < 270) {
+                textRotation += 180; // 翻转180度
+            }
+
+            // 基础样式
+            label.className = 'absolute whitespace-nowrap transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 font-bold text-shadow';
+            label.style.left = `${x}%`;
+            label.style.top = `${y}%`;
+            label.style.transform = `translate(-50%, -50%) rotate(${textRotation}deg)`;
+            label.style.fontSize = 'clamp(0.85rem, 2.8vw, 1.1rem)';
+            label.style.color = '#5D4037'; // 深棕色文字，确保高识别度
+            label.style.width = `${Math.min(sliceAngle * 0.9, 100)}px`;
+            label.style.textAlign = 'center';
+            label.textContent = option.name;
+
+            wheelLabels.appendChild(label);
+        }
+
+        // 更新概率分布显示
+        function updateProbabilityDistribution() {
+            probabilityDistribution.innerHTML = '';
+
+            const totalRatio = options.reduce((sum, option) => sum + option.ratio, 0);
+
+            options.forEach(option => {
+                const probability = Math.round((option.ratio / totalRatio) * 100);
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center p-2 hover:bg-amber-100/50 rounded transition-colors';
+                item.innerHTML = `
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full" style="background-color: ${option.color}"></div>
+                <span>${option.name}</span>
+              </div>
+              <span class="font-medium">${probability}%</span>
+            `;
+                probabilityDistribution.appendChild(item);
+            });
+        }
+
+        // 旋转转盘 - 按比例计算概率，完全随机
+        function spinWheel() {
+            if (isSpinning) return;
+
+            // 检查是否还有可选的选项
+            let availableOptions = [...options];
+
+            if (preventDuplicatesCheckbox.checked && selectedOptions.length > 0) {
+                availableOptions = options.filter(option =>
+                    !selectedOptions.some(selected => selected.name === option.name)
+                );
+
+                if (availableOptions.length === 0) {
+                    showToast('所有选项已选择完毕！');
+                    return;
+                }
+            }
+
+            isSpinning = true;
+            spinButton.disabled = true;
+            spinButton.classList.add('opacity-70', 'cursor-not-allowed');
+            resultDisplay.classList.remove('opacity-100');
+            resultDisplay.classList.add('opacity-0', 'scale-90');
+
+            // 隐藏所有高亮
+            wheel.style.filter = 'none';
+
+            // 计算总比例（只考虑可用选项）
+            const totalRatio = availableOptions.reduce((sum, option) => sum + option.ratio, 0);
+
+            // 随机选择一个选项 - 按比例概率
+            const random = Math.random() * totalRatio;
+            let cumulativeRatio = 0;
+            let selectedOption = null;
+
+            for (const option of availableOptions) {
+                cumulativeRatio += option.ratio;
+                if (random < cumulativeRatio) {
+                    selectedOption = option;
+                    break;
+                }
+            }
+
+            // 计算选中选项的角度位置
+            const allTotalRatio = options.reduce((sum, option) => sum + option.ratio, 0);
+            let angleOffset = 0;
+            let targetAngle = 0;
+
+            options.forEach(option => {
+                const sliceAngle = (option.ratio / allTotalRatio) * 360;
+
+                if (option.name === selectedOption.name && targetAngle === 0) {
+                    // 目标角度是选中区域的中间位置
+                    targetAngle = 360 - (angleOffset + sliceAngle / 2);
+                }
+
+                angleOffset += sliceAngle;
+            });
+
+            // 生成随机旋转角度偏移（±15度），增加随机性
+            const randomOffset = (Math.random() - 0.5) * 30; // -15到15度之间的随机值
+            targetAngle += randomOffset;
+
+            // 根据旋转强度计算总旋转角度（至少5圈）
+            const baseSpins = 5 + (spinIntensity - 3) * 0.5; // 5-8圈
+            const totalSpinAngle = baseSpins * 360 + targetAngle;
+            const finalRotation = (currentRotation + totalSpinAngle) % 360;
+
+            // 惯性旋转效果 - 使用requestAnimationFrame实现非线性减速
+            const startTime = performance.now();
+            const duration = 2000 + (spinIntensity * 200); // 旋转持续时间基于强度
+            const startRotation = currentRotation;
+
+            // 应用物理减速函数 - 模拟摩擦力导致的减速
+            function animate(currentTime) {
+                if (!isSpinning) return;
+
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // 缓动函数 - 开始快，逐渐减速（模拟惯性）
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const rotation = startRotation + totalSpinAngle * easeProgress;
+
+                // 应用旋转
+                wheel.style.transform = `rotate(${rotation}deg)`;
+
+                // 继续动画或结束
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // 动画结束
+                    currentRotation = finalRotation;
+                    wheel.style.transform = `rotate(${currentRotation}deg)`;
+                    finishSpin(selectedOption);
+                }
+            }
+
+            // 开始动画
+            requestAnimationFrame(animate);
+        }
+
+        // 完成旋转，处理结果
+        function finishSpin(selectedOption) {
+            isSpinning = false;
+            spinButton.disabled = false;
+            spinButton.classList.remove('opacity-70', 'cursor-not-allowed');
+
+            // 高亮显示选中的结果
+            wheel.style.filter = `drop-shadow(0 0 15px ${selectedOption.highlightColor}80)`;
+
+            // 显示结果
+            resultText.textContent = `推荐活动：${selectedOption.name}`;
+            setTimeout(() => {
+                resultDisplay.classList.remove('opacity-0', 'scale-90');
+                resultDisplay.classList.add('opacity-100', 'scale-100');
+            }, 300);
+
+            // 添加到历史记录
+            addToHistory(selectedOption);
+
+            // 如果开启防重复，添加到已选列表
+            if (preventDuplicatesCheckbox.checked) {
+                selectedOptions.push(selectedOption);
+                updateSelectedOptions();
+            }
+        }
+
+        // 添加到历史记录
+        function addToHistory(option) {
+            // 如果是初始状态，清空"暂无记录"提示
+            if (historyList.querySelector('.text-center')) {
+                historyList.innerHTML = '';
+            }
+
+            const historyItem = document.createElement('div');
+            historyItem.className = 'p-3 rounded-lg border flex justify-between items-center transform transition-all duration-300 hover:shadow-md hover:shadow-primary/10 bg-amber-50/50';
+            historyItem.style.borderColor = option.color;
+
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            historyItem.innerHTML = `
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full" style="background-color: ${option.color}"></div>
+              <span class="font-medium text-gray-800">${option.name}</span>
+            </div>
+            <span class="text-xs text-gray-600">${timeString}</span>
+          `;
+
+            // 添加到列表开头
+            historyList.insertBefore(historyItem, historyList.firstChild);
+
+            // 添加进入动画
+            historyItem.style.transform = 'translateX(-10px)';
+            historyItem.style.opacity = '0';
+            setTimeout(() => {
+                historyItem.style.transform = 'translateX(0)';
+                historyItem.style.opacity = '1';
+            }, 50);
+        }
+
+        // 更新已选选项显示
+        function updateSelectedOptions() {
+            selectedOptionsContainer.innerHTML = '';
+
+            // 去重显示
+            const uniqueSelectedOptions = [...new Map(selectedOptions.map(option => [option.name, option])).values()];
+
+            uniqueSelectedOptions.forEach(option => {
+                const badge = document.createElement('span');
+                badge.className = 'px-2 py-1 rounded-full text-xs flex items-center gap-1 font-medium text-gray-800 transition-all hover:scale-110';
+                badge.style.backgroundColor = option.color;
+                badge.innerHTML = `
+              ${option.name}
+              <i class="fa fa-check"></i>
+            `;
+                selectedOptionsContainer.appendChild(badge);
+            });
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            // 添加淡出动画
+            const items = historyList.querySelectorAll('div:not(.text-center)');
+            items.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.transform = 'translateX(10px)';
+                    item.style.opacity = '0';
+                    setTimeout(() => item.remove(), 300);
+                }, index * 50);
+            });
+
+            // 延迟显示空状态
+            setTimeout(() => {
+                if (historyList.children.length === 0 ||
+                    (historyList.children.length === items.length &&
+                        !historyList.querySelector('.text-center'))) {
+                    historyList.innerHTML = `
+                <div class="text-center text-gray-500 py-8">
+                  <i class="fa fa-clipboard-list text-4xl mb-2 text-amber-200"></i>
+                  <p>暂无选择记录</p>
+                </div>
+              `;
+                }
+            }, items.length * 50 + 300);
+
+            // 重置已选选项
+            selectedOptions = [];
+            selectedOptionsContainer.innerHTML = '';
+
+            showToast('记录已清空');
+        }
+
+        // 显示提示信息
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-x-full');
+
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // 方案管理功能
+        function getSavedSchemes() {
+            const schemesJson = localStorage.getItem(SCHEME_STORAGE_KEY);
+            return schemesJson ? JSON.parse(schemesJson) : {};
+        }
+
+        function saveSchemes(schemes) {
+            localStorage.setItem(SCHEME_STORAGE_KEY, JSON.stringify(schemes));
+        }
+
+        function loadSavedSchemes() {
+            const schemes = getSavedSchemes();
+            const schemeNames = Object.keys(schemes);
+
+            while (loadSchemeSelect.options.length > 1) {
+                loadSchemeSelect.remove(1);
+            }
+
+            schemeNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                loadSchemeSelect.appendChild(option);
+            });
+        }
+
+        function saveCurrentScheme() {
+            const schemeName = schemeNameInput.value.trim();
+
+            if (!schemeName) {
+                showToast('请输入方案名称');
+                return;
+            }
+
+            const optionItems = document.querySelectorAll('.option-item');
+
+            if (optionItems.length < 2) {
+                showToast('至少需要2个选项才能保存方案');
+                return;
+            }
+
+            const optionsData = Array.from(optionItems).map(item => {
+                const nameInput = item.querySelector('input[type="text"]');
+                const ratioInput = item.querySelector('input[type="number"]');
+
+                return {
+                    name: nameInput.value.trim() || `选项`,
+                    ratio: parseInt(ratioInput.value) || 1
+                };
+            });
+
+            const currentSettings = {
+                options: optionsData,
+                preventDuplicates: preventDuplicatesCheckbox.checked,
+                spinIntensity: parseInt(spinIntensitySlider.value)
+            };
+
+            const schemes = getSavedSchemes();
+            schemes[schemeName] = currentSettings;
+            saveSchemes(schemes);
+
+            loadSavedSchemes();
+            schemeNameInput.value = '';
+
+            showToast(`方案"${schemeName}"已保存`);
+        }
+
+        function loadSelectedScheme() {
+            const selectedSchemeName = loadSchemeSelect.value;
+
+            if (!selectedSchemeName) {
+                return;
+            }
+
+            const schemes = getSavedSchemes();
+            const schemeData = schemes[selectedSchemeName];
+
+            if (!schemeData) {
+                showToast('方案不存在');
+                return;
+            }
+
+            const optionItems = document.querySelectorAll('.option-item');
+            optionItems.forEach((item, index) => {
+                if (index > 0) {
+                    item.remove();
+                }
+            });
+
+            const firstOptionItem = document.querySelector('.option-item');
+
+            schemeData.options.forEach((option, index) => {
+                let optionItem;
+
+                if (index === 0 && firstOptionItem) {
+                    optionItem = firstOptionItem;
+                } else {
+                    addOptionField();
+                    optionItem = document.querySelectorAll('.option-item')[index];
+                }
+
+                const nameInput = optionItem.querySelector('input[type="text"]');
+                const ratioInput = optionItem.querySelector('input[type="number"]');
+
+                nameInput.value = option.name;
+                ratioInput.value = option.ratio;
+            });
+
+            preventDuplicatesCheckbox.checked = schemeData.preventDuplicates || false;
+            spinIntensitySlider.value = schemeData.spinIntensity || 7;
+
+            updateIntensityDisplay();
+            applySettings();
+
+            showToast(`已加载方案"${selectedSchemeName}"`);
+        }
+
+        function deleteSelectedScheme() {
+            const selectedSchemeName = loadSchemeSelect.value;
+
+            if (!selectedSchemeName) {
+                showToast('请先选择要删除的方案');
+                return;
+            }
+
+            if (confirm(`确定要删除方案"${selectedSchemeName}"吗？`)) {
+                const schemes = getSavedSchemes();
+                delete schemes[selectedSchemeName];
+                saveSchemes(schemes);
+
+                loadSavedSchemes();
+                showToast(`方案"${selectedSchemeName}"已删除`);
+            }
+        }
+
+        function clearAllSchemes() {
+            const schemes = getSavedSchemes();
+
+            if (Object.keys(schemes).length === 0) {
+                showToast('没有保存的方案');
+                return;
+            }
+
+            if (confirm('确定要删除所有保存的方案吗？此操作不可恢复！')) {
+                localStorage.removeItem(SCHEME_STORAGE_KEY);
+                loadSavedSchemes();
+                showToast('所有方案已清空');
+            }
+        }
+    </script>
+</body>
+
+</html>

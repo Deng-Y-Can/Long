@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy多功能时钟</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        cyber: '#00FFCC',
+                        warning: '#F59E0B',
+                    },
+                    fontFamily: {
+                        digital: ['Orbitron', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+
+    <!-- 引入Google字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 基础样式 */
+        body {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* 时钟容器样式 */
+        #clockContainer {
+            min-height: 300px;
+            height: 100%;
+            position: relative;
+        }
+
+        /* 时钟显示控制 */
+        .clock-display {
+            display: none;
+            width: 100%;
+            min-height: 300px;
+            height: 100%;
+        }
+
+            .clock-display.active {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+        /* 模拟时钟样式 */
+        .analog-clock-face {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .clock-marker {
+            position: absolute;
+            background-color: #3B82F6;
+            transform-origin: bottom center;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .hour-marker {
+            width: 3px;
+            height: 12px;
+            top: 15px;
+        }
+
+        .minute-marker {
+            width: 1px;
+            height: 6px;
+            top: 15px;
+            background-color: #94a3b8;
+        }
+
+        .clock-hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            transform: translateX(-50%);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .hour-hand {
+            width: 6px;
+            height: 90px;
+            background-color: #10B981;
+        }
+
+        .minute-hand {
+            width: 4px;
+            height: 120px;
+            background-color: #3B82F6;
+        }
+
+        .second-hand {
+            width: 2px;
+            height: 130px;
+            background-color: #ef4444;
+        }
+
+        .clock-center {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #8B5CF6;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        /* 数字时钟样式 */
+        .digital-clock {
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .time-display {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            margin-bottom: 10px;
+        }
+
+        .date-display {
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            color: #94a3b8;
+        }
+
+        /* 二进制时钟样式 */
+        .binary-clock {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .binary-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .binary-column {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .binary-bit {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background-color: #334155;
+            transition: background-color 0.3s;
+        }
+
+            .binary-bit.active {
+                background-color: #8B5CF6;
+            }
+
+        .binary-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+
+        /* 秒表样式 */
+        .stopwatch {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .stopwatch-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 6vw, 3rem);
+            margin: 15px 0;
+            transition: color 0.2s;
+        }
+
+        .stopwatch-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .laps-container {
+            max-height: 120px;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .lap-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 0.875rem;
+            border-bottom: 1px solid #334155;
+        }
+
+            .lap-item.best {
+                color: #10B981;
+            }
+
+            .lap-item.worst {
+                color: #ef4444;
+            }
+
+        /* 计时器样式 */
+        .timer {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .timer-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2rem, 6vw, 3rem);
+            margin: 15px 0;
+        }
+
+        .timer-inputs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .timer-input {
+            width: 60px;
+            padding: 8px;
+            text-align: center;
+            background-color: #334155;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* 赛博时钟样式 */
+        .cyber-clock {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(13, 27, 42, 0.9);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+            border: 1px solid rgba(0, 255, 204, 0.5);
+        }
+
+        .cyber-time {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            margin-bottom: 10px;
+            color: #00FFCC;
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.7);
+        }
+
+        .cyber-date {
+            font-size: clamp(1rem, 3vw, 1.25rem);
+            color: rgba(0, 255, 204, 0.8);
+        }
+
+        /* 翻转时钟样式 */
+        .flip-clock {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .flip-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .flip-card {
+            width: 70px;
+            height: 100px;
+            position: relative;
+            perspective: 300px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipping .flip-card-inner {
+            transform: rotateX(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background-color: #334155;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+        }
+
+        .flip-card-back {
+            transform: rotateX(180deg);
+        }
+
+        .flip-separator {
+            font-size: 2rem;
+            margin: 0 5px;
+        }
+
+        /* 世界时钟样式 */
+        .world-clock {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+
+        .timezone-selector {
+            margin: 15px 0;
+            padding: 8px;
+            background-color: #334155;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .world-clock-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .world-clock-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background-color: rgba(51, 65, 85, 0.5);
+            border-radius: 5px;
+            text-align: left;
+        }
+
+        .clock-city {
+            font-weight: 500;
+        }
+
+        .clock-time {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .clock-utc {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* 闹钟样式 */
+        .alarm-clock {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+
+        .alarm-form {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .alarm-input {
+            width: 60px;
+            padding: 8px;
+            text-align: center;
+            background-color: #334155;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .alarm-label {
+            margin: 0 5px;
+        }
+
+        .alarm-list {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: rgba(51, 65, 85, 0.5);
+            border-radius: 5px;
+        }
+
+        .alarm-time {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .alarm-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .alarm-toggle {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+            .alarm-toggle input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+        .alarm-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+            .alarm-slider:before {
+                position: absolute;
+                content: "";
+                height: 16px;
+                width: 16px;
+                left: 2px;
+                bottom: 2px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+
+        input:checked + .alarm-slider {
+            background-color: #10B981;
+        }
+
+            input:checked + .alarm-slider:before {
+                transform: translateX(20px);
+            }
+
+        .alarm-ringing {
+            animation: alarmPulse 1s infinite;
+        }
+
+        @keyframes alarmPulse {
+            0% {
+                background-color: rgba(239, 68, 68, 0.2);
+            }
+
+            50% {
+                background-color: rgba(239, 68, 68, 0.5);
+            }
+
+            100% {
+                background-color: rgba(239, 68, 68, 0.2);
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .blinking-colon {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+
+        /* 背景渐变 */
+        .bg-gradient-dark {
+            background: linear-gradient(135deg, #1E293B, #334155);
+        }
+
+        .bg-gradient-light {
+            background: linear-gradient(135deg, #F8FAFC, #E2E8F0);
+        }
+
+        .bg-gradient-cyber {
+            background: linear-gradient(135deg, #0D1B2A, #1B263B);
+        }
+
+        /* 精度选择器样式 */
+        .precision-selector {
+            margin: 15px 0;
+            padding: 5px;
+            background-color: #334155;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.875rem;
+        }
+
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: #1E293B;
+            color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .notification.show {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+        .notification-icon {
+            font-size: 1.25rem;
+        }
+
+        .notification.warning .notification-icon {
+            color: #F59E0B;
+        }
+
+        .notification.success .notification-icon {
+            color: #10B981;
+        }
+    </style>
+</head>
+<body class="bg-gradient-dark text-light min-h-screen font-sans p-4">
+    <!-- 页面标题 -->
+    <header class="text-center mb-8">
+        <h1 class="text-[clamp(1.5rem,5vw,2.5rem)] font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            多功能时钟应用
+        </h1>
+        <p class="text-gray-400 max-w-md mx-auto">精确、美观的多种时钟显示方式，满足您的各种时间需求</p>
+    </header>
+
+    <!-- 时钟类型选择器 -->
+    <div class="container mx-auto mb-8 overflow-x-auto pb-2">
+        <div class="flex justify-center gap-2 p-3 bg-dark/50 rounded-lg min-w-max">
+            <button class="clock-type-btn active px-4 py-2 rounded bg-primary text-sm" data-clock="analog">
+                <i class="fa fa-clock-o mr-1"></i>模拟时钟
+            </button>
+            <button class="clock-type-btn px-4 py-2 rounded bg-dark/70 hover:bg-primary/80 text-sm transition-colors" data-clock="digital">
+                <i class="fa fa-digital-tachograph mr-1"></i>数字时钟
+            </button>
+            <button class="clock-type-btn px-4 py-2 rounded bg-dark/70 hover:bg-primary/80 text-sm transition-colors" data-clock="binary">
+                <i class="fa fa-code mr-1"></i>二进制时钟
+            </button>
+            <button class="clock-type-btn px-4 py-2 rounded bg-dark/70 hover:bg-primary/80 text-sm transition-colors" data-clock="stopwatch">
+                <i class="fa fa-stopwatch mr-1"></i>秒表
+            </button>
+            <button class="clock-type-btn px-4 py-2 rounded bg-dark/70 hover:bg-primary/80 text-sm transition-colors" data-clock="timer">
+                <i class="fa fa-hourglass-start mr-1"></i>计时器
+            </button>
+            <button class="clock-type-btn px-4 py-2 rounded bg-dark/70 hover:bg-primary/80 text-sm transition-colors" data-clock="cyber">
+                <i class="fa fa-microchip mr-1"></i>赛博时钟
+            </button>
+            <button class="clock-type-btn px-4 py-2 rounded bg-dark/70 hover:bg-primary/80 text-sm transition-colors" data-clock="flip">
+                <i class="fa fa-exchange mr-1"></i>翻转时钟
+            </button>
+            <button class="clock-type-btn px-4 py-2 rounded bg-dark/70 hover:bg-primary/80 text-sm transition-colors" data-clock="world">
+                <i class="fa fa-globe mr-1"></i>世界时钟
+            </button>
+            <button class="clock-type-btn px-4 py-2 rounded bg-dark/70 hover:bg-primary/80 text-sm transition-colors" data-clock="alarm">
+                <i class="fa fa-bell mr-1"></i>闹钟
+            </button>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <main class="container mx-auto max-w-5xl">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 左侧：时钟显示区域 -->
+            <div class="lg:col-span-2">
+                <div id="clockContainer" class="w-full">
+                    <!-- 模拟时钟 -->
+                    <div id="analogClock" class="clock-display active">
+                        <div class="analog-clock-face">
+                            <!-- 时钟刻度将通过JS生成 -->
+                            <div class="clock-hand hour-hand" id="analogHourHand"></div>
+                            <div class="clock-hand minute-hand" id="analogMinuteHand"></div>
+                            <div class="clock-hand second-hand" id="analogSecondHand"></div>
+                            <div class="clock-center"></div>
+                        </div>
+                        <div class="text-center mt-4 text-gray-400 text-sm">
+                            <span id="analogDate"></span>
+                        </div>
+                    </div>
+
+                    <!-- 数字时钟 -->
+                    <div id="digitalClock" class="clock-display">
+                        <div class="digital-clock w-full max-w-md">
+                            <div class="time-display">
+                                <span id="digitalHours">00</span>
+                                <span class="blinking-colon">:</span>
+                                <span id="digitalMinutes">00</span>
+                                <span class="blinking-colon hidden sm:inline">:</span>
+                                <span id="digitalSeconds" class="text-primary/80">00</span>
+                            </div>
+                            <div class="date-display" id="digitalDateDisplay">2023年1月1日 星期一</div>
+                        </div>
+                    </div>
+
+                    <!-- 二进制时钟 -->
+                    <div id="binaryClock" class="clock-display">
+                        <div class="binary-clock w-full max-w-md">
+                            <h3 class="text-lg mb-2">二进制时钟</h3>
+                            <div class="binary-grid">
+                                <!-- 小时十位 -->
+                                <div class="binary-column">
+                                    <div class="binary-label">时(十)</div>
+                                    <div class="binary-bit" data-position="h1-0"></div>
+                                </div>
+
+                                <!-- 小时个位 -->
+                                <div class="binary-column">
+                                    <div class="binary-label">时(个)</div>
+                                    <div class="binary-bit" data-position="h2-3"></div>
+                                    <div class="binary-bit" data-position="h2-2"></div>
+                                    <div class="binary-bit" data-position="h2-1"></div>
+                                    <div class="binary-bit" data-position="h2-0"></div>
+                                </div>
+
+                                <!-- 分钟十位 -->
+                                <div class="binary-column">
+                                    <div class="binary-label">分(十)</div>
+                                    <div class="binary-bit" data-position="m1-1"></div>
+                                    <div class="binary-bit" data-position="m1-0"></div>
+                                </div>
+
+                                <!-- 分钟个位 -->
+                                <div class="binary-column">
+                                    <div class="binary-label">分(个)</div>
+                                    <div class="binary-bit" data-position="m2-3"></div>
+                                    <div class="binary-bit" data-position="m2-2"></div>
+                                    <div class="binary-bit" data-position="m2-1"></div>
+                                    <div class="binary-bit" data-position="m2-0"></div>
+                                </div>
+
+                                <!-- 秒钟十位 -->
+                                <div class="binary-column">
+                                    <div class="binary-label">秒(十)</div>
+                                    <div class="binary-bit" data-position="s1-1"></div>
+                                    <div class="binary-bit" data-position="s1-0"></div>
+                                </div>
+
+                                <!-- 秒钟个位 -->
+                                <div class="binary-column">
+                                    <div class="binary-label">秒(个)</div>
+                                    <div class="binary-bit" data-position="s2-3"></div>
+                                    <div class="binary-bit" data-position="s2-2"></div>
+                                    <div class="binary-bit" data-position="s2-1"></div>
+                                    <div class="binary-bit" data-position="s2-0"></div>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-400 mt-3">
+                                <span class="inline-block w-3 h-3 bg-accent rounded-sm mr-1"></span>表示 1
+                                <span class="inline-block w-3 h-3 bg-gray-700 rounded-sm ml-4 mr-1 border border-gray-600"></span>表示 0
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 秒表 -->
+                    <div id="stopwatchClock" class="clock-display">
+                        <div class="stopwatch w-full max-w-md">
+                            <h3 class="text-lg mb-2">秒表</h3>
+                            <div class="stopwatch-display" id="stopwatchDisplay">00:00:00.00</div>
+
+                            <!-- 精度选择器 -->
+                            <div class="mb-3">
+                                <label for="stopwatchPrecision" class="text-sm text-gray-400 mr-2">精度:</label>
+                                <select id="stopwatchPrecision" class="precision-selector">
+                                    <option value="10">百分之一秒</option>
+                                    <option value="100">十分之一秒</option>
+                                    <option value="1000">整秒</option>
+                                </select>
+                            </div>
+
+                            <div class="stopwatch-controls">
+                                <button id="startStopwatch" class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded text-sm">
+                                    <i class="fa fa-play mr-1"></i>开始
+                                </button>
+                                <button id="pauseStopwatch" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded text-sm hidden">
+                                    <i class="fa fa-pause mr-1"></i>暂停
+                                </button>
+                                <button id="lapStopwatch" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded text-sm">
+                                    <i class="fa fa-flag mr-1"></i>记录
+                                </button>
+                                <button id="resetStopwatch" class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded text-sm">
+                                    <i class="fa fa-refresh mr-1"></i>重置
+                                </button>
+                            </div>
+
+                            <div class="text-sm text-gray-400 mb-2">记录列表: <span class="text-xs">(最快 <span class="text-green-500">绿色</span> / 最慢 <span class="text-red-500">红色</span>)</span></div>
+                            <div class="laps-container" id="lapsContainer"></div>
+
+                            <!-- 统计信息 -->
+                            <div class="mt-4 text-xs text-gray-400 grid grid-cols-3 gap-2">
+                                <div>总记录: <span id="lapCount">0</span></div>
+                                <div>最快: <span id="bestLap">--:--:--.--</span></div>
+                                <div>最慢: <span id="worstLap">--:--:--.--</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 计时器 -->
+                    <div id="timerClock" class="clock-display">
+                        <div class="timer w-full max-w-md">
+                            <h3 class="text-lg mb-2">计时器</h3>
+                            <div class="timer-display" id="timerDisplay">00:00:00</div>
+
+                            <div class="timer-presets mb-4">
+                                <button class="timer-preset px-3 py-1 bg-dark/70 hover:bg-primary/80 rounded text-xs mr-2 mb-2" data-time="30">30秒</button>
+                                <button class="timer-preset px-3 py-1 bg-dark/70 hover:bg-primary/80 rounded text-xs mr-2 mb-2" data-time="60">1分钟</button>
+                                <button class="timer-preset px-3 py-1 bg-dark/70 hover:bg-primary/80 rounded text-xs mr-2 mb-2" data-time="300">5分钟</button>
+                                <button class="timer-preset px-3 py-1 bg-dark/70 hover:bg-primary/80 rounded text-xs mr-2 mb-2" data-time="600">10分钟</button>
+                                <button class="timer-preset px-3 py-1 bg-dark/70 hover:bg-primary/80 rounded text-xs mb-2" data-time="900">15分钟</button>
+                            </div>
+
+                            <div class="timer-inputs">
+                                <div>
+                                    <input type="number" id="timerHours" class="timer-input" min="0" max="23" value="0">
+                                    <div class="text-xs text-gray-400 mt-1">小时</div>
+                                </div>
+                                <span class="text-xl">:</span>
+                                <div>
+                                    <input type="number" id="timerMinutes" class="timer-input" min="0" max="59" value="0">
+                                    <div class="text-xs text-gray-400 mt-1">分钟</div>
+                                </div>
+                                <span class="text-xl">:</span>
+                                <div>
+                                    <input type="number" id="timerSeconds" class="timer-input" min="0" max="59" value="0">
+                                    <div class="text-xs text-gray-400 mt-1">秒钟</div>
+                                </div>
+                                <button id="setTimer" class="px-3 py-2 bg-accent hover:bg-accent/80 rounded text-sm">
+                                    <i class="fa fa-check mr-1"></i>设置
+                                </button>
+                            </div>
+                            <div class="timer-controls">
+                                <button id="startTimer" class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded text-sm">
+                                    <i class="fa fa-play mr-1"></i>开始
+                                </button>
+                                <button id="pauseTimer" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 rounded text-sm hidden">
+                                    <i class="fa fa-pause mr-1"></i>暂停
+                                </button>
+                                <button id="resetTimer" class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded text-sm">
+                                    <i class="fa fa-refresh mr-1"></i>重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 赛博时钟 -->
+                    <div id="cyberClock" class="clock-display">
+                        <div class="cyber-clock w-full max-w-md">
+                            <div class="cyber-time">
+                                <span id="cyberHours">00</span>
+                                <span class="blinking-colon">:</span>
+                                <span id="cyberMinutes">00</span>
+                                <span class="blinking-colon hidden sm:inline">:</span>
+                                <span id="cyberSeconds">00</span>
+                            </div>
+                            <div class="cyber-date" id="cyberDate">2023.01.01 MON</div>
+                            <div class="text-xs mt-4 opacity-70">SYSTEM TIME ONLINE</div>
+                        </div>
+                    </div>
+
+                    <!-- 翻转时钟 -->
+                    <div id="flipClock" class="clock-display">
+                        <div class="flip-clock w-full max-w-md">
+                            <h3 class="text-lg mb-2">翻转时钟</h3>
+                            <div class="flip-container">
+                                <div class="flip-card" id="flipHours">
+                                    <div class="flip-card-inner">
+                                        <div class="flip-card-front" id="flipHoursFront">00</div>
+                                        <div class="flip-card-back" id="flipHoursBack">00</div>
+                                    </div>
+                                </div>
+                                <div class="flip-separator blinking-colon">:</div>
+                                <div class="flip-card" id="flipMinutes">
+                                    <div class="flip-card-inner">
+                                        <div class="flip-card-front" id="flipMinutesFront">00</div>
+                                        <div class="flip-card-back" id="flipMinutesBack">00</div>
+                                    </div>
+                                </div>
+                                <div class="flip-separator blinking-colon hidden sm:block">:</div>
+                                <div class="flip-card" id="flipSeconds">
+                                    <div class="flip-card-inner">
+                                        <div class="flip-card-front" id="flipSecondsFront">00</div>
+                                        <div class="flip-card-back" id="flipSecondsBack">00</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-400 mt-4" id="flipDate">2023年1月1日 星期一</div>
+                        </div>
+                    </div>
+
+                    <!-- 世界时钟 -->
+                    <div id="worldClock" class="clock-display">
+                        <div class="world-clock w-full max-w-md">
+                            <h3 class="text-lg mb-2">世界时钟</h3>
+
+                            <div class="mb-4">
+                                <select id="timezoneSelector" class="timezone-selector">
+                                    <option value="Asia/Shanghai">上海 (Asia/Shanghai)</option>
+                                    <option value="Europe/London">伦敦 (Europe/London)</option>
+                                    <option value="America/New_York">纽约 (America/New_York)</option>
+                                    <option value="America/Los_Angeles">洛杉矶 (America/Los_Angeles)</option>
+                                    <option value="Asia/Tokyo">东京 (Asia/Tokyo)</option>
+                                    <option value="Australia/Sydney">悉尼 (Australia/Sydney)</option>
+                                    <option value="Asia/Dubai">迪拜 (Asia/Dubai)</option>
+                                    <option value="Europe/Paris">巴黎 (Europe/Paris)</option>
+                                </select>
+                                <button id="addTimezone" class="px-3 py-1.5 bg-primary hover:bg-primary/80 rounded text-sm ml-2">
+                                    <i class="fa fa-plus mr-1"></i>添加
+                                </button>
+                            </div>
+
+                            <div class="world-clock-list" id="worldClockList">
+                                <!-- 世界时钟条目将通过JS添加 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 闹钟 -->
+                    <div id="alarmClock" class="clock-display">
+                        <div class="alarm-clock w-full max-w-md">
+                            <h3 class="text-lg mb-2">闹钟</h3>
+
+                            <div class="alarm-form">
+                                <input type="number" id="alarmHours" class="alarm-input" min="0" max="23" value="07">
+                                <span class="alarm-label">:</span>
+                                <input type="number" id="alarmMinutes" class="alarm-input" min="0" max="59" value="00">
+
+                                <div class="alarm-repeat">
+                                    <label class="text-sm mr-2">重复:</label>
+                                    <div class="flex gap-1">
+                                        <span class="text-xs bg-dark/70 px-2 py-1 rounded">一</span>
+                                        <span class="text-xs bg-dark/70 px-2 py-1 rounded">二</span>
+                                        <span class="text-xs bg-dark/70 px-2 py-1 rounded">三</span>
+                                        <span class="text-xs bg-dark/70 px-2 py-1 rounded">四</span>
+                                        <span class="text-xs bg-dark/70 px-2 py-1 rounded">五</span>
+                                        <span class="text-xs bg-primary/80 px-2 py-1 rounded">六</span>
+                                        <span class="text-xs bg-primary/80 px-2 py-1 rounded">日</span>
+                                    </div>
+                                </div>
+
+                                <button id="addAlarm" class="px-3 py-2 bg-accent hover:bg-accent/80 rounded text-sm">
+                                    <i class="fa fa-plus mr-1"></i>添加
+                                </button>
+                            </div>
+
+                            <div class="alarm-list" id="alarmList">
+                                <!-- 闹钟条目将通过JS添加 -->
+                            </div>
+
+                            <audio id="alarmSound" preload="auto">
+                                <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" type="audio/mpeg">
+                            </audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：信息和设置 -->
+            <div class="space-y-6">
+                <div class="bg-dark/50 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-3 text-accent">
+                        <i class="fa fa-info-circle mr-2"></i>时钟信息
+                    </h3>
+                    <div id="clockInfo" class="text-sm text-gray-300 space-y-2">
+                        <p>模拟时钟是最传统的时间显示方式，通过时针、分针和秒针的位置指示时间。</p>
+                        <p>时针走一圈为12小时，分针走一圈为60分钟，秒针走一圈为60秒。</p>
+                    </div>
+                </div>
+
+                <div class="bg-dark/50 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-3 text-accent">
+                        <i class="fa fa-sliders mr-2"></i>设置
+                    </h3>
+                    <div class="space-y-4 text-sm">
+                        <div>
+                            <label class="block mb-2 text-gray-300">主题</label>
+                            <div class="flex gap-2 flex-wrap">
+                                <button class="theme-btn px-3 py-1.5 rounded bg-dark border border-primary text-xs" data-theme="dark">
+                                    <i class="fa fa-moon-o mr-1"></i>深色
+                                </button>
+                                <button class="theme-btn px-3 py-1.5 rounded bg-gray-200 text-dark border border-transparent text-xs" data-theme="light">
+                                    <i class="fa fa-sun-o mr-1"></i>浅色
+                                </button>
+                                <button class="theme-btn px-3 py-1.5 rounded bg-[#0D1B2A] text-cyber border border-transparent text-xs" data-theme="cyber">
+                                    <i class="fa fa-bolt mr-1"></i>赛博
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="showSeconds" class="mr-2 accent-primary" checked>
+                                显示秒针
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="enableSound" class="mr-2 accent-primary" checked>
+                                启用提示音
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="24hourFormat" class="mr-2 accent-primary" checked>
+                                24小时制显示
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-dark/50 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-3 text-accent">
+                        <i class="fa fa-bell mr-2"></i>通知中心
+                    </h3>
+                    <div id="notificationCenter" class="text-sm text-gray-300 space-y-2 max-h-40 overflow-y-auto">
+                        <p class="text-gray-500 italic">暂无通知</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 提示音元素 -->
+    <audio id="timerSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 通知组件 -->
+    <div id="notification" class="notification">
+        <div class="notification-icon">
+            <i class="fa fa-info-circle"></i>
+        </div>
+        <div class="notification-message"></div>
+    </div>
+
+    <script>
+        class ClockApp {
+            constructor() {
+                // 初始化所有状态变量
+                this.stopwatchInterval = null;
+                this.stopwatchRunning = false;
+                this.stopwatchTime = 0;
+                this.lapCount = 0;
+                this.laps = [];
+                this.stopwatchPrecision = 10; // 默认百分之一秒精度
+
+                this.timerInterval = null;
+                this.timerRunning = false;
+                this.timerTotalSeconds = 0;
+
+                // 翻转时钟状态变量
+                this.lastSeconds = -1;
+                this.lastMinutes = -1;
+                this.lastHours = -1;
+
+                // 世界时钟状态
+                this.worldClocks = [
+                    { timezone: 'Asia/Shanghai', name: '上海' }
+                ];
+
+                // 闹钟状态
+                this.alarms = [];
+                this.activeAlarm = null;
+
+                // 24小时制显示
+                this.use24HourFormat = true;
+
+                // 初始化应用
+                this.init();
+            }
+
+            // 初始化应用
+            init() {
+                // 初始化模拟时钟
+                this.initAnalogClock();
+
+                // 加载保存的设置
+                this.loadSettings();
+
+                // 加载保存的闹钟
+                this.loadAlarms();
+
+                // 更新所有时钟显示
+                this.updateAllClocks();
+
+                // 每秒更新一次时钟
+                setInterval(() => this.updateAllClocks(), 1000);
+
+                // 绑定事件监听器
+                this.bindEventListeners();
+
+                // 初始化世界时钟列表
+                this.updateWorldClockList();
+            }
+
+            // 初始化模拟时钟刻度
+            initAnalogClock() {
+                const clockFace = document.querySelector('.analog-clock-face');
+                if (!clockFace) return;
+
+                // 创建小时刻度
+                for (let i = 0; i < 12; i++) {
+                    const angle = i * 30; // 每小时30度
+                    const marker = document.createElement('div');
+                    marker.className = 'clock-marker hour-marker';
+                    marker.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+                    clockFace.appendChild(marker);
+                }
+
+                // 创建分钟刻度
+                for (let i = 0; i < 60; i++) {
+                    // 跳过小时刻度的位置
+                    if (i % 5 !== 0) {
+                        const angle = i * 6; // 每分钟6度
+                        const marker = document.createElement('div');
+                        marker.className = 'clock-marker minute-marker';
+                        marker.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+                        clockFace.appendChild(marker);
+                    }
+                }
+            }
+
+            // 更新所有时钟显示
+            updateAllClocks() {
+                const now = new Date();
+                this.updateAnalogClock(now);
+                this.updateDigitalClock(now);
+                this.updateBinaryClock(now);
+                this.updateCyberClock(now);
+                this.updateFlipClock(now);
+                this.updateWorldClocks();
+                this.checkAlarms(now);
+            }
+
+            // 更新模拟时钟
+            updateAnalogClock(date) {
+                const hours = date.getHours() % 12;
+                const minutes = date.getMinutes();
+                const seconds = date.getSeconds();
+
+                // 计算角度 (加上秒数的小数部分使指针平滑移动)
+                const secondsFraction = date.getMilliseconds() / 1000;
+                const hourAngle = (hours * 30) + (minutes * 0.5) + (seconds * 0.5 / 60) + (secondsFraction * 0.5 / 60);
+                const minuteAngle = (minutes * 6) + (seconds * 0.1) + (secondsFraction * 0.1);
+                const secondAngle = (seconds * 6) + (secondsFraction * 6);
+
+                // 更新指针位置 - 添加空值检查
+                const hourHand = document.getElementById('analogHourHand');
+                const minuteHand = document.getElementById('analogMinuteHand');
+                const secondHand = document.getElementById('analogSecondHand');
+
+                if (hourHand) hourHand.style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
+                if (minuteHand) minuteHand.style.transform = `translateX(-50%) rotate(${minuteAngle}deg)`;
+                if (secondHand) {
+                    secondHand.style.transform = `translateX(-50%) rotate(${secondAngle}deg)`;
+                    // 根据设置显示/隐藏秒针
+                    secondHand.style.display = document.getElementById('showSeconds')?.checked ? 'block' : 'none';
+                }
+
+                // 更新日期
+                const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const weekday = weekdays[date.getDay()];
+
+                const analogDate = document.getElementById('analogDate');
+                if (analogDate) analogDate.textContent = `${year}年${month}月${day}日 ${weekday}`;
+            }
+
+            // 更新数字时钟
+            updateDigitalClock(date) {
+                let hours = date.getHours();
+                // 如果使用12小时制，转换小时格式
+                if (!this.use24HourFormat) {
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // 0应显示为12
+                }
+
+                const formattedHours = hours.toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const seconds = date.getSeconds().toString().padStart(2, '0');
+
+                // 添加空值检查
+                const digitalHours = document.getElementById('digitalHours');
+                const digitalMinutes = document.getElementById('digitalMinutes');
+                const digitalSeconds = document.getElementById('digitalSeconds');
+
+                if (digitalHours) digitalHours.textContent = formattedHours;
+                if (digitalMinutes) digitalMinutes.textContent = minutes;
+                if (digitalSeconds) digitalSeconds.textContent = seconds;
+
+                // 更新日期
+                const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const weekday = weekdays[date.getDay()];
+
+                const digitalDateDisplay = document.getElementById('digitalDateDisplay');
+                if (digitalDateDisplay) {
+                    digitalDateDisplay.textContent = `${year}年${month}月${day}日 ${weekday}`;
+                }
+            }
+
+            // 更新二进制时钟
+            updateBinaryClock(date) {
+                const hours = this.use24HourFormat ? date.getHours() : (date.getHours() % 12 || 12);
+                const minutes = date.getMinutes();
+                const seconds = date.getSeconds();
+
+                // 分解为十位和个位
+                const h1 = Math.floor(hours / 10);
+                const h2 = hours % 10;
+                const m1 = Math.floor(minutes / 10);
+                const m2 = minutes % 10;
+                const s1 = Math.floor(seconds / 10);
+                const s2 = seconds % 10;
+
+                // 转换为二进制并更新显示
+                this.updateBinaryDigit('h1', h1, 1);  // 小时十位 (1位)
+                this.updateBinaryDigit('h2', h2, 4);  // 小时个位 (4位)
+                this.updateBinaryDigit('m1', m1, 2);  // 分钟十位 (2位)
+                this.updateBinaryDigit('m2', m2, 4);  // 分钟个位 (4位)
+                this.updateBinaryDigit('s1', s1, 2);  // 秒钟十位 (2位)
+                this.updateBinaryDigit('s2', s2, 4);  // 秒钟个位 (4位)
+            }
+
+            // 更新二进制位显示
+            updateBinaryDigit(prefix, number, bits) {
+                // 将数字转换为指定长度的二进制字符串
+                let binary = number.toString(2).padStart(bits, '0');
+
+                // 更新每个位的显示状态
+                for (let i = 0; i < bits; i++) {
+                    const position = `${prefix}-${i}`;
+                    const bitElement = document.querySelector(`[data-position="${position}"]`);
+                    if (bitElement) {
+                        if (binary[i] === '1') {
+                            bitElement.classList.add('active');
+                        } else {
+                            bitElement.classList.remove('active');
+                        }
+                    }
+                }
+            }
+
+            // 更新赛博时钟
+            updateCyberClock(date) {
+                let hours = date.getHours();
+                // 如果使用12小时制，转换小时格式
+                if (!this.use24HourFormat) {
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // 0应显示为12
+                }
+
+                const formattedHours = hours.toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const seconds = date.getSeconds().toString().padStart(2, '0');
+
+                // 添加空值检查
+                const cyberHours = document.getElementById('cyberHours');
+                const cyberMinutes = document.getElementById('cyberMinutes');
+                const cyberSeconds = document.getElementById('cyberSeconds');
+
+                if (cyberHours) cyberHours.textContent = formattedHours;
+                if (cyberMinutes) cyberMinutes.textContent = minutes;
+                if (cyberSeconds) cyberSeconds.textContent = seconds;
+
+                // 更新日期
+                const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                const weekday = weekdays[date.getDay()];
+
+                const cyberDate = document.getElementById('cyberDate');
+                if (cyberDate) {
+                    cyberDate.textContent = `${year}.${month}.${day} ${weekday}`;
+                }
+            }
+
+            // 更新翻转时钟
+            updateFlipClock(date) {
+                let hours = date.getHours();
+                // 如果使用12小时制，转换小时格式
+                if (!this.use24HourFormat) {
+                    hours = hours % 12;
+                    hours = hours ? hours : 12; // 0应显示为12
+                }
+
+                const minutes = date.getMinutes();
+                const seconds = date.getSeconds();
+
+                // 格式化数字
+                const formattedHours = hours.toString().padStart(2, '0');
+                const formattedMinutes = minutes.toString().padStart(2, '0');
+                const formattedSeconds = seconds.toString().padStart(2, '0');
+
+                // 小时变化时翻转小时卡片
+                if (hours !== this.lastHours) {
+                    this.lastHours = hours;
+                    this.flipCard('Hours', formattedHours);
+                }
+
+                // 分钟变化时翻转分钟卡片
+                if (minutes !== this.lastMinutes) {
+                    this.lastMinutes = minutes;
+                    this.flipCard('Minutes', formattedMinutes);
+                }
+
+                // 秒变化时翻转秒卡片
+                if (seconds !== this.lastSeconds) {
+                    this.lastSeconds = seconds;
+                    this.flipCard('Seconds', formattedSeconds);
+                }
+
+                // 更新日期
+                const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const weekday = weekdays[date.getDay()];
+
+                const flipDate = document.getElementById('flipDate');
+                if (flipDate) {
+                    flipDate.textContent = `${year}年${month}月${day}日 ${weekday}`;
+                }
+            }
+
+            // 翻转卡片动画
+            flipCard(type, value) {
+                // 添加空值检查
+                const card = document.getElementById(`flip${type}`);
+                const front = document.getElementById(`flip${type}Front`);
+                const back = document.getElementById(`flip${type}Back`);
+
+                if (!card || !front || !back) return;
+
+                // 设置背面内容
+                back.textContent = value;
+
+                // 添加翻转类
+                card.classList.add('flipping');
+
+                // 翻转完成后更新正面内容并移除翻转类
+                setTimeout(() => {
+                    front.textContent = value;
+                    card.classList.remove('flipping');
+                }, 600);
+            }
+
+            // 秒表功能优化
+            startStopwatch() {
+                if (!this.stopwatchRunning) {
+                    const startTime = Date.now() - this.stopwatchTime;
+                    // 清除可能存在的旧定时器
+                    if (this.stopwatchInterval) {
+                        clearInterval(this.stopwatchInterval);
+                    }
+
+                    // 根据精度设置定时器间隔
+                    this.stopwatchInterval = setInterval(() => {
+                        this.stopwatchTime = Date.now() - startTime;
+                        this.updateStopwatchDisplay();
+                    }, this.stopwatchPrecision);
+
+                    this.stopwatchRunning = true;
+
+                    // 添加空值检查
+                    const startBtn = document.getElementById('startStopwatch');
+                    const pauseBtn = document.getElementById('pauseStopwatch');
+
+                    if (startBtn) startBtn.classList.add('hidden');
+                    if (pauseBtn) pauseBtn.classList.remove('hidden');
+
+                    // 显示通知
+                    this.showNotification('秒表已开始', 'success');
+                }
+            }
+
+            pauseStopwatch() {
+                clearInterval(this.stopwatchInterval);
+                this.stopwatchRunning = false;
+
+                // 添加空值检查
+                const startBtn = document.getElementById('startStopwatch');
+                const pauseBtn = document.getElementById('pauseStopwatch');
+
+                if (startBtn) startBtn.classList.remove('hidden');
+                if (pauseBtn) pauseBtn.classList.add('hidden');
+
+                // 显示通知
+                this.showNotification('秒表已暂停', 'info');
+            }
+
+            recordLap() {
+                if (this.stopwatchRunning) {
+                    this.lapCount++;
+                    const lapsContainer = document.getElementById('lapsContainer');
+
+                    if (!lapsContainer) return; // 空值检查
+
+                    // 计算当前时间
+                    const milliseconds = Math.floor(this.stopwatchTime % 1000);
+                    const seconds = Math.floor(this.stopwatchTime / 1000) % 60;
+                    const minutes = Math.floor(this.stopwatchTime / (1000 * 60)) % 60;
+
+                    // 计算单圈时间（与上一圈的差值）
+                    const lapTime = this.stopwatchTime - (this.laps.length > 0 ? this.laps[this.laps.length - 1].totalTime : 0);
+
+                    // 保存单圈数据
+                    const lapData = {
+                        number: this.lapCount,
+                        totalTime: this.stopwatchTime,
+                        lapTime: lapTime
+                    };
+                    this.laps.push(lapData);
+
+                    // 格式化显示时间
+                    const formattedTotalTime = this.formatTime(this.stopwatchTime);
+                    const formattedLapTime = this.formatTime(lapTime);
+
+                    // 创建记录项
+                    const lapItem = document.createElement('div');
+                    lapItem.className = 'lap-item';
+                    lapItem.innerHTML = `
+                <div>
+                  <span>Lap ${this.lapCount}</span>
+                  <div class="text-xs text-gray-400">+${formattedLapTime}</div>
+                </div>
+                <span>${formattedTotalTime}</span>
+              `;
+
+                    // 添加到列表顶部
+                    lapsContainer.prepend(lapItem);
+
+                    // 更新统计信息
+                    this.updateLapStats();
+
+                    // 更新记录计数显示
+                    const lapCountElement = document.getElementById('lapCount');
+                    if (lapCountElement) {
+                        lapCountElement.textContent = this.lapCount;
+                    }
+                }
+            }
+
+            // 格式化时间显示
+            formatTime(milliseconds) {
+                const ms = Math.floor(milliseconds % 1000);
+                const seconds = Math.floor(milliseconds / 1000) % 60;
+                const minutes = Math.floor(milliseconds / (1000 * 60)) % 60;
+
+                // 根据精度调整显示
+                let msDisplay = '';
+                if (this.stopwatchPrecision === 10) {
+                    msDisplay = `.${Math.floor(ms / 10).toString().padStart(2, '0')}`;
+                } else if (this.stopwatchPrecision === 100) {
+                    msDisplay = `.${Math.floor(ms / 100).toString().padStart(1, '0')}`;
+                }
+
+                return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${msDisplay}`;
+            }
+
+            // 更新单圈统计信息
+            updateLapStats() {
+                if (this.laps.length === 0) return;
+
+                // 找到最快和最慢的单圈
+                let bestLap = this.laps[0];
+                let worstLap = this.laps[0];
+
+                this.laps.forEach(lap => {
+                    if (lap.lapTime < bestLap.lapTime) {
+                        bestLap = lap;
+                    }
+                    if (lap.lapTime > worstLap.lapTime) {
+                        worstLap = lap;
+                    }
+                });
+
+                // 更新显示
+                const bestLapElement = document.getElementById('bestLap');
+                const worstLapElement = document.getElementById('worstLap');
+
+                if (bestLapElement) {
+                    bestLapElement.textContent = this.formatTime(bestLap.lapTime);
+                }
+                if (worstLapElement) {
+                    worstLapElement.textContent = this.formatTime(worstLap.lapTime);
+                }
+
+                // 更新列表项样式
+                const lapItems = document.querySelectorAll('.lap-item');
+                lapItems.forEach((item, index) => {
+                    // 清除之前的样式
+                    item.classList.remove('best', 'worst');
+
+                    // 当前项索引（因为是倒序显示）
+                    const currentIndex = this.laps.length - 1 - index;
+
+                    // 添加最快/最慢样式
+                    if (currentIndex >= 0 && this.laps[currentIndex]) {
+                        if (this.laps[currentIndex].lapTime === bestLap.lapTime) {
+                            item.classList.add('best');
+                        }
+                        if (this.laps[currentIndex].lapTime === worstLap.lapTime) {
+                            item.classList.add('worst');
+                        }
+                    }
+                });
+            }
+
+            resetStopwatch() {
+                clearInterval(this.stopwatchInterval);
+                this.stopwatchInterval = null; // 重置定时器变量
+                this.stopwatchRunning = false;
+                this.stopwatchTime = 0;
+                this.lapCount = 0;
+                this.laps = [];
+                this.updateStopwatchDisplay();
+
+                // 清空记录列表 - 添加空值检查
+                const lapsContainer = document.getElementById('lapsContainer');
+                if (lapsContainer) {
+                    lapsContainer.innerHTML = '';
+                }
+
+                // 更新统计信息
+                const bestLapElement = document.getElementById('bestLap');
+                const worstLapElement = document.getElementById('worstLap');
+                const lapCountElement = document.getElementById('lapCount');
+
+                if (bestLapElement) bestLapElement.textContent = '--:--:--.--';
+                if (worstLapElement) worstLapElement.textContent = '--:--:--.--';
+                if (lapCountElement) lapCountElement.textContent = '0';
+
+                // 更新按钮状态 - 添加空值检查
+                const startBtn = document.getElementById('startStopwatch');
+                const pauseBtn = document.getElementById('pauseStopwatch');
+
+                if (startBtn) startBtn.classList.remove('hidden');
+                if (pauseBtn) pauseBtn.classList.add('hidden');
+
+                // 显示通知
+                this.showNotification('秒表已重置', 'info');
+            }
+
+            updateStopwatchDisplay() {
+                const stopwatchDisplay = document.getElementById('stopwatchDisplay');
+                if (stopwatchDisplay) {
+                    stopwatchDisplay.textContent = this.formatTime(this.stopwatchTime);
+                }
+            }
+
+            // 更改秒表精度
+            setStopwatchPrecision(precision) {
+                this.stopwatchPrecision = parseInt(precision);
+
+                // 如果秒表正在运行，重新启动以应用新精度
+                if (this.stopwatchRunning) {
+                    const wasRunning = this.stopwatchRunning;
+                    this.pauseStopwatch();
+                    if (wasRunning) {
+                        this.startStopwatch();
+                    }
+                } else {
+                    // 即使没在运行，也更新显示格式
+                    this.updateStopwatchDisplay();
+                }
+            }
+
+            // 计时器功能优化
+            setTimer() {
+                if (!this.timerRunning) {
+                    // 添加空值检查
+                    const hoursInput = document.getElementById('timerHours');
+                    const minutesInput = document.getElementById('timerMinutes');
+                    const secondsInput = document.getElementById('timerSeconds');
+
+                    if (!hoursInput || !minutesInput || !secondsInput) return;
+
+                    const hours = parseInt(hoursInput.value) || 0;
+                    const minutes = parseInt(minutesInput.value) || 0;
+                    const seconds = parseInt(secondsInput.value) || 0;
+
+                    // 验证输入范围
+                    const validHours = Math.min(Math.max(hours, 0), 23);
+                    const validMinutes = Math.min(Math.max(minutes, 0), 59);
+                    const validSeconds = Math.min(Math.max(seconds, 0), 59);
+
+                    // 更新输入框
+                    hoursInput.value = validHours;
+                    minutesInput.value = validMinutes;
+                    secondsInput.value = validSeconds;
+
+                    // 计算总秒数
+                    this.timerTotalSeconds = validHours * 3600 + validMinutes * 60 + validSeconds;
+                    this.updateTimerDisplay();
+
+                    // 显示通知
+                    this.showNotification(`计时器已设置为 ${validHours}小时${validMinutes}分钟${validSeconds}秒`, 'info');
+                }
+            }
+
+            // 快速设置计时器
+            setTimerPreset(seconds) {
+                if (!this.timerRunning) {
+                    const hours = Math.floor(seconds / 3600);
+                    const minutes = Math.floor((seconds % 3600) / 60);
+                    const secs = seconds % 60;
+
+                    // 更新输入框
+                    const hoursInput = document.getElementById('timerHours');
+                    const minutesInput = document.getElementById('timerMinutes');
+                    const secondsInput = document.getElementById('timerSeconds');
+
+                    if (hoursInput) hoursInput.value = hours;
+                    if (minutesInput) minutesInput.value = minutes;
+                    if (secondsInput) secondsInput.value = secs;
+
+                    this.timerTotalSeconds = seconds;
+                    this.updateTimerDisplay();
+
+                    // 显示通知
+                    this.showNotification(`计时器已设置为 ${minutes}分钟${secs}秒`, 'info');
+                }
+            }
+
+            startTimer() {
+                if (!this.timerRunning && this.timerTotalSeconds > 0) {
+                    // 清除可能存在的旧定时器
+                    if (this.timerInterval) {
+                        clearInterval(this.timerInterval);
+                    }
+
+                    this.timerInterval = setInterval(() => {
+                        this.timerTotalSeconds--;
+                        this.updateTimerDisplay();
+
+                        // 计时结束
+                        if (this.timerTotalSeconds <= 0) {
+                            clearInterval(this.timerInterval);
+                            this.timerInterval = null; // 重置定时器变量
+                            this.timerRunning = false;
+
+                            // 更新按钮状态 - 添加空值检查
+                            const startBtn = document.getElementById('startTimer');
+                            const pauseBtn = document.getElementById('pauseTimer');
+
+                            if (startBtn) startBtn.classList.remove('hidden');
+                            if (pauseBtn) pauseBtn.classList.add('hidden');
+
+                            // 播放提示音
+                            if (document.getElementById('enableSound')?.checked) {
+                                const sound = document.getElementById('timerSound');
+                                if (sound) {
+                                    sound.currentTime = 0;
+                                    sound.play().catch(e => console.log('无法播放提示音:', e));
+                                }
+                            }
+
+                            // 视觉提示 - 添加空值检查
+                            const timerDisplay = document.getElementById('timerDisplay');
+                            if (timerDisplay) {
+                                // 改为更柔和的提示效果，非闪烁
+                                timerDisplay.classList.add('pulse');
+                                setTimeout(() => {
+                                    timerDisplay.classList.remove('pulse');
+                                }, 3000);
+                            }
+
+                            // 显示通知
+                            this.showNotification('计时器已结束', 'success');
+                        } else if (this.timerTotalSeconds <= 10) {
+                            // 最后10秒提醒
+                            const timerDisplay = document.getElementById('timerDisplay');
+                            if (timerDisplay) {
+                                timerDisplay.style.color = '#F59E0B';
+                                setTimeout(() => {
+                                    timerDisplay.style.color = '';
+                                }, 300);
+                            }
+                        }
+                    }, 1000);
+
+                    this.timerRunning = true;
+
+                    // 更新按钮状态 - 添加空值检查
+                    const startBtn = document.getElementById('startTimer');
+                    const pauseBtn = document.getElementById('pauseTimer');
+
+                    if (startBtn) startBtn.classList.add('hidden');
+                    if (pauseBtn) pauseBtn.classList.remove('hidden');
+
+                    // 显示通知
+                    this.showNotification('计时器已开始', 'info');
+                }
+            }
+
+            pauseTimer() {
+                clearInterval(this.timerInterval);
+                this.timerRunning = false;
+
+                // 添加空值检查
+                const startBtn = document.getElementById('startTimer');
+                const pauseBtn = document.getElementById('pauseTimer');
+
+                if (startBtn) startBtn.classList.remove('hidden');
+                if (pauseBtn) pauseBtn.classList.add('hidden');
+
+                // 显示通知
+                this.showNotification('计时器已暂停', 'info');
+            }
+
+            resetTimer() {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null; // 重置定时器变量
+                this.timerRunning = false;
+                this.timerTotalSeconds = 0;
+
+                // 重置输入框 - 添加空值检查
+                const hoursInput = document.getElementById('timerHours');
+                const minutesInput = document.getElementById('timerMinutes');
+                const secondsInput = document.getElementById('timerSeconds');
+
+                if (hoursInput) hoursInput.value = 0;
+                if (minutesInput) minutesInput.value = 0;
+                if (secondsInput) secondsInput.value = 0;
+
+                this.updateTimerDisplay();
+
+                // 更新按钮状态 - 添加空值检查
+                const startBtn = document.getElementById('startTimer');
+                const pauseBtn = document.getElementById('pauseTimer');
+
+                if (startBtn) startBtn.classList.remove('hidden');
+                if (pauseBtn) pauseBtn.classList.add('hidden');
+
+                // 显示通知
+                this.showNotification('计时器已重置', 'info');
+            }
+
+            updateTimerDisplay() {
+                const hours = Math.floor(this.timerTotalSeconds / 3600);
+                const minutes = Math.floor((this.timerTotalSeconds % 3600) / 60);
+                const seconds = this.timerTotalSeconds % 60;
+
+                // 添加空值检查
+                const timerDisplay = document.getElementById('timerDisplay');
+                if (timerDisplay) {
+                    timerDisplay.textContent =
+                        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }
+
+            // 世界时钟功能
+            updateWorldClocks() {
+                const worldClockList = document.getElementById('worldClockList');
+                if (!worldClockList) return;
+
+                this.worldClocks.forEach((clock, index) => {
+                    const element = worldClockList.children[index];
+                    if (element) {
+                        // 获取指定时区的当前时间
+                        const options = {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: !this.use24HourFormat,
+                            timeZone: clock.timezone
+                        };
+
+                        const timeString = new Date().toLocaleTimeString('zh-CN', options);
+
+                        // 更新时间显示
+                        const timeElement = element.querySelector('.clock-time');
+                        if (timeElement) {
+                            timeElement.textContent = timeString;
+                        }
+                    }
+                });
+            }
+
+            updateWorldClockList() {
+                const worldClockList = document.getElementById('worldClockList');
+                if (!worldClockList) return;
+
+                worldClockList.innerHTML = '';
+
+                this.worldClocks.forEach((clock, index) => {
+                    const clockItem = document.createElement('div');
+                    clockItem.className = 'world-clock-item';
+
+                    // 获取UTC偏移
+                    const date = new Date();
+                    const utcOffset = this.getTimezoneOffset(clock.timezone);
+                    const offsetHours = Math.floor(utcOffset / 60);
+                    const offsetMinutes = utcOffset % 60;
+
+                    let offsetString = `UTC${offsetHours >= 0 ? '+' : ''}${offsetHours}`;
+                    if (offsetMinutes !== 0) {
+                        offsetString += `:${offsetMinutes.toString().padStart(2, '0')}`;
+                    }
+
+                    clockItem.innerHTML = `
+                <div>
+                  <div class="clock-city">${clock.name}</div>
+                  <div class="clock-utc">${offsetString} (${clock.timezone})</div>
+                </div>
+                <div class="clock-time">--:--:--</div>
+                <button class="remove-timezone text-gray-400 hover:text-red-500" data-index="${index}">
+                  <i class="fa fa-times"></i>
+                </button>
+              `;
+
+                    worldClockList.appendChild(clockItem);
+                });
+
+                // 添加删除事件
+                document.querySelectorAll('.remove-timezone').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = parseInt(e.currentTarget.getAttribute('data-index'));
+                        this.removeTimezone(index);
+                    });
+                });
+
+                // 立即更新一次时间
+                this.updateWorldClocks();
+            }
+
+            // 获取时区的UTC偏移（分钟）
+            getTimezoneOffset(timezone) {
+                const date = new Date();
+                const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+                const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+                return (tzDate.getTime() - utcDate.getTime()) / (60 * 1000);
+            }
+
+            addTimezone() {
+                const timezoneSelector = document.getElementById('timezoneSelector');
+                if (!timezoneSelector) return;
+
+                const timezone = timezoneSelector.value;
+                const name = timezoneSelector.options[timezoneSelector.selectedIndex].text.split(' ')[0];
+
+                // 检查是否已添加
+                const exists = this.worldClocks.some(clock => clock.timezone === timezone);
+                if (!exists) {
+                    this.worldClocks.push({ timezone, name });
+                    this.updateWorldClockList();
+                    this.showNotification(`已添加 ${name} 时钟`, 'success');
+                } else {
+                    this.showNotification(`${name} 时钟已存在`, 'warning');
+                }
+            }
+
+            removeTimezone(index) {
+                if (index >= 0 && index < this.worldClocks.length && this.worldClocks.length > 1) {
+                    const removed = this.worldClocks.splice(index, 1);
+                    this.updateWorldClockList();
+                    this.showNotification(`已移除 ${removed[0].name} 时钟`, 'info');
+                } else if (this.worldClocks.length <= 1) {
+                    this.showNotification('至少保留一个时钟', 'warning');
+                }
+            }
+
+            // 闹钟功能
+            addAlarm() {
+                const hoursInput = document.getElementById('alarmHours');
+                const minutesInput = document.getElementById('alarmMinutes');
+
+                if (!hoursInput || !minutesInput) return;
+
+                const hours = parseInt(hoursInput.value) || 0;
+                const minutes = parseInt(minutesInput.value) || 0;
+
+                // 验证输入
+                const validHours = Math.min(Math.max(hours, 0), 23);
+                const validMinutes = Math.min(Math.max(minutes, 0), 59);
+
+                // 更新输入框
+                hoursInput.value = validHours;
+                minutesInput.value = validMinutes;
+
+                // 创建新闹钟
+                const alarm = {
+                    id: Date.now(), // 使用时间戳作为唯一ID
+                    hours: validHours,
+                    minutes: validMinutes,
+                    enabled: true,
+                    repeat: [6, 0] // 默认周六和周日
+                };
+
+                this.alarms.push(alarm);
+                this.updateAlarmList();
+                this.saveAlarms();
+
+                this.showNotification(`已添加 ${validHours.toString().padStart(2, '0')}:${validMinutes.toString().padStart(2, '0')} 的闹钟`, 'success');
+            }
+
+            updateAlarmList() {
+                const alarmList = document.getElementById('alarmList');
+                if (!alarmList) return;
+
+                alarmList.innerHTML = '';
+
+                if (this.alarms.length === 0) {
+                    alarmList.innerHTML = '<p class="text-gray-500 italic text-sm">暂无闹钟，点击添加按钮创建新闹钟</p>';
+                    return;
+                }
+
+                this.alarms.forEach(alarm => {
+                    const alarmItem = document.createElement('div');
+                    alarmItem.className = `alarm-item ${this.activeAlarm === alarm.id ? 'alarm-ringing' : ''}`;
+
+                    const timeString = `${alarm.hours.toString().padStart(2, '0')}:${alarm.minutes.toString().padStart(2, '0')}`;
+
+                    alarmItem.innerHTML = `
+                <div class="alarm-time">${timeString}</div>
+                <div class="alarm-repeat text-xs">
+                  ${alarm.repeat.includes(1) ? '一' : '—'}
+                  ${alarm.repeat.includes(2) ? '二' : '—'}
+                  ${alarm.repeat.includes(3) ? '三' : '—'}
+                  ${alarm.repeat.includes(4) ? '四' : '—'}
+                  ${alarm.repeat.includes(5) ? '五' : '—'}
+                  ${alarm.repeat.includes(6) ? '六' : '—'}
+                  ${alarm.repeat.includes(0) ? '日' : '—'}
+                </div>
+                <div class="alarm-actions">
+                  <label class="alarm-toggle">
+                    <input type="checkbox" ${alarm.enabled ? 'checked' : ''} data-id="${alarm.id}">
+                    <span class="alarm-slider"></span>
+                  </label>
+                  <button class="delete-alarm text-gray-400 hover:text-red-500" data-id="${alarm.id}">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                  ${this.activeAlarm === alarm.id ? `
+                    <button class="snooze-alarm text-warning hover:text-warning/80" data-id="${alarm.id}">
+                      <i class="fa fa-clock-o"></i>
+                    </button>
+                  ` : ''}
+                </div>
+              `;
+
+                    alarmList.appendChild(alarmItem);
+                });
+
+                // 添加事件监听器
+                document.querySelectorAll('.alarm-toggle input').forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => {
+                        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.toggleAlarm(id, e.currentTarget.checked);
+                    });
+                });
+
+                document.querySelectorAll('.delete-alarm').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.deleteAlarm(id);
+                    });
+                });
+
+                document.querySelectorAll('.snooze-alarm').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+                        this.snoozeAlarm(id);
+                    });
+                });
+            }
+
+            toggleAlarm(id, enabled) {
+                const alarm = this.alarms.find(a => a.id === id);
+                if (alarm) {
+                    alarm.enabled = enabled;
+                    this.updateAlarmList();
+                    this.saveAlarms();
+
+                    const status = enabled ? '启用' : '禁用';
+                    this.showNotification(`${alarm.hours.toString().padStart(2, '0')}:${alarm.minutes.toString().padStart(2, '0')} 的闹钟已${status}`, 'info');
+                }
+            }
+
+            deleteAlarm(id) {
+                const index = this.alarms.findIndex(a => a.id === id);
+                if (index !== -1) {
+                    const deleted = this.alarms.splice(index, 1)[0];
+                    this.updateAlarmList();
+                    this.saveAlarms();
+
+                    // 如果删除的是正在响铃的闹钟，停止响铃
+                    if (this.activeAlarm === id) {
+                        this.stopAlarm();
+                    }
+
+                    this.showNotification(`${deleted.hours.toString().padStart(2, '0')}:${deleted.minutes.toString().padStart(2, '0')} 的闹钟已删除`, 'info');
+                }
+            }
+
+            checkAlarms(currentTime) {
+                if (this.activeAlarm !== null) return; // 如果已有闹钟在响，不再检查
+
+                const hours = currentTime.getHours();
+                const minutes = currentTime.getMinutes();
+                const day = currentTime.getDay(); // 0是周日，6是周六
+
+                // 只在每分钟的前5秒检查，避免重复触发
+                if (currentTime.getSeconds() > 5) return;
+
+                for (const alarm of this.alarms) {
+                    if (alarm.enabled && alarm.hours === hours && alarm.minutes === minutes) {
+                        // 检查是否在重复日期内
+                        if (alarm.repeat.length === 0 || alarm.repeat.includes(day)) {
+                            this.triggerAlarm(alarm.id);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            triggerAlarm(id) {
+                this.activeAlarm = id;
+                this.updateAlarmList();
+
+                // 播放闹钟声音
+                if (document.getElementById('enableSound')?.checked) {
+                    const sound = document.getElementById('alarmSound');
+                    if (sound) {
+                        sound.loop = true;
+                        sound.currentTime = 0;
+                        sound.play().catch(e => console.log('无法播放闹钟声:', e));
+                    }
+                }
+
+                // 找到闹钟信息
+                const alarm = this.alarms.find(a => a.id === id);
+                if (alarm) {
+                    this.showNotification(`闹钟时间到: ${alarm.hours.toString().padStart(2, '0')}:${alarm.minutes.toString().padStart(2, '0')}`, 'warning', 0);
+
+                    // 自动切换到闹钟页面
+                    document.querySelector(`.clock-type-btn[data-clock="alarm"]`)?.click();
+                }
+            }
+
+            stopAlarm() {
+                if (this.activeAlarm !== null) {
+                    // 停止播放声音
+                    const sound = document.getElementById('alarmSound');
+                    if (sound) {
+                        sound.loop = false;
+                        sound.pause();
+                    }
+
+                    this.activeAlarm = null;
+                    this.updateAlarmList();
+                    this.hideNotification();
+                    this.showNotification('闹钟已停止', 'info');
+                }
+            }
+
+            snoozeAlarm(id) {
+                // 停止当前闹钟
+                this.stopAlarm();
+
+                // 找到闹钟
+                const alarm = this.alarms.find(a => a.id === id);
+                if (alarm) {
+                    // 10分钟后再次触发
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() + 10);
+
+                    this.showNotification(`闹钟已延迟10分钟，将在 ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} 再次响起`, 'info');
+                }
+            }
+
+            // 保存和加载闹钟
+            saveAlarms() {
+                try {
+                    localStorage.setItem('clockAppAlarms', JSON.stringify(this.alarms));
+                } catch (e) {
+                    console.error('无法保存闹钟:', e);
+                }
+            }
+
+            loadAlarms() {
+                try {
+                    const saved = localStorage.getItem('clockAppAlarms');
+                    if (saved) {
+                        this.alarms = JSON.parse(saved);
+                        this.updateAlarmList();
+                    }
+                } catch (e) {
+                    console.error('无法加载闹钟:', e);
+                    this.alarms = [];
+                }
+            }
+
+            // 更新时钟信息
+            updateClockInfo(clockType) {
+                const infoElement = document.getElementById('clockInfo');
+                if (!infoElement) return; // 空值检查
+
+                const infoTexts = {
+                    analog: `
+                <p>模拟时钟是最传统的时间显示方式，通过时针、分针和秒针的位置指示时间。</p>
+                <p>时钟表面有12个主要刻度，代表12个小时，每个主要刻度之间有4个小刻度，代表分钟。</p>
+                <p>时针走一圈为12小时，分针走一圈为60分钟，秒针走一圈为60秒。</p>
+              `,
+                    digital: `
+                <p>数字时钟以数字形式直接显示时间，支持24小时制或12小时制切换。</p>
+                <p>这种显示方式直观明了，广泛应用于电子设备中。</p>
+                <p>此数字时钟同时显示日期和星期信息，方便您了解当前日期。</p>
+              `,
+                    binary: `
+                <p>二进制时钟使用二进制数字表示时间，是一种独特而有趣的时间显示方式。</p>
+                <p>每一列代表一个十进制数字的二进制表示，从上到下为最高位到最低位。</p>
+                <p>例如，数字5用二进制表示为101，因此会点亮第1和第3个LED。</p>
+              `,
+                    stopwatch: `
+                <p>秒表用于精确测量时间间隔，可以记录多个时间点。</p>
+                <p>支持三种精度：整秒、十分之一秒和百分之一秒，可根据需要选择。</p>
+                <p>点击"开始"启动计时，"暂停"停止计时，"记录"保存当前时间点，"重置"清除计时数据。</p>
+                <p>记录列表会标记出最快和最慢的单圈时间。</p>
+              `,
+                    timer: `
+                <p>计时器可以设置一段时间，当时间结束时会发出提示音。</p>
+                <p>提供常用时间快捷设置，也可通过输入框精确设置时、分、秒。</p>
+                <p>倒计时最后10秒会有视觉提示，计时结束时有声音和动画提示。</p>
+              `,
+                    cyber: `
+                <p>赛博朋克风格时钟采用未来感的设计和色彩，呈现出科技感十足的视觉效果。</p>
+                <p>这种设计灵感来源于赛博朋克文化，通常使用霓虹色调和数字化显示元素。</p>
+                <p>时钟采用单色显示，配合特殊效果增强未来科技感。</p>
+              `,
+                    flip: `
+                <p>翻转时钟通过卡片翻转动画来展示时间变化，创造出独特的视觉体验。</p>
+                <p>每当数字变化时，卡片会翻转显示新的数字，带来流畅的过渡效果。</p>
+                <p>这种设计结合了机械美感和数字显示的清晰度。</p>
+              `,
+                    world: `
+                <p>世界时钟可以同时显示多个不同时区的当前时间。</p>
+                <p>从下拉菜单选择时区并点击"添加"按钮，可添加新的城市时钟。</p>
+                <p>每个时钟会显示当地时间、城市名称和UTC偏移量。</p>
+              `,
+                    alarm: `
+                <p>闹钟功能可以设置特定时间的提醒。</p>
+                <p>设置时可以选择重复日期，默认在周六和周日重复。</p>
+                <p>闹钟响起时可以选择停止或延迟10分钟。所有闹钟设置会自动保存。</p>
+              `
+                };
+
+                if (infoTexts[clockType]) {
+                    infoElement.innerHTML = infoTexts[clockType];
+                }
+            }
+
+            // 切换主题
+            setTheme(theme) {
+                const body = document.body;
+                if (!body) return; // 空值检查
+
+                // 移除所有主题类
+                body.classList.remove('bg-gradient-dark', 'bg-gradient-light', 'bg-gradient-cyber', 'text-light', 'text-dark', 'text-cyber');
+
+                // 应用选中的主题
+                if (theme === 'dark') {
+                    body.classList.add('bg-gradient-dark', 'text-light');
+                } else if (theme === 'light') {
+                    body.classList.add('bg-gradient-light', 'text-dark');
+                } else if (theme === 'cyber') {
+                    body.classList.add('bg-gradient-cyber', 'text-cyber');
+                }
+
+                // 更新按钮状态
+                document.querySelectorAll('.theme-btn').forEach(b => {
+                    b.classList.remove('border-primary', 'border-cyber');
+                    b.classList.add('border-transparent');
+                });
+
+                const activeBtn = document.querySelector(`.theme-btn[data-theme="${theme}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.remove('border-transparent');
+                    if (theme === 'cyber') {
+                        activeBtn.classList.add('border-cyber');
+                    } else {
+                        activeBtn.classList.add('border-primary');
+                    }
+                }
+
+                // 保存主题设置
+                localStorage.setItem('clockAppTheme', theme);
+            }
+
+            // 加载保存的设置
+            loadSettings() {
+                // 加载主题设置
+                const savedTheme = localStorage.getItem('clockAppTheme');
+                if (savedTheme) {
+                    this.setTheme(savedTheme);
+                }
+
+                // 加载24小时制设置
+                const use24Hour = localStorage.getItem('clockApp24Hour');
+                if (use24Hour !== null) {
+                    this.use24HourFormat = use24Hour === 'true';
+                    const formatCheckbox = document.getElementById('24hourFormat');
+                    if (formatCheckbox) {
+                        formatCheckbox.checked = this.use24HourFormat;
+                    }
+                }
+            }
+
+            // 切换24小时制/12小时制
+            toggleTimeFormat(use24Hour) {
+                this.use24HourFormat = use24Hour;
+                localStorage.setItem('clockApp24Hour', use24Hour);
+                this.updateAllClocks(); // 立即更新所有时钟显示
+            }
+
+            // 显示通知
+            showNotification(message, type = 'info', duration = 3000) {
+                const notification = document.getElementById('notification');
+                const messageElement = notification.querySelector('.notification-message');
+                const iconElement = notification.querySelector('.notification-icon i');
+
+                if (!notification || !messageElement || !iconElement) return;
+
+                // 设置通知类型
+                notification.className = 'notification';
+                notification.classList.add(type);
+
+                // 设置图标
+                iconElement.className = '';
+                switch (type) {
+                    case 'success':
+                        iconElement.className = 'fa fa-check-circle';
+                        break;
+                    case 'warning':
+                        iconElement.className = 'fa fa-exclamation-triangle';
+                        break;
+                    case 'error':
+                        iconElement.className = 'fa fa-times-circle';
+                        break;
+                    default:
+                        iconElement.className = 'fa fa-info-circle';
+                }
+
+                // 设置消息
+                messageElement.textContent = message;
+
+                // 显示通知
+                notification.classList.add('show');
+
+                // 添加到通知中心
+                this.addToNotificationCenter(message, type);
+
+                // 自动隐藏（除非是警告类型且持续时间为0）
+                if (duration > 0) {
+                    if (this.notificationTimeout) {
+                        clearTimeout(this.notificationTimeout);
+                    }
+
+                    this.notificationTimeout = setTimeout(() => {
+                        this.hideNotification();
+                    }, duration);
+                }
+            }
+
+            // 隐藏通知
+            hideNotification() {
+                const notification = document.getElementById('notification');
+                if (notification) {
+                    notification.classList.remove('show');
+                }
+            }
+
+            // 添加到通知中心
+            addToNotificationCenter(message, type) {
+                const center = document.getElementById('notificationCenter');
+                if (!center) return;
+
+                // 如果是初始状态，清空提示文本
+                if (center.innerHTML.includes('暂无通知')) {
+                    center.innerHTML = '';
+                }
+
+                // 创建时间戳
+                const now = new Date();
+                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+                // 创建通知项
+                const item = document.createElement('div');
+                item.className = `flex items-center gap-2 ${type === 'warning' ? 'text-warning' : ''}`;
+                item.innerHTML = `
+              <span class="text-xs">${timeString}</span>
+              <i class="fa ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'} text-xs"></i>
+              <span>${message}</span>
+            `;
+
+                // 添加到顶部
+                center.prepend(item);
+
+                // 限制通知数量
+                if (center.children.length > 10) {
+                    center.removeChild(center.lastChild);
+                }
+            }
+
+            // 绑定所有事件监听器
+            bindEventListeners() {
+                // 秒表事件 - 添加空值检查
+                const startStopwatchBtn = document.getElementById('startStopwatch');
+                const pauseStopwatchBtn = document.getElementById('pauseStopwatch');
+                const lapStopwatchBtn = document.getElementById('lapStopwatch');
+                const resetStopwatchBtn = document.getElementById('resetStopwatch');
+                const precisionSelector = document.getElementById('stopwatchPrecision');
+
+                if (startStopwatchBtn) startStopwatchBtn.addEventListener('click', () => this.startStopwatch());
+                if (pauseStopwatchBtn) pauseStopwatchBtn.addEventListener('click', () => this.pauseStopwatch());
+                if (lapStopwatchBtn) lapStopwatchBtn.addEventListener('click', () => this.recordLap());
+                if (resetStopwatchBtn) resetStopwatchBtn.addEventListener('click', () => this.resetStopwatch());
+                if (precisionSelector) {
+                    precisionSelector.addEventListener('change', (e) => {
+                        this.setStopwatchPrecision(e.target.value);
+                    });
+                }
+
+                // 计时器事件 - 添加空值检查
+                const setTimerBtn = document.getElementById('setTimer');
+                const startTimerBtn = document.getElementById('startTimer');
+                const pauseTimerBtn = document.getElementById('pauseTimer');
+                const resetTimerBtn = document.getElementById('resetTimer');
+
+                if (setTimerBtn) setTimerBtn.addEventListener('click', () => this.setTimer());
+                if (startTimerBtn) startTimerBtn.addEventListener('click', () => this.startTimer());
+                if (pauseTimerBtn) pauseTimerBtn.addEventListener('click', () => this.pauseTimer());
+                if (resetTimerBtn) resetTimerBtn.addEventListener('click', () => this.resetTimer());
+
+                // 计时器预设
+                document.querySelectorAll('.timer-preset').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const seconds = parseInt(e.currentTarget.getAttribute('data-time'));
+                        this.setTimerPreset(seconds);
+                    });
+                });
+
+                // 世界时钟事件
+                const addTimezoneBtn = document.getElementById('addTimezone');
+                if (addTimezoneBtn) {
+                    addTimezoneBtn.addEventListener('click', () => this.addTimezone());
+                }
+
+                // 闹钟事件
+                const addAlarmBtn = document.getElementById('addAlarm');
+                if (addAlarmBtn) {
+                    addAlarmBtn.addEventListener('click', () => this.addAlarm());
+                }
+
+                // 时钟类型切换
+                document.querySelectorAll('.clock-type-btn').forEach(btn => {
+                    btn.addEventListener('click', (event) => {
+                        const btnElement = event.target.closest('.clock-type-btn');
+                        if (!btnElement) return; // 空值检查
+
+                        const clockType = btnElement.getAttribute('data-clock');
+                        if (!clockType) return; // 空值检查
+
+                        // 更新按钮状态
+                        document.querySelectorAll('.clock-type-btn').forEach(b => {
+                            b.classList.remove('active', 'bg-primary');
+                            b.classList.add('bg-dark/70', 'hover:bg-primary/80');
+                        });
+
+                        btnElement.classList.add('active', 'bg-primary');
+                        btnElement.classList.remove('bg-dark/70', 'hover:bg-primary/80');
+
+                        // 更新显示的时钟
+                        document.querySelectorAll('.clock-display').forEach(display => {
+                            display.classList.remove('active');
+                        });
+
+                        // 构建正确的ID
+                        const clockId = `${clockType}Clock`;
+                        const clockDisplay = document.getElementById(clockId);
+                        if (clockDisplay) {
+                            clockDisplay.classList.add('active');
+                        }
+
+                        // 更新时钟信息
+                        this.updateClockInfo(clockType);
+                    });
+                });
+
+                // 主题切换
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.addEventListener('click', (event) => {
+                        const btnElement = event.target.closest('.theme-btn');
+                        if (!btnElement) return; // 空值检查
+
+                        const theme = btnElement.getAttribute('data-theme');
+                        if (theme) {
+                            this.setTheme(theme);
+                        }
+                    });
+                });
+
+                // 秒针显示设置 - 添加空值检查
+                const showSecondsCheckbox = document.getElementById('showSeconds');
+                if (showSecondsCheckbox) {
+                    showSecondsCheckbox.addEventListener('change', function () {
+                        const secondHand = document.getElementById('analogSecondHand');
+                        const digitalSeconds = document.getElementById('digitalSeconds');
+                        const cyberSeconds = document.getElementById('cyberSeconds');
+                        const flipSeconds = document.getElementById('flipSeconds');
+                        const flipSecondsSeparator = document.querySelector('.flip-separator.hidden');
+
+                        if (secondHand) {
+                            secondHand.style.display = this.checked ? 'block' : 'none';
+                        }
+
+                        if (digitalSeconds) {
+                            digitalSeconds.style.display = this.checked ? 'inline' : 'none';
+                        }
+
+                        if (cyberSeconds) {
+                            cyberSeconds.style.display = this.checked ? 'inline' : 'none';
+                        }
+
+                        if (flipSeconds) {
+                            flipSeconds.style.display = this.checked ? 'block' : 'none';
+                        }
+
+                        if (flipSecondsSeparator) {
+                            flipSecondsSeparator.style.display = this.checked ? 'block' : 'none';
+                        }
+                    });
+                }
+
+                // 24小时制设置
+                const formatCheckbox = document.getElementById('24hourFormat');
+                if (formatCheckbox) {
+                    formatCheckbox.addEventListener('change', function () {
+                        this.toggleTimeFormat(this.checked);
+                    }.bind(this));
+                }
+            }
+        }
+
+        // DOM加载完成后初始化应用
+        document.addEventListener('DOMContentLoaded', function () {
+            // 创建时钟应用实例
+            const clockApp = new ClockApp();
+        });
+    </script>
+</body>
+</html>

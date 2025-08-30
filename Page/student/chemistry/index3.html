@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初高中化学学习平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        // 配置清新柔和的Tailwind主题
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4A90E2', // 柔和蓝
+                        secondary: '#50E3C2', // 清新绿
+                        accent: '#9013FE',   // 淡紫色
+                        light: '#F8FAFC',    // 极浅灰
+                        dark: '#2D3748'      // 深灰
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'hover': '0 10px 30px rgba(74, 144, 226, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+
+            .bg-blur {
+                backdrop-filter: blur(8px);
+            }
+
+            .card-hover {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .float-animation {
+                animation: float 6s ease-in-out infinite;
+            }
+
+            @keyframes float {
+                0% {
+                    transform: translateY(0px);
+                }
+
+                50% {
+                    transform: translateY(-10px);
+                }
+
+                100% {
+                    transform: translateY(0px);
+                }
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-light to-blue-50 text-dark min-h-screen flex flex-col">
+    <!-- 装饰元素 -->
+    <div class="fixed top-20 right-10 w-32 h-32 bg-secondary/10 rounded-full blur-3xl -z-10"></div>
+    <div class="fixed bottom-20 left-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl -z-10"></div>
+    <div class="fixed top-1/2 left-1/4 w-24 h-24 bg-accent/10 rounded-full blur-2xl -z-10"></div>
+
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-white/80 bg-blur shadow-soft transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <i class="fa fa-flask text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-accent text-gradient">化学学习平台</h1>
+            </div>
+
+            <!-- 桌面端导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#home" class="font-medium hover:text-primary transition-colors relative group">
+                    首页
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#middle-school" class="font-medium hover:text-primary transition-colors relative group">
+                    初中化学
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#high-school" class="font-medium hover:text-primary transition-colors relative group">
+                    高中化学
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </a>
+                <a href="#search" class="font-medium hover:text-primary transition-colors relative group">
+                    知识搜索
+                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </a>
+            </nav>
+
+            <!-- 移动端菜单按钮 -->
+            <button id="menuBtn" class="md:hidden text-dark text-xl p-2 rounded-full hover:bg-gray-100 transition-colors">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- 移动端导航菜单 -->
+        <div id="mobileMenu" class="md:hidden bg-white shadow-soft absolute w-full left-0 top-full transform -translate-y-full opacity-0 transition-all duration-300 pointer-events-none">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#home" class="py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors">首页</a>
+                <a href="#middle-school" class="py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors">初中化学</a>
+                <a href="#high-school" class="py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors">高中化学</a>
+                <a href="#search" class="py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors">知识搜索</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- 首页英雄区 -->
+        <section id="home" class="py-16 md:py-24 relative overflow-hidden">
+            <div class="container mx-auto px-4">
+                <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-10">
+                    <div class="md:w-1/2 space-y-6">
+                        <div class="inline-block px-4 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                            初高中化学知识全掌握
+                        </div>
+                        <h2 class="text-3xl md:text-5xl font-bold leading-tight">
+                            探索化学世界的<br>
+                            <span class="bg-gradient-to-r from-primary to-accent text-gradient">奥秘与乐趣</span>
+                        </h2>
+                        <p class="text-gray-600 text-lg max-w-lg">
+                            系统梳理初高中化学知识体系，通过模块化学习和智能搜索，让化学学习变得轻松高效。
+                        </p>
+                        <div class="flex flex-wrap gap-4 pt-4">
+                            <a href="#middle-school" class="px-6 py-3 bg-primary text-white rounded-lg shadow-soft hover:shadow-hover hover:-translate-y-1 transition-all font-medium flex items-center gap-2">
+                                <i class="fa fa-graduation-cap"></i> 初中化学
+                            </a>
+                            <a href="#high-school" class="px-6 py-3 bg-white text-primary border border-primary/20 rounded-lg shadow-soft hover:shadow-hover hover:-translate-y-1 transition-all font-medium flex items-center gap-2">
+                                <i class="fa fa-flask"></i> 高中化学
+                            </a>
+                        </div>
+                        <div class="flex items-center gap-6 pt-2">
+                            <div class="flex -space-x-2">
+                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs">
+                                    <i class="fa fa-book"></i>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary text-xs">
+                                    <i class="fa fa-list"></i>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent text-xs">
+                                    <i class="fa fa-search"></i>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                包含数百个核心知识点
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 relative">
+                        <div class="relative z-10 float-animation">
+                            <img src="https://picsum.photos/seed/chemistry1/600/500" alt="化学实验与分子结构示意图" class="rounded-2xl shadow-soft w-full max-w-md mx-auto">
+                            <div class="absolute -bottom-4 -left-4 bg-white p-3 rounded-xl shadow-soft">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
+                                        <i class="fa fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">系统知识体系</div>
+                                        <div class="text-xs text-gray-500">覆盖全部重点</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="absolute -top-4 -right-4 bg-white p-3 rounded-xl shadow-soft">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                                        <i class="fa fa-lightbulb-o"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">轻松学习</div>
+                                        <div class="text-xs text-gray-500">高效掌握要点</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-3xl -z-10 transform scale-110"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 搜索区域 -->
+        <section id="search" class="py-16 bg-white rounded-3xl mx-4 md:mx-8 shadow-soft relative">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto text-center mb-10">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-3">快速查找化学知识</h2>
+                    <p class="text-gray-600">输入关键词，立即找到你需要的化学概念和知识点</p>
+                </div>
+
+                <div class="max-w-3xl mx-auto">
+                    <div class="relative">
+                        <input type="text"
+                               id="searchInput"
+                               placeholder="例如：氧气的性质、化学反应方程式、有机化合物..."
+                               class="w-full py-4 px-6 pr-14 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all shadow-soft">
+                        <button id="searchBtn" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-primary text-white p-2 rounded-lg hover:bg-primary/90 transition-colors">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center gap-3 mt-4">
+                        <span class="text-sm text-gray-500">热门搜索：</span>
+                        <button class="search-tag text-sm px-3 py-1 bg-gray-100 rounded-full hover:bg-primary/10 hover:text-primary transition-colors">元素周期表</button>
+                        <button class="search-tag text-sm px-3 py-1 bg-gray-100 rounded-full hover:bg-primary/10 hover:text-primary transition-colors">化学方程式</button>
+                        <button class="search-tag text-sm px-3 py-1 bg-gray-100 rounded-full hover:bg-primary/10 hover:text-primary transition-colors">酸碱中和</button>
+                        <button class="search-tag text-sm px-3 py-1 bg-gray-100 rounded-full hover:bg-primary/10 hover:text-primary transition-colors">有机化学</button>
+                    </div>
+
+                    <div id="searchResults" class="mt-8 hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold">搜索结果</h3>
+                            <span id="resultCount" class="text-sm text-gray-500">找到 0 个结果</span>
+                        </div>
+                        <div id="resultsContainer" class="space-y-4">
+                            <!-- 搜索结果将动态插入这里 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 初中化学区域 -->
+        <section id="middle-school" class="py-16">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <div class="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
+                        初中阶段
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-3">初中化学知识体系</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">从基础概念到实验操作，系统掌握初中化学核心知识</p>
+                </div>
+
+                <div id="middleSchoolContent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 初中化学模块将从JSON动态加载 -->
+                    <div class="flex justify-center items-center h-32 col-span-full">
+                        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 装饰分隔区 -->
+        <section class="py-10 relative overflow-hidden">
+            <div class="container mx-auto px-4">
+                <div class="bg-gradient-to-r from-primary/5 to-accent/5 rounded-3xl py-12 relative z-10">
+                    <div class="max-w-3xl mx-auto text-center">
+                        <h3 class="text-xl md:text-2xl font-bold mb-3">从初中到高中，无缝衔接化学学习</h3>
+                        <p class="text-gray-600">循序渐进，逐步深入，构建完整的化学知识框架</p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-primary/5 to-accent/5 -skew-y-2 -z-10"></div>
+        </section>
+
+        <!-- 高中化学区域 -->
+        <section id="high-school" class="py-16">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <div class="inline-block px-3 py-1 bg-accent/10 text-accent rounded-full text-sm font-medium mb-4">
+                        高中阶段
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-3">高中化学知识体系</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">深入理解化学原理，掌握复杂化学反应与计算</p>
+                </div>
+
+                <div id="highSchoolContent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 高中化学模块将从JSON动态加载 -->
+                    <div class="flex justify-center items-center h-32 col-span-full">
+                        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 知识详情模态框 -->
+        <div id="knowledgeModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/20 bg-blur opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4 transform scale-95 transition-all duration-300 shadow-soft">
+                <div class="flex justify-between items-center border-b p-6">
+                    <h3 id="modalTitle" class="text-xl font-bold text-dark"></h3>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600 text-xl p-2 rounded-full hover:bg-gray-100 transition-colors">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <div id="modalContent" class="p-6 space-y-6">
+                    <!-- 知识详情将动态插入这里 -->
+                </div>
+                <div class="border-t p-4 flex justify-end">
+                    <button id="closeModalBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-50 border-t border-gray-100 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                            <i class="fa fa-flask text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold bg-gradient-to-r from-primary to-accent text-gradient">化学学习平台</h3>
+                    </div>
+                    <p class="text-gray-600 max-w-md mb-4">
+                        为初高中学生提供系统、全面的化学知识学习资源，帮助学生轻松掌握化学要点，提升化学学习效率。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-primary hover:text-white transition-colors">
+                            <i class="fa fa-weixin"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-primary hover:text-white transition-colors">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-primary hover:text-white transition-colors">
+                            <i class="fa fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">快速导航</h4>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>
+                            <a href="#home" class="hover:text-primary transition-colors flex items-center gap-1">
+                                <i class="fa fa-angle-right text-xs"></i> 首页
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#middle-school" class="hover:text-primary transition-colors flex items-center gap-1">
+                                <i class="fa fa-angle-right text-xs"></i> 初中化学
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#high-school" class="hover:text-primary transition-colors flex items-center gap-1">
+                                <i class="fa fa-angle-right text-xs"></i> 高中化学
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#search" class="hover:text-primary transition-colors flex items-center gap-1">
+                                <i class="fa fa-angle-right text-xs"></i> 知识搜索
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">学习资源</h4>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>
+                            <a href="#" class="hover:text-primary transition-colors flex items-center gap-1">
+                                <i class="fa fa-angle-right text-xs"></i> 化学实验视频
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-primary transition-colors flex items-center gap-1">
+                                <i class="fa fa-angle-right text-xs"></i> 习题练习
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-primary transition-colors flex items-center gap-1">
+                                <i class="fa fa-angle-right text-xs"></i> 学习方法指导
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-primary transition-colors flex items-center gap-1">
+                                <i class="fa fa-angle-right text-xs"></i> 常见问题解答
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 mt-10 pt-6 text-center text-gray-500 text-sm">
+                <p>© 2025 化学学习平台 - 专注初高中化学教育资源</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // DOM元素获取
+        const menuBtn = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const navbar = document.getElementById('navbar');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultCount = document.getElementById('resultCount');
+        const knowledgeModal = document.getElementById('knowledgeModal');
+        const closeModal = document.getElementById('closeModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const middleSchoolContent = document.getElementById('middleSchoolContent');
+        const highSchoolContent = document.getElementById('highSchoolContent');
+        const searchTags = document.querySelectorAll('.search-tag');
+
+        // 化学知识数据 - 修复核心：确保数据能被正确加载和访问
+        let chemistryData = {
+            "middle_school": {},
+            "high_school": {}
+        };
+
+        // 移动端菜单切换
+        menuBtn.addEventListener('click', () => {
+            const isOpen = mobileMenu.classList.contains('opacity-100');
+            if (isOpen) {
+                mobileMenu.classList.remove('opacity-100', 'translate-y-0');
+                mobileMenu.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
+                menuBtn.innerHTML = '<i class="fa fa-bars"></i>';
+            } else {
+                mobileMenu.classList.remove('-translate-y-full', 'opacity-0', 'pointer-events-none');
+                mobileMenu.classList.add('opacity-100', 'translate-y-0');
+                menuBtn.innerHTML = '<i class="fa fa-times"></i>';
+            }
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2', 'shadow-md');
+                navbar.classList.remove('py-3', 'shadow-soft');
+            } else {
+                navbar.classList.add('py-3', 'shadow-soft');
+                navbar.classList.remove('py-2', 'shadow-md');
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+
+                    // 关闭移动端菜单
+                    mobileMenu.classList.remove('opacity-100', 'translate-y-0');
+                    mobileMenu.classList.add('-translate-y-full', 'opacity-0', 'pointer-events-none');
+                    menuBtn.innerHTML = '<i class="fa fa-bars"></i>';
+                }
+            });
+        });
+
+        // 从JSON文件加载数据 - 修复核心：添加错误处理和数据验证
+        async function loadChemistryData() {
+            try {
+                // 尝试从外部文件加载
+                const response = await fetch('chemistry.json');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // 验证数据结构
+                if (!data || !data.chemistry_knowledge ||
+                    typeof data.chemistry_knowledge.middle_school !== 'object' ||
+                    typeof data.chemistry_knowledge.high_school !== 'object') {
+                    throw new Error('数据结构不正确');
+                }
+
+                chemistryData = data.chemistry_knowledge;
+                console.log('数据加载成功:', chemistryData);
+
+                // 渲染知识模块
+                renderKnowledgeModules();
+                return data;
+            } catch (error) {
+                console.error('数据加载错误:', error);
+
+                // 显示友好错误信息
+                showErrorMsg(middleSchoolContent, '初中化学数据加载失败');
+                showErrorMsg(highSchoolContent, '高中化学数据加载失败');
+
+                // 提供备选数据 - 修复核心：确保有数据可显示
+                provideFallbackData();
+            }
+        }
+
+        // 提供备选数据 - 修复核心：当外部数据加载失败时使用
+        function provideFallbackData() {
+            console.log('使用备选数据');
+
+            // 填充一些示例数据确保页面能正常显示
+            chemistryData = {
+                "middle_school": {
+                    "1. 物质的构成": [
+                        {
+                            "term": "原子结构",
+                            "def": "原子由原子核和核外电子构成，原子核包含质子和中子。质子带正电，电子带负电，中子不带电。"
+                        },
+                        {
+                            "term": "元素周期表",
+                            "def": "元素周期表按原子序数递增排列，同一周期元素电子层数相同，同一族元素化学性质相似。"
+                        }
+                    ],
+                    "2. 化学方程式": [
+                        {
+                            "term": "化学方程式配平",
+                            "def": "根据质量守恒定律，在化学式前配上适当的化学计量数，使反应前后各元素的原子个数相等。"
+                        },
+                        {
+                            "term": "化合反应",
+                            "def": "由两种或两种以上物质生成另一种物质的反应，如2Mg + O₂ 点燃 2MgO"
+                        }
+                    ]
+                },
+                "high_school": {
+                    "1. 化学反应原理": [
+                        {
+                            "term": "化学平衡",
+                            "def": "在一定条件下，可逆反应的正反应速率和逆反应速率相等，反应物和生成物的浓度不再发生变化的状态。"
+                        },
+                        {
+                            "term": "电离平衡",
+                            "def": "弱电解质在水溶液中部分电离，当电离速率和离子结合成分子的速率相等时达到的平衡状态。"
+                        }
+                    ],
+                    "2. 有机化学基础": [
+                        {
+                            "term": "烃的分类",
+                            "def": "烃是只含有碳和氢两种元素的化合物，包括烷烃、烯烃、炔烃和芳香烃等。"
+                        },
+                        {
+                            "term": "官能团",
+                            "def": "决定有机化合物化学性质的原子或原子团，如羟基(-OH)、羧基(-COOH)、醛基(-CHO)等。"
+                        }
+                    ]
+                }
+            };
+
+            // 使用备选数据重新渲染
+            renderKnowledgeModules();
+        }
+
+        // 显示错误信息
+        function showErrorMsg(container, msg) {
+            container.innerHTML = `
+                    <div class="col-span-full text-center text-red-500 py-8">
+                        <i class="fa fa-exclamation-circle text-2xl mb-2"></i>
+                        <p>${msg}</p>
+                        <p class="text-sm mt-2 text-gray-500">正在加载备用数据...</p>
+                    </div>
+                `;
+        }
+
+        // 渲染知识模块 - 修复核心：确保正确处理数据并渲染
+        function renderKnowledgeModules() {
+            console.log('开始渲染知识模块:', chemistryData);
+
+            if (!chemistryData) {
+                console.error('没有可渲染的数据');
+                return;
+            }
+
+            // 渲染初中化学模块
+            if (chemistryData.middle_school && Object.keys(chemistryData.middle_school).length > 0) {
+                renderLevelModules(
+                    chemistryData.middle_school,
+                    middleSchoolContent,
+                    '初中化学',
+                    'primary'
+                );
+            } else {
+                showErrorMsg(middleSchoolContent, '未找到初中化学数据');
+            }
+
+            // 渲染高中化学模块
+            if (chemistryData.high_school && Object.keys(chemistryData.high_school).length > 0) {
+                renderLevelModules(
+                    chemistryData.high_school,
+                    highSchoolContent,
+                    '高中化学',
+                    'accent'
+                );
+            } else {
+                showErrorMsg(highSchoolContent, '未找到高中化学数据');
+            }
+        }
+
+        // 渲染某一学段的知识模块
+        function renderLevelModules(levelData, container, levelName, color) {
+            // 清空容器
+            container.innerHTML = '';
+
+            // 检查数据是否有效
+            if (!levelData || typeof levelData !== 'object' || Object.keys(levelData).length === 0) {
+                container.innerHTML = `
+                        <div class="col-span-full text-center py-8 text-gray-500">
+                            <i class="fa fa-folder-open text-2xl mb-2"></i>
+                            <p>该学段暂无数据</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            // 遍历所有知识模块
+            const moduleEntries = Object.entries(levelData);
+            moduleEntries.forEach(([moduleKey, moduleItems], index) => {
+                // 创建模块卡片
+                const moduleCard = document.createElement('div');
+                moduleCard.className = 'bg-white rounded-xl shadow-soft overflow-hidden card-hover animate-[fadeInUp_0.5s_forwards]';
+                moduleCard.style.animationDelay = `${index * 0.1}s`;
+
+                // 模块标题（提取数字后的文字作为标题）
+                const moduleTitle = moduleKey.replace(/^\d+\.\s*/, '');
+                const iconList = ['flask', 'atom', 'water', 'fire', 'beaker', 'tint', 'balance-scale', 'microscope'];
+                const randomIcon = iconList[Math.floor(Math.random() * iconList.length)];
+
+                moduleCard.innerHTML = `
+                        <div class="p-5">
+                            <div class="w-12 h-12 rounded-lg bg-${color}/10 flex items-center justify-center text-${color} mb-4">
+                                <i class="fa fa-${randomIcon} text-xl"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">${moduleKey}</h3>
+                            <p class="text-gray-600 text-sm mb-4">${moduleTitle}</p>
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-xs text-gray-500">${moduleItems.length} 个知识点</span>
+                                <button class="viewKnowledgeBtn px-4 py-2 bg-${color}/10 text-${color} rounded-lg hover:bg-${color}/20 transition-colors text-sm font-medium"
+                                        data-level="${levelName}"
+                                        data-module="${moduleKey}"
+                                        data-module-title="${moduleTitle}">
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                container.appendChild(moduleCard);
+            });
+
+            // 为所有知识点查看按钮添加事件监听
+            document.querySelectorAll('.viewKnowledgeBtn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const level = this.getAttribute('data-level');
+                    const moduleKey = this.getAttribute('data-module');
+                    const moduleTitle = this.getAttribute('data-module-title');
+
+                    // 显示知识点详情
+                    showKnowledgeDetails(level, moduleKey, moduleTitle);
+                });
+            });
+        }
+
+        // 显示知识点详情
+        function showKnowledgeDetails(level, moduleKey, moduleTitle) {
+            if (!chemistryData) return;
+
+            // 根据学段获取对应的数据
+            const levelData = level === '初中化学' ?
+                chemistryData.middle_school :
+                chemistryData.high_school;
+
+            const knowledgeItems = levelData[moduleKey];
+
+            if (!knowledgeItems) {
+                alert('未找到相关知识点');
+                return;
+            }
+
+            // 设置模态框标题
+            modalTitle.textContent = `${level} - ${moduleKey}`;
+
+            // 构建知识点列表
+            let contentHtml = `
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <h4 class="font-semibold mb-2">模块介绍</h4>
+                        <p class="text-gray-600">${moduleTitle}</p>
+                        <div class="mt-3 flex items-center text-sm text-gray-500">
+                            <span class="flex items-center mr-4">
+                                <i class="fa fa-list-ul mr-1"></i> ${knowledgeItems.length}个知识点
+                            </span>
+                            <span class="flex items-center">
+                                <i class="fa fa-${level === '初中化学' ? 'graduation-cap' : 'book'} mr-1"></i> ${level}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4">
+                        <h4 class="font-semibold text-lg mb-4">知识点列表</h4>
+                        <div class="space-y-3">
+                `;
+
+            // 遍历知识点
+            knowledgeItems.forEach((item, index) => {
+                contentHtml += `
+                        <div class="p-4 bg-white border border-gray-100 rounded-xl hover:border-primary/30 transition-colors">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-medium mr-3 mt-0.5">
+                                    ${index + 1}
+                                </div>
+                                <div>
+                                    <div class="font-medium text-dark">${item.term}</div>
+                                    <div class="mt-1 text-gray-600">${item.def}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            });
+
+            contentHtml += `
+                        </div>
+                    </div>
+                `;
+
+            // 设置模态框内容并显示
+            modalContent.innerHTML = contentHtml;
+            openModal();
+        }
+
+        // 打开模态框
+        function openModal() {
+            knowledgeModal.classList.remove('opacity-0', 'pointer-events-none');
+            knowledgeModal.querySelector('div').classList.remove('scale-95');
+            knowledgeModal.querySelector('div').classList.add('scale-100');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭模态框
+        function closeModalFunc() {
+            knowledgeModal.classList.add('opacity-0', 'pointer-events-none');
+            knowledgeModal.querySelector('div').classList.remove('scale-100');
+            knowledgeModal.querySelector('div').classList.add('scale-95');
+            document.body.style.overflow = '';
+        }
+
+        closeModal.addEventListener('click', closeModalFunc);
+        closeModalBtn.addEventListener('click', closeModalFunc);
+
+        // 点击模态框外部关闭
+        knowledgeModal.addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeModalFunc();
+            }
+        });
+
+        // 搜索功能
+        function searchKnowledge(query) {
+            if (!chemistryData || !query.trim()) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            query = query.toLowerCase().trim();
+            const results = [];
+
+            // 搜索初中化学
+            if (chemistryData.middle_school) {
+                Object.entries(chemistryData.middle_school).forEach(([moduleKey, items]) => {
+                    items.forEach(item => {
+                        if (item.term.toLowerCase().includes(query) || item.def.toLowerCase().includes(query)) {
+                            results.push({
+                                level: '初中化学',
+                                module: moduleKey,
+                                term: item.term,
+                                def: item.def,
+                                score: calculateSearchScore(item, query)
+                            });
+                        }
+                    });
+                });
+            }
+
+            // 搜索高中化学
+            if (chemistryData.high_school) {
+                Object.entries(chemistryData.high_school).forEach(([moduleKey, items]) => {
+                    items.forEach(item => {
+                        if (item.term.toLowerCase().includes(query) || item.def.toLowerCase().includes(query)) {
+                            results.push({
+                                level: '高中化学',
+                                module: moduleKey,
+                                term: item.term,
+                                def: item.def,
+                                score: calculateSearchScore(item, query)
+                            });
+                        }
+                    });
+                });
+            }
+
+            // 按匹配度排序
+            results.sort((a, b) => b.score - a.score);
+
+            // 显示搜索结果
+            displaySearchResults(results);
+        }
+
+        // 计算搜索匹配度分数
+        function calculateSearchScore(item, query) {
+            let score = 0;
+            // 标题匹配权重更高
+            if (item.term.toLowerCase() === query) score += 100;
+            else if (item.term.toLowerCase().includes(query)) score += 50;
+            // 内容匹配
+            if (item.def.toLowerCase().includes(query)) score += 30;
+            // 关键词长度调整
+            score -= query.length * 2;
+            return score;
+        }
+
+        // 显示搜索结果
+        function displaySearchResults(results) {
+            resultCount.textContent = `找到 ${results.length} 个结果`;
+
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                        <div class="text-center py-12 bg-gray-50 rounded-xl">
+                            <i class="fa fa-search text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500">未找到匹配的知识点</p>
+                            <p class="text-gray-400 text-sm mt-2">请尝试其他关键词或检查拼写</p>
+                        </div>
+                    `;
+            } else {
+                let resultsHtml = '';
+                results.forEach((item, index) => {
+                    // 高亮匹配的关键词
+                    const highlightedTerm = highlightKeyword(item.term, searchInput.value);
+                    const highlightedDef = highlightKeyword(item.def, searchInput.value);
+
+                    resultsHtml += `
+                            <div class="p-5 bg-white border border-gray-100 rounded-xl hover:border-primary/30 transition-all hover:shadow-hover">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-semibold text-primary">${highlightedTerm}</h4>
+                                        <p class="text-xs text-gray-500 mt-1">${item.level} · ${item.module}</p>
+                                    </div>
+                                    <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                                        ${index + 1}
+                                    </span>
+                                </div>
+                                <p class="mt-3 text-gray-700">${highlightedDef}</p>
+                            </div>
+                        `;
+                });
+                resultsContainer.innerHTML = resultsHtml;
+            }
+
+            searchResults.classList.remove('hidden');
+            // 滚动到搜索结果
+            searchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // 高亮关键词
+        function highlightKeyword(text, keyword) {
+            if (!keyword.trim()) return text;
+            const regex = new RegExp(`(${keyword})`, 'gi');
+            return text.replace(regex, '<span class="bg-yellow-100 font-medium">$1</span>');
+        }
+
+        // 搜索按钮点击事件
+        searchBtn.addEventListener('click', () => {
+            searchKnowledge(searchInput.value);
+        });
+
+        // 搜索框回车事件
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchKnowledge(searchInput.value);
+            }
+        });
+
+        // 热门搜索标签点击事件
+        searchTags.forEach(tag => {
+            tag.addEventListener('click', () => {
+                searchInput.value = tag.textContent;
+                searchKnowledge(tag.textContent);
+            });
+        });
+
+        // 页面加载完成后加载数据
+        window.addEventListener('DOMContentLoaded', () => {
+            // 确保DOM完全加载后再执行
+            setTimeout(() => {
+                loadChemistryData();
+            }, 100);
+
+            // 添加页面载入动画
+            document.body.classList.add('opacity-0');
+            setTimeout(() => {
+                document.body.classList.remove('opacity-0');
+                document.body.classList.add('transition-opacity', 'duration-500', 'opacity-100');
+            }, 100);
+        });
+    </script>
+</body>
+</html>

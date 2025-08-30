@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中外历史事件对比时间轴</title>
+    <title>历史事件时间轴</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    
-    <!-- 配置Tailwind自定义颜色和字体 -->
     <script>
+        // Tailwind 配置
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         primary: '#3B82F6',
-                        domestic: '#2563EB',
-                        foreign: '#D97706',
-                        unparsed: '#6B7280',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -25,429 +25,803 @@
             }
         }
     </script>
-    
     <style type="text/tailwindcss">
         @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
             .timeline-line {
-                @apply absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gray-200 z-0;
+                @apply absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gray-200 dark:bg-gray-700;
             }
+
             .timeline-dot {
-                @apply absolute left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-primary z-10 border-4 border-white shadow-md transition-all duration-300;
+                @apply absolute left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-primary border-4 border-white dark:border-dark z-10 transition-all duration-300;
             }
-            .timeline-dot-unparsed {
-                @apply bg-unparsed;
+
+                .timeline-dot:hover {
+                    @apply w-6 h-6 bg-accent;
+                }
+
+            .card-hover {
+                @apply transition-all duration-500 hover:shadow-xl hover:-translate-y-1;
             }
-            .event-card {
-                @apply bg-white rounded-lg shadow-md p-4 transition-all duration-500 hover:shadow-xl transform hover:-translate-y-1;
-            }
-            .event-card-domestic {
-                @apply border-l-4 border-domestic;
-            }
-            .event-card-foreign {
-                @apply border-r-4 border-foreign;
-            }
-            .event-card-unparsed {
-                @apply border-l-4 border-unparsed md:border-r-4;
-            }
+
             .fade-in {
                 animation: fadeIn 0.8s ease-out forwards;
             }
+
             .slide-in-left {
                 animation: slideInLeft 0.6s ease-out forwards;
             }
+
             .slide-in-right {
                 animation: slideInRight 0.6s ease-out forwards;
             }
+
+            .pulse-border {
+                animation: pulseBorder 2s infinite;
+            }
+
             @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
+
             @keyframes slideInLeft {
-                from { opacity: 0; transform: translateX(-30px); }
-                to { opacity: 1; transform: translateX(0); }
+                from {
+                    opacity: 0;
+                    transform: translateX(-30px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
             }
+
             @keyframes slideInRight {
-                from { opacity: 0; transform: translateX(30px); }
-                to { opacity: 1; transform: translateX(0); }
+                from {
+                    opacity: 0;
+                    transform: translateX(30px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
             }
-            .pulse {
-                animation: pulse 2s infinite;
-            }
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
+
+            @keyframes pulseBorder {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+                }
+
+                70% {
+                    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+                }
+
+                100% {
+                    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+                }
             }
         }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
-    <!-- 顶部导航 -->
-    <header class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300" id="main-header">
-        <div class="container mx-auto px-4 py-6">
-            <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800">
-                中外历史事件对比时间轴
-            </h1>
-            
-            <!-- 筛选控制 -->
-            <div class="flex flex-wrap justify-center gap-4 mt-4">
-                <div class="flex items-center bg-gray-100 rounded-lg p-2">
-                    <span class="px-3 py-1 text-gray-700">教育级别:</span>
-                    <button id="btn-all" class="px-4 py-1 rounded-md bg-primary text-white transition-all">全部</button>
-                    <button id="btn-junior" class="px-4 py-1 rounded-md hover:bg-gray-200 transition-all">初中</button>
-                    <button id="btn-senior" class="px-4 py-1 rounded-md hover:bg-gray-200 transition-all">高中</button>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-md transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-history text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold">历史事件时间轴</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="搜索事件..."
+                           class="pl-10 pr-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary transition-all">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                 </div>
-                
-                <div class="flex items-center flex-wrap justify-center gap-4">
-                    <div class="flex items-center">
-                        <span class="w-3 h-3 rounded-full bg-domestic mr-2"></span>
-                        <span class="text-gray-700">国内事件</span>
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa fa-moon-o dark:hidden"></i>
+                    <i class="fa fa-sun-o hidden dark:block"></i>
+                </button>
+                <button id="filter-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors md:hidden">
+                    <i class="fa fa-filter"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 筛选选项 - 桌面版 -->
+        <div class="hidden md:block bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2">
+            <div class="container mx-auto flex flex-wrap gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">地区</label>
+                    <select id="region-filter" class="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
+                        <option value="all">全部地区</option>
+                        <option value="国内">国内</option>
+                        <option value="国外">国外</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">教育级别</label>
+                    <select id="education-filter" class="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
+                        <option value="all">全部级别</option>
+                        <option value="初中">初中</option>
+                        <option value="高中">高中</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">时间范围</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="time-start" placeholder="起始时间"
+                               class="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary w-24">
+                        <span class="self-center">-</span>
+                        <input type="text" id="time-end" placeholder="结束时间"
+                               class="rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary w-24">
                     </div>
-                    <div class="flex items-center">
-                        <span class="w-3 h-3 rounded-full bg-foreign mr-2"></span>
-                        <span class="text-gray-700">国外事件</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span class="w-3 h-3 rounded-full bg-unparsed mr-2"></span>
-                        <span class="text-gray-700">未解析时间</span>
-                    </div>
+                </div>
+                <div class="self-end">
+                    <button id="reset-filters" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+                        <i class="fa fa-refresh mr-1"></i>重置筛选
+                    </button>
+                </div>
+                <div class="self-end ml-auto">
+                    <span id="event-count" class="text-sm text-gray-500 dark:text-gray-400">
+                        共 <span class="font-semibold text-primary">0</span> 个事件
+                    </span>
                 </div>
             </div>
+        </div>
 
-            <!-- 状态信息 -->
-            <div class="text-center mt-3 text-sm">
-                <span id="status-info" class="text-gray-600">
-                    加载中... <i class="fa fa-circle-o-notch fa-spin"></i>
-                </span>
+        <!-- 筛选选项 - 移动端 (默认隐藏) -->
+        <div id="mobile-filters" class="md:hidden hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-3">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">地区</label>
+                    <select id="mobile-region-filter" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                        <option value="all">全部地区</option>
+                        <option value="国内">国内</option>
+                        <option value="国外">国外</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">教育级别</label>
+                    <select id="mobile-education-filter" class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                        <option value="all">全部级别</option>
+                        <option value="初中">初中</option>
+                        <option value="高中">高中</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">时间范围</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="mobile-time-start" placeholder="起始时间"
+                               class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                        <span class="self-center">-</span>
+                        <input type="text" id="mobile-time-end" placeholder="结束时间"
+                               class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                </div>
+                <div class="flex justify-between">
+                    <span id="mobile-event-count" class="text-sm text-gray-500 dark:text-gray-400 self-center">
+                        共 <span class="font-semibold text-primary">0</span> 个事件
+                    </span>
+                    <button id="mobile-reset-filters" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+                        <i class="fa fa-refresh mr-1"></i>重置筛选
+                    </button>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- 主要内容区 -->
+    <!-- 主内容区 -->
     <main class="container mx-auto px-4 py-8">
-        <div class="relative">
-            <!-- 中央时间轴 -->
+        <!-- 加载状态 -->
+        <div id="loading" class="flex flex-col items-center justify-center py-16">
+            <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p class="mt-4 text-gray-600 dark:text-gray-400">加载历史事件中...</p>
+            <p id="loading-progress" class="mt-2 text-sm text-gray-500 dark:text-gray-500">0/0 事件加载中</p>
+        </div>
+
+        <!-- 错误提示 -->
+        <div id="error" class="hidden flex-col items-center justify-center py-16 text-center">
+            <i class="fa fa-exclamation-triangle text-yellow-500 text-4xl"></i>
+            <p class="mt-4 text-gray-600 dark:text-gray-400">无法加载历史事件数据</p>
+            <p id="error-details" class="mt-2 text-sm text-gray-500 dark:text-gray-500"></p>
+            <button id="retry-load" class="mt-4 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">
+                重试
+            </button>
+        </div>
+
+        <!-- 时间轴容器 -->
+        <div id="timeline-container" class="hidden relative">
+            <!-- 时间轴线 -->
             <div class="timeline-line"></div>
-            
-            <!-- 事件容器 -->
-            <div id="events-container" class="space-y-16">
-                <!-- 加载状态 -->
-                <div id="loading" class="flex flex-col justify-center items-center py-20">
-                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
-                    <p class="text-gray-600">正在加载历史事件数据...</p>
-                </div>
+
+            <!-- 时间轴事件将通过JS动态添加 -->
+            <div id="events-container" class="space-y-20">
+                <!-- 事件卡片会在这里动态生成 -->
             </div>
+        </div>
+
+        <!-- 无结果提示 -->
+        <div id="no-results" class="hidden flex-col items-center justify-center py-16 text-center">
+            <i class="fa fa-search text-gray-400 text-4xl"></i>
+            <p class="mt-4 text-gray-600 dark:text-gray-400">没有找到符合条件的事件</p>
+            <button id="clear-filters" class="mt-4 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg transition-colors">
+                清除筛选条件
+            </button>
         </div>
     </main>
 
-    <!-- 回到顶部按钮 -->
-    <button id="back-to-top" class="fixed bottom-6 right-6 bg-primary text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50">
-        <i class="fa fa-arrow-up"></i>
-    </button>
-
     <!-- 页脚 -->
-    <footer class="bg-gray-800 text-white py-8 mt-12">
-        <div class="container mx-auto px-4 text-center">
-            <p>历史事件对比时间轴 &copy; 2023</p>
-            <p class="text-gray-400 text-sm mt-2">数据来源: history.json</p>
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 mt-12">
+        <div class="container mx-auto px-4 text-center text-gray-600 dark:text-gray-400 text-sm">
+            <p>历史事件时间轴 &copy; 2023</p>
+            <p class="mt-1">数据来源：历史事件集合</p>
         </div>
     </footer>
 
     <script>
         // 全局变量
-        let allEvents = [];
-        let parsedEvents = [];
-        let unparsedEvents = [];
-        let currentFilter = 'all';
+        let events = [];
+        let filteredEvents = [];
+        let totalEventsCount = 0;
 
-        // 初始化函数
-        async function init() {
-            try {
-                // 从JSON文件加载数据
-                const response = await fetch('histroy.json');
-                if (!response.ok) throw new Error(`HTTP错误: ${response.status}`);
-                
-                const data = await response.json();
-                allEvents = data.timeline || [];
-                
-                // 分离解析成功和失败的事件
-                separateParsedEvents(allEvents);
-                
-                // 更新状态信息
-                updateStatusInfo();
-                
-                // 渲染所有事件
-                renderAllEvents();
-                
-                // 绑定事件监听
-                bindEvents();
-                
-            } catch (error) {
-                console.error('加载错误:', error);
-                document.getElementById('status-info').innerHTML = `
-                    <span class="text-red-500">数据加载失败 <i class="fa fa-exclamation-circle"></i> 请检查history.json文件</span>
-                `;
-                document.getElementById('loading').innerHTML = `
-                    <div class="text-center text-red-500">
-                        <i class="fa fa-exclamation-triangle text-3xl mb-2"></i>
-                        <p>无法加载历史数据</p>
-                        <p class="text-sm mt-1">错误: ${error.message}</p>
-                    </div>
-                `;
-            }
-        }
+        // DOM 元素
+        const loadingElement = document.getElementById('loading');
+        const loadingProgress = document.getElementById('loading-progress');
+        const errorElement = document.getElementById('error');
+        const errorDetails = document.getElementById('error-details');
+        const timelineContainer = document.getElementById('timeline-container');
+        const eventsContainer = document.getElementById('events-container');
+        const noResultsElement = document.getElementById('no-results');
+        const eventCountElement = document.getElementById('event-count').querySelector('span');
+        const mobileEventCountElement = document.getElementById('mobile-event-count').querySelector('span');
 
-        // 分离解析成功和失败的事件
-        function separateParsedEvents(events) {
-            parsedEvents = [];
-            unparsedEvents = [];
-            
-            events.forEach(event => {
-                // 尝试解析时间
-                const timeValue = parseTime(event.time);
-                // 如果解析结果是Infinity，则视为解析失败
-                if (timeValue === Infinity) {
-                    unparsedEvents.push(event);
-                } else {
-                    // 为解析成功的事件添加时间值，便于排序
-                    parsedEvents.push({...event, timeValue});
-                }
-            });
-            
-            // 对解析成功的事件排序
-            parsedEvents.sort((a, b) => a.timeValue - b.timeValue);
-        }
+        // 筛选相关元素
+        const searchInput = document.getElementById('search-input');
+        const regionFilter = document.getElementById('region-filter');
+        const educationFilter = document.getElementById('education-filter');
+        const timeStartInput = document.getElementById('time-start');
+        const timeEndInput = document.getElementById('time-end');
+        const resetFiltersBtn = document.getElementById('reset-filters');
+        const filterToggle = document.getElementById('filter-toggle');
+        const mobileFilters = document.getElementById('mobile-filters');
 
-        // 更新状态信息
-        function updateStatusInfo() {
-            const total = allEvents.length;
-            const parsed = parsedEvents.length;
-            const unparsed = unparsedEvents.length;
-            const junior = allEvents.filter(e => e.education_level === '初中').length;
-            const senior = allEvents.filter(e => e.education_level === '高中').length;
-            
-            document.getElementById('status-info').innerHTML = `
-                共 <span class="font-semibold">${total}</span> 个事件 
-                (解析: <span class="font-semibold">${parsed}</span>, 
-                未解析: <span class="font-semibold text-unparsed">${unparsed}</span>,
-                初中: <span class="font-semibold">${junior}</span>,
-                高中: <span class="font-semibold">${senior}</span>)
-            `;
-        }
+        // 移动端筛选元素
+        const mobileRegionFilter = document.getElementById('mobile-region-filter');
+        const mobileEducationFilter = document.getElementById('mobile-education-filter');
+        const mobileTimeStartInput = document.getElementById('mobile-time-start');
+        const mobileTimeEndInput = document.getElementById('mobile-time-end');
+        const mobileResetFiltersBtn = document.getElementById('mobile-reset-filters');
+        const clearFiltersBtn = document.getElementById('clear-filters');
 
-        // 渲染所有事件（先渲染解析成功的，最后渲染未解析的）
-        function renderAllEvents() {
-            const container = document.getElementById('events-container');
-            container.innerHTML = '';
-            
-            // 先渲染解析成功的事件
-            const filteredParsed = filterEvents(parsedEvents);
-            filteredParsed.forEach((event, index) => {
-                renderEvent(event, index, false);
-            });
-            
-            // 最后渲染未解析的事件
-            const filteredUnparsed = filterEvents(unparsedEvents);
-            filteredUnparsed.forEach((event, index) => {
-                renderEvent(event, index + filteredParsed.length, true);
-            });
-            
-            // 如果没有事件
-            if (filteredParsed.length === 0 && filteredUnparsed.length === 0) {
-                container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-20 text-gray-500">
-                        <i class="fa fa-folder-open-o text-5xl mb-4"></i>
-                        <p>没有找到符合条件的事件</p>
-                    </div>
-                `;
-            }
-        }
-
-        // 根据筛选条件过滤事件
-        function filterEvents(events) {
-            if (currentFilter === 'all') return events;
-            return events.filter(event => event.education_level === currentFilter);
-        }
-
-        // 渲染单个事件
-        function renderEvent(event, index, isUnparsed) {
-            const container = document.getElementById('events-container');
-            
-            // 创建事件项
-            const eventItem = document.createElement('div');
-            eventItem.className = 'relative flex flex-col md:flex-row items-center z-10 opacity-0';
-            // 延迟动画，创造瀑布流效果
-            setTimeout(() => {
-                eventItem.classList.add('fade-in');
-            }, index * 100);
-            
-            // 时间点
-            const timeDot = document.createElement('div');
-            timeDot.className = `timeline-dot ${isUnparsed ? 'timeline-dot-unparsed' : ''}`;
-            
-            // 时间标签（完整显示原始时间文本）
-            const timeLabel = document.createElement('div');
-            timeLabel.className = `absolute left-1/2 transform -translate-x-1/2 -top-6 px-3 py-1 rounded-full whitespace-nowrap text-sm
-                ${isUnparsed ? 'bg-unparsed text-white' : 'bg-primary text-white'}`;
-            timeLabel.textContent = event.time;
-            // 未解析时间添加标记
-            if (isUnparsed) {
-                timeLabel.innerHTML += ' <i class="fa fa-question-circle" title="时间格式无法解析"></i>';
-            }
-            
-            // 事件卡片
-            const isDomestic = !isUnparsed && (event.region === '国内' || !event.region);
-            const card = document.createElement('div');
-            card.className = `
-                md:w-5/12 event-card 
-                ${isUnparsed ? 'event-card-unparsed md:ml-[50%] md:transform md:-translate-x-1/2' : 
-                  isDomestic ? 'event-card-domestic md:mr-auto md:pr-8 md:text-right slide-in-right' : 
-                  'event-card-foreign md:ml-auto md:pl-8 slide-in-left'}
-            `;
-            
-            // 卡片内容
-            card.innerHTML = `
-                <div class="flex ${isDomestic || isUnparsed ? 'md:justify-end' : 'justify-start'} items-center mb-2">
-                    <span class="text-xs font-semibold px-2 py-1 rounded-full ${event.education_level === '初中' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
-                        ${event.education_level}
-                    </span>
-                    ${isUnparsed ? '<span class="ml-2 text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">时间未解析</span>' : ''}
-                </div>
-                <h3 class="text-lg font-bold mb-1 ${isUnparsed ? 'text-unparsed' : isDomestic ? 'text-domestic' : 'text-foreign'}">${event.event}</h3>
-                <p class="text-gray-700 text-sm mb-2">${event.significance}</p>
-                ${event.additional_info ? `<p class="text-gray-500 text-xs italic">${event.additional_info}</p>` : ''}
-            `;
-            
-            // 组装元素
-            eventItem.append(timeLabel, timeDot, card);
-            container.appendChild(eventItem);
-        }
-
-        // 增强版时间解析函数
-        function parseTime(timeStr) {
-            // 处理"约X万年前"
-            const yearAgoMatch = timeStr.match(/约?(\d+)万年前/);
-            if (yearAgoMatch) {
-                return -parseInt(yearAgoMatch[1]) * 10000;
-            }
-            
-            // 处理"约公元前X年"和"公元前X年"
-            const bcMatch = timeStr.match(/约?公元前(\d+)/);
-            if (bcMatch) {
-                return -parseInt(bcMatch[1]);
-            }
-            
-            // 处理"公元前X年-X年"（取起始年）
-            const bcRangeMatch = timeStr.match(/公元前(\d+)-/);
-            if (bcRangeMatch) {
-                return -parseInt(bcRangeMatch[1]);
-            }
-            
-            // 处理"公元X年"
-            const adMatch = timeStr.match(/公元(\d+)/);
-            if (adMatch) {
-                return parseInt(adMatch[1]);
-            }
-            
-            // 处理"X世纪X年代"
-            const centuryMatch = timeStr.match(/(\d+)世纪(\d+)年代/);
-            if (centuryMatch) {
-                return (parseInt(centuryMatch[1]) - 1) * 100 + parseInt(centuryMatch[2]);
-            }
-            
-            // 处理"X年-X年"（取起始年）
-            const rangeMatch = timeStr.match(/^(\d+)-/);
-            if (rangeMatch) {
-                return parseInt(rangeMatch[1]);
-            }
-            
-            // 处理普通年份
-            const yearMatch = timeStr.match(/(\d{4})/);
-            if (yearMatch) {
-                return parseInt(yearMatch[1]);
-            }
-            
-            // 无法解析的时间返回Infinity，会被放到最后
-            return Infinity;
-        }
-
-        // 绑定事件
-        function bindEvents() {
-            // 筛选按钮
-            document.getElementById('btn-all').addEventListener('click', () => {
-                setFilter('all');
-            });
-            document.getElementById('btn-junior').addEventListener('click', () => {
-                setFilter('初中');
-            });
-            document.getElementById('btn-senior').addEventListener('click', () => {
-                setFilter('高中');
-            });
-            
-            // 回到顶部按钮
-            const backToTop = document.getElementById('back-to-top');
-            window.addEventListener('scroll', () => {
-                // 滚动超过500px显示回到顶部按钮
-                if (window.scrollY > 500) {
-                    backToTop.classList.remove('opacity-0', 'invisible');
-                    backToTop.classList.add('opacity-100', 'visible');
-                } else {
-                    backToTop.classList.add('opacity-0', 'invisible');
-                    backToTop.classList.remove('opacity-100', 'visible');
-                }
-                
-                // 导航栏滚动效果
-                const header = document.getElementById('main-header');
-                if (window.scrollY > 100) {
-                    header.classList.add('py-3', 'shadow-lg');
-                    header.classList.remove('py-6', 'shadow-md');
-                } else {
-                    header.classList.add('py-6', 'shadow-md');
-                    header.classList.remove('py-3', 'shadow-lg');
-                }
-            });
-            
-            backToTop.addEventListener('click', () => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-
-            // 添加滚动动画效果 - 当元素进入视口时显示动画
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('opacity-100');
-                        entry.target.classList.remove('opacity-0');
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            // 观察所有事件项
-            document.querySelectorAll('.event-card').forEach(card => {
-                observer.observe(card);
-            });
-        }
-
-        // 设置筛选条件
-        function setFilter(filter) {
-            currentFilter = filter;
-            
-            // 更新按钮样式
-            ['btn-all', 'btn-junior', 'btn-senior'].forEach(id => {
-                const btn = document.getElementById(id);
-                btn.classList.toggle('bg-primary', id === `btn-${filter === 'all' ? 'all' : filter === '初中' ? 'junior' : 'senior'}`);
-                btn.classList.toggle('text-white', id === `btn-${filter === 'all' ? 'all' : filter === '初中' ? 'junior' : 'senior'}`);
-                btn.classList.toggle('hover:bg-gray-200', !(id === `btn-${filter === 'all' ? 'all' : filter === '初中' ? 'junior' : 'senior'}`));
-            });
-            
-            // 重新渲染所有事件
-            renderAllEvents();
-            
-            // 滚动到顶部
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        // 主题切换
+        const themeToggle = document.getElementById('theme-toggle');
 
         // 初始化
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查本地存储中的主题设置
+            if (localStorage.getItem('theme') === 'dark' ||
+                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // 加载事件数据
+            loadEvents();
+
+            // 绑定事件监听
+            bindEventListeners();
+
+            // 初始化滚动动画监听
+            initScrollAnimation();
+        });
+
+        // 加载事件数据
+        async function loadEvents() {
+            try {
+                // 显示加载状态
+                loadingElement.classList.remove('hidden');
+                errorElement.classList.add('hidden');
+                timelineContainer.classList.add('hidden');
+                noResultsElement.classList.add('hidden');
+
+                // 这里使用示例JSON数据URL
+                const response = await fetch('history.json');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: 状态码 ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // 验证数据结构
+                if (!data || !Array.isArray(data.timeline)) {
+                    throw new Error('数据格式不正确，无法找到事件列表');
+                }
+
+                // 存储原始事件并计数
+                events = [...data.timeline];
+                totalEventsCount = events.length;
+
+                // 更新加载进度
+                updateLoadingProgress(totalEventsCount, totalEventsCount);
+
+                // 按时间排序（改进的排序算法）
+                events.sort((a, b) => {
+                    return compareTime(a.time, b.time);
+                });
+
+                // 验证是否所有事件都已加载
+                if (events.length === 0) {
+                    throw new Error('未加载到任何历史事件数据');
+                }
+
+                // 应用筛选并显示事件
+                applyFilters();
+
+                // 显示时间轴，隐藏加载状态
+                loadingElement.classList.add('hidden');
+                timelineContainer.classList.remove('hidden');
+
+            } catch (error) {
+                console.error('加载事件失败:', error);
+                loadingElement.classList.add('hidden');
+                errorElement.classList.remove('hidden');
+                errorDetails.textContent = error.message;
+            }
+        }
+
+        // 更新加载进度
+        function updateLoadingProgress(loaded, total) {
+            loadingProgress.textContent = `${loaded}/${total} 事件加载中`;
+        }
+
+        // 改进的时间比较算法 - 特别处理各种复杂年代格式
+        function compareTime(timeA, timeB) {
+            // 解析两个时间值
+            const parsedA = parseTimeString(timeA);
+            const parsedB = parseTimeString(timeB);
+
+            // 首先比较是否为公元前
+            if (parsedA.isBCE !== parsedB.isBCE) {
+                return parsedA.isBCE ? -1 : 1;
+            }
+
+            // 同是公元前或同是公元后，比较年份
+            if (parsedA.isBCE) {
+                // 公元前：年份大的更早
+                return parsedB.year - parsedA.year;
+            } else {
+                // 公元后：年份小的更早
+                return parsedA.year - parsedB.year;
+            }
+        }
+
+        // 解析时间字符串为结构化数据 - 增强版
+        function parseTimeString(timeStr) {
+            // 默认值：公元0年
+            let result = {
+                year: 0,
+                isBCE: false,  // 是否为公元前
+                original: timeStr
+            };
+
+            // 移除所有空格，统一处理
+            const cleanTime = timeStr.replace(/\s+/g, '');
+
+            // 处理包含"约"字的情况（不影响年份值）
+            const hasApprox = cleanTime.includes('约');
+
+            // 处理包含"公元前"的情况
+            if (cleanTime.includes('公元前')) {
+                result.isBCE = true;
+                // 提取年份数字，支持范围如"公元前70万-20万年前"
+                const match = cleanTime.match(/公元前(\d+)/);
+                if (match && match[1]) {
+                    result.year = parseInt(match[1], 10);
+                    // 处理"万"单位
+                    if (cleanTime.includes('万')) {
+                        result.year *= 10000;
+                    }
+                }
+                return result;
+            }
+
+            // 处理"年前"格式，如"约170万年前"
+            if (cleanTime.includes('年前')) {
+                result.isBCE = true; // 年前的都是公元前
+                const match = cleanTime.match(/(\d+)/);
+                if (match && match[1]) {
+                    result.year = parseInt(match[1], 10);
+                    // 处理"万"单位
+                    if (cleanTime.includes('万')) {
+                        result.year *= 10000;
+                    }
+                }
+                return result;
+            }
+
+            // 处理包含"公元"的情况
+            if (cleanTime.includes('公元')) {
+                const match = cleanTime.match(/公元(\d+)/);
+                if (match && match[1]) {
+                    result.year = parseInt(match[1], 10);
+                }
+                return result;
+            }
+
+            // 处理世纪格式，如"14世纪-16世纪"
+            if (cleanTime.includes('世纪')) {
+                const match = cleanTime.match(/(\d+)/);
+                if (match && match[1]) {
+                    // 世纪转年份，取世纪的起始年份
+                    result.year = (parseInt(match[1], 10) - 1) * 100;
+                }
+                return result;
+            }
+
+            // 处理年代格式，如"19世纪60年代-90年代"
+            if (cleanTime.includes('年代')) {
+                const match = cleanTime.match(/(\d+)/);
+                if (match && match[1]) {
+                    // 取年代的起始年份
+                    result.year = parseInt(match[1], 10) * 100;
+                }
+                return result;
+            }
+
+            // 处理范围格式，如"约7000-5000年前"（已在前面处理）
+            // 处理"约4000多年前"
+            if (cleanTime.includes('多年前')) {
+                result.isBCE = true;
+                const match = cleanTime.match(/(\d+)/);
+                if (match && match[1]) {
+                    result.year = parseInt(match[1], 10);
+                }
+                return result;
+            }
+
+            // 尝试直接提取数字
+            const numMatch = cleanTime.match(/(\d+)/);
+            if (numMatch && numMatch[1]) {
+                result.year = parseInt(numMatch[1], 10);
+            }
+
+            return result;
+        }
+
+        // 应用筛选条件
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            // 获取筛选条件（桌面和移动保持同步）
+            const region = regionFilter.value;
+            const education = educationFilter.value;
+            const timeStart = timeStartInput.value.trim();
+            const timeEnd = timeEndInput.value.trim();
+
+            // 筛选事件
+            filteredEvents = events.filter(event => {
+                // 搜索词筛选
+                if (searchTerm && !(
+                    event.event.toLowerCase().includes(searchTerm) ||
+                    event.significance.toLowerCase().includes(searchTerm) ||
+                    event.additional_info.toLowerCase().includes(searchTerm)
+                )) {
+                    return false;
+                }
+
+                // 地区筛选
+                if (region !== 'all' && !event.region.includes(region)) {
+                    return false;
+                }
+
+                // 教育级别筛选
+                if (education !== 'all' && event.education_level !== education) {
+                    return false;
+                }
+
+                // 时间范围筛选
+                if (timeStart || timeEnd) {
+                    const eventTime = parseTimeString(event.time);
+                    let start = null;
+                    let end = null;
+
+                    if (timeStart) {
+                        start = parseTimeString(timeStart);
+                    }
+
+                    if (timeEnd) {
+                        end = parseTimeString(timeEnd);
+                    }
+
+                    // 检查是否在时间范围内
+                    if (start && isTimeBefore(eventTime, start)) {
+                        return false;
+                    }
+
+                    if (end && isTimeAfter(eventTime, end)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            // 更新事件计数
+            updateEventCount(filteredEvents.length, totalEventsCount);
+
+            // 显示筛选结果
+            renderEvents(filteredEvents);
+        }
+
+        // 检查时间A是否在时间B之前
+        function isTimeBefore(timeA, timeB) {
+            if (timeA.isBCE && !timeB.isBCE) {
+                return true; // 公元前在公元后之前
+            }
+
+            if (!timeA.isBCE && timeB.isBCE) {
+                return false; // 公元后不在公元前之前
+            }
+
+            // 同为公元前或公元后
+            if (timeA.isBCE) {
+                // 公元前：年份大的更早
+                return timeA.year > timeB.year;
+            } else {
+                // 公元后：年份小的更早
+                return timeA.year < timeB.year;
+            }
+        }
+
+        // 检查时间A是否在时间B之后
+        function isTimeAfter(timeA, timeB) {
+            return !isTimeBefore(timeA, timeB) && !(
+                timeA.isBCE === timeB.isBCE && timeA.year === timeB.year
+            );
+        }
+
+        // 更新事件计数显示
+        function updateEventCount(filtered, total) {
+            eventCountElement.textContent = filtered;
+            mobileEventCountElement.textContent = filtered;
+        }
+
+        // 渲染事件 - 直接显示全部信息
+        function renderEvents(eventsToRender) {
+            // 清空容器
+            eventsContainer.innerHTML = '';
+
+            // 检查是否有结果
+            if (eventsToRender.length === 0) {
+                timelineContainer.classList.add('hidden');
+                noResultsElement.classList.remove('hidden');
+                return;
+            }
+
+            // 显示时间轴，隐藏无结果提示
+            timelineContainer.classList.remove('hidden');
+            noResultsElement.classList.add('hidden');
+
+            // 渲染每个事件
+            eventsToRender.forEach((event, index) => {
+                // 交替显示在时间轴两侧
+                const isLeft = index % 2 === 0;
+                const cardClass = isLeft
+                    ? 'ml-0 mr-auto md:mr-1/2 md:pr-8'
+                    : 'ml-auto mr-0 md:ml-1/2 md:pl-8';
+                const animationClass = isLeft ? 'slide-in-left' : 'slide-in-right';
+
+                // 创建事件元素
+                const eventElement = document.createElement('div');
+                eventElement.className = `relative ${cardClass} w-full md:w-[calc(50%-2rem)] opacity-0`;
+                eventElement.setAttribute('data-animate', 'true');
+                eventElement.innerHTML = `
+                        <!-- 时间点 -->
+                        <div class="timeline-dot pulse-border" data-index="${index}"></div>
+
+                        <!-- 事件卡片 - 直接显示全部信息 -->
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 card-hover border border-gray-100 dark:border-gray-700">
+                            <div class="flex flex-wrap justify-between items-start mb-3 gap-2">
+                                <h3 class="font-bold text-lg text-gray-900 dark:text-white">${event.event}</h3>
+                                <div class="flex gap-2">
+                                    <span class="text-sm px-2 py-0.5 rounded-full ${event.region.includes('国内') ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'}">
+                                        ${event.region.includes('国内') ? '国内' : '国外'}
+                                    </span>
+                                    <span class="text-sm px-2 py-0.5 rounded-full ${event.education_level === '初中' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'}">
+                                        ${event.education_level}
+                                    </span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 flex items-center">
+                                <i class="fa fa-clock-o mr-1"></i> ${event.time}
+                            </p>
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-semibold text-sm text-gray-600 dark:text-gray-300 mb-1 flex items-center">
+                                        <i class="fa fa-star text-yellow-500 mr-1"></i> 事件意义
+                                    </h4>
+                                    <p class="text-gray-700 dark:text-gray-300 text-sm">${event.significance}</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-sm text-gray-600 dark:text-gray-300 mb-1 flex items-center">
+                                        <i class="fa fa-info-circle text-primary mr-1"></i> 补充信息
+                                    </h4>
+                                    <p class="text-gray-700 dark:text-gray-300 text-sm">${event.additional_info}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                // 添加到容器
+                eventsContainer.appendChild(eventElement);
+
+                // 初始延迟动画，确保按顺序显示
+                if (index < 5) { // 只对前5个元素立即应用动画，其余由滚动触发
+                    setTimeout(() => {
+                        eventElement.classList.add(animationClass);
+                    }, index * 200);
+                }
+            });
+        }
+
+        // 初始化滚动动画
+        function initScrollAnimation() {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.target.getAttribute('data-animate') === 'true') {
+                        const isLeft = entry.target.classList.contains('ml-0');
+                        const animationClass = isLeft ? 'slide-in-left' : 'slide-in-right';
+                        entry.target.classList.add(animationClass);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // 监听滚动动画
+            const observeElements = () => {
+                document.querySelectorAll('[data-animate="true"]:not(.slide-in-left):not(.slide-in-right)')
+                    .forEach(el => observer.observe(el));
+            };
+
+            // 初始检查
+            observeElements();
+
+            // 滚动时检查
+            window.addEventListener('scroll', observeElements);
+        }
+
+        // 重置筛选条件
+        function resetFilters() {
+            searchInput.value = '';
+
+            // 重置桌面筛选
+            regionFilter.value = 'all';
+            educationFilter.value = 'all';
+            timeStartInput.value = '';
+            timeEndInput.value = '';
+
+            // 重置移动筛选
+            mobileRegionFilter.value = 'all';
+            mobileEducationFilter.value = 'all';
+            mobileTimeStartInput.value = '';
+            mobileTimeEndInput.value = '';
+
+            // 应用筛选
+            applyFilters();
+        }
+
+        // 同步桌面和移动筛选器
+        function syncFilters(source, target) {
+            if (source === 'desktop') {
+                mobileRegionFilter.value = regionFilter.value;
+                mobileEducationFilter.value = educationFilter.value;
+                mobileTimeStartInput.value = timeStartInput.value;
+                mobileTimeEndInput.value = timeEndInput.value;
+            } else {
+                regionFilter.value = mobileRegionFilter.value;
+                educationFilter.value = mobileEducationFilter.value;
+                timeStartInput.value = mobileTimeStartInput.value;
+                timeEndInput.value = mobileTimeEndInput.value;
+            }
+        }
+
+        // 绑定事件监听
+        function bindEventListeners() {
+            // 筛选相关
+            searchInput.addEventListener('input', applyFilters);
+
+            // 桌面筛选
+            regionFilter.addEventListener('change', () => {
+                syncFilters('desktop', 'mobile');
+                applyFilters();
+            });
+            educationFilter.addEventListener('change', () => {
+                syncFilters('desktop', 'mobile');
+                applyFilters();
+            });
+            timeStartInput.addEventListener('input', () => {
+                syncFilters('desktop', 'mobile');
+                applyFilters();
+            });
+            timeEndInput.addEventListener('input', () => {
+                syncFilters('desktop', 'mobile');
+                applyFilters();
+            });
+            resetFiltersBtn.addEventListener('click', resetFilters);
+
+            // 移动筛选
+            filterToggle.addEventListener('click', () => {
+                mobileFilters.classList.toggle('hidden');
+            });
+            mobileRegionFilter.addEventListener('change', () => {
+                syncFilters('mobile', 'desktop');
+                applyFilters();
+            });
+            mobileEducationFilter.addEventListener('change', () => {
+                syncFilters('mobile', 'desktop');
+                applyFilters();
+            });
+            mobileTimeStartInput.addEventListener('input', () => {
+                syncFilters('mobile', 'desktop');
+                applyFilters();
+            });
+            mobileTimeEndInput.addEventListener('input', () => {
+                syncFilters('mobile', 'desktop');
+                applyFilters();
+            });
+            mobileResetFiltersBtn.addEventListener('click', resetFilters);
+            clearFiltersBtn.addEventListener('click', resetFilters);
+
+            // 重试加载
+            document.getElementById('retry-load').addEventListener('click', () => {
+                errorElement.classList.add('hidden');
+                loadingElement.classList.remove('hidden');
+                loadEvents();
+            });
+
+            // 主题切换
+            themeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+
+            // 滚动时导航栏效果
+            window.addEventListener('scroll', () => {
+                const header = document.querySelector('header');
+                if (window.scrollY > 10) {
+                    header.classList.add('py-2');
+                    header.classList.remove('py-4');
+                } else {
+                    header.classList.add('py-4');
+                    header.classList.remove('py-2');
+                }
+            });
+        }
     </script>
 </body>
 </html>

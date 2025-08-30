@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多语言单词学习应用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // 深紫蓝色作为主色调，更专业
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        neutral: '#1F2937',
+                        'neutral-light': '#F9FAFB',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)',
+                        'card-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .text-balance {
+                text-wrap: balance;
+            }
+
+            .card-transition {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .perspective {
+                perspective: 1000px;
+            }
+
+            .backface-hidden {
+                backface-visibility: hidden;
+            }
+
+            .rotate-y-180 {
+                transform: rotateY(180deg);
+            }
+
+            .preserve-3d {
+                transform-style: preserve-3d;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-neutral min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm fixed w-full top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-book text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-primary">单词学习助手</h1>
+            </div>
+
+            <nav class="hidden md:flex space-x-6">
+                <a href="#import" class="nav-link py-2 border-b-2 border-transparent hover:border-primary hover:text-primary transition-all duration-200">导入数据</a>
+                <a href="#flashcards" class="nav-link py-2 border-b-2 border-transparent hover:border-primary hover:text-primary transition-all duration-200">随机记词</a>
+                <a href="#quiz" class="nav-link py-2 border-b-2 border-transparent hover:border-primary hover:text-primary transition-all duration-200">默写单词</a>
+                <a href="#multiple-choice" class="nav-link py-2 border-b-2 border-transparent hover:border-primary hover:text-primary transition-all duration-200">选择测试</a>
+                <a href="#word-list" class="nav-link py-2 border-b-2 border-transparent hover:border-primary hover:text-primary transition-all duration-200">单词列表</a>
+                <a href="#statistics" class="nav-link py-2 border-b-2 border-transparent hover:border-primary hover:text-primary transition-all duration-200">学习统计</a>
+            </nav>
+
+            <button id="mobile-menu-button" class="md:hidden text-neutral text-xl p-2 rounded-md hover:bg-gray-100 transition-colors">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 shadow-md animate-fadeIn">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-1">
+                <a href="#import" class="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors">导入数据</a>
+                <a href="#flashcards" class="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors">随机记词</a>
+                <a href="#quiz" class="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors">默写单词</a>
+                <a href="#multiple-choice" class="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors">选择测试</a>
+                <a href="#word-list" class="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors">单词列表</a>
+                <a href="#statistics" class="py-3 px-2 rounded-md hover:bg-gray-50 transition-colors">学习统计</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 pt-24 pb-16 flex-grow">
+        <!-- 初始提示 -->
+        <div id="initial-prompt" class="text-center py-16">
+            <div class="max-w-md mx-auto bg-white rounded-xl p-8 shadow-card">
+                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fa fa-file-excel-o text-2xl text-primary"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-4 text-neutral">欢迎使用单词学习助手</h2>
+                <p class="text-gray-600 mb-6 text-balance">请先导入包含单词数据的Excel文件开始学习</p>
+                <a href="#import" class="inline-block bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                    导入Excel文件
+                </a>
+            </div>
+        </div>
+
+        <!-- 1. 导入数据区域 -->
+        <section id="import" class="py-12 hidden">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2">导入单词数据</h2>
+                    <p class="text-gray-600">请上传包含单词数据的Excel文件</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-card p-6 md:p-8 transform transition-all duration-300 hover:shadow-card-hover">
+                    <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary hover:bg-primary/5 transition-all duration-300">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fa fa-cloud-upload text-xl text-gray-500"></i>
+                        </div>
+                        <p class="mb-4 text-gray-700">拖放Excel文件到此处，或</p>
+                        <label class="inline-block bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg cursor-pointer transition-all duration-200 transform hover:-translate-y-0.5">
+                            选择文件
+                            <input type="file" id="file-input" accept=".xlsx, .xls" class="hidden">
+                        </label>
+                        <p class="text-sm text-gray-500 mt-4">支持 .xlsx 和 .xls 格式</p>
+                    </div>
+
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold mb-4">文件格式要求</h3>
+                        <ul class="list-disc pl-5 text-gray-600 space-y-2">
+                            <li>第一个工作表必须包含 <strong>key</strong> 列（显示的键）</li>
+                            <li>必须包含至少一个 <strong>语言_某种语言</strong> 列（如：语言_英语、语言_法语）</li>
+                            <li>可选包含 <strong>提示</strong> 和 <strong>类型</strong> 列</li>
+                        </ul>
+
+                        <div class="mt-6 flex justify-center">
+                            <button id="download-template" class="bg-gray-700 hover:bg-gray-800 text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 flex items-center transform hover:-translate-y-0.5">
+                                <i class="fa fa-download mr-2"></i> 下载模板文件
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 导入结果显示 -->
+                <div id="import-result" class="mt-8 hidden">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-6 animate-fadeIn">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-0.5">
+                                <i class="fa fa-check-circle text-green-500 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="font-semibold text-green-800">导入成功！</h3>
+                                <p class="text-green-700 mt-1">已导入 <span id="import-count">0</span> 个单词</p>
+                                <div class="mt-4">
+                                    <p class="text-sm text-gray-600 mb-2">检测到的语言列：</p>
+                                    <div id="language-columns" class="flex flex-wrap gap-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. 随机记单词区域 -->
+        <section id="flashcards" class="py-12 hidden">
+            <div class="max-w-2xl mx-auto">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2">随机记单词</h2>
+                    <p class="text-gray-600">选择要学习的语言，点击卡片查看答案</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-card p-6 md:p-8">
+                    <!-- 语言选择 -->
+                    <div class="mb-8">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">选择学习的语言：</label>
+                        <div id="flashcard-language-selector" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <!-- 卡片容器 - 优化布局防止文字重叠 -->
+                    <div class="flex justify-center mb-2">
+                        <div class="w-full max-w-md perspective">
+                            <div id="flashcard-inner" class="relative w-full h-[300px] md:h-[350px] preserve-3d transition-all duration-500">
+                                <!-- 卡片正面 -->
+                                <div id="flashcard-front" class="absolute w-full h-full backface-hidden bg-neutral-light rounded-xl flex flex-col items-center justify-center p-6 cursor-pointer shadow-card card-transition overflow-hidden">
+                                    <div class="text-center w-full max-w-[90%]">
+                                        <p class="text-sm text-gray-500 mb-4">点击卡片查看答案</p>
+                                        <h3 id="flashcard-key" class="text-2xl md:text-3xl font-bold text-neutral mb-6 break-words"></h3>
+                                        <p id="flashcard-hint" class="mt-auto text-sm text-gray-600 italic break-words"></p>
+                                    </div>
+                                </div>
+
+                                <!-- 卡片背面 -->
+                                <div id="flashcard-back" class="absolute w-full h-full backface-hidden bg-primary/5 rounded-xl flex flex-col items-center justify-center p-6 cursor-pointer shadow-card card-transition rotate-y-180 overflow-hidden">
+                                    <div class="text-center w-full max-w-[90%]">
+                                        <p class="text-sm text-gray-500 mb-4">点击卡片返回</p>
+                                        <div id="flashcard-value" class="text-xl md:text-2xl font-bold text-primary mb-6 break-words"></div>
+                                        <p id="flashcard-type" class="mt-auto text-sm text-gray-600 break-words"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 控制按钮 -->
+                    <div class="mt-8 flex justify-between">
+                        <button id="prev-flashcard" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                            <i class="fa fa-arrow-left mr-2"></i> 上一个
+                        </button>
+                        <button id="next-flashcard" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center">
+                            下一个 <i class="fa fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- 进度指示器 -->
+                    <div class="mt-6">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>进度</span>
+                            <span id="flashcard-progress-text">0/0</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                            <div id="flashcard-progress-bar" class="bg-primary h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 默写单词区域 -->
+        <section id="quiz" class="py-12 hidden">
+            <div class="max-w-2xl mx-auto">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2">默写单词</h2>
+                    <p class="text-gray-600">根据提示输入对应的单词，检验学习效果</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-card p-6 md:p-8">
+                    <!-- 语言选择 -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">选择默写的语言：</label>
+                        <select id="quiz-language-select" class="block w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200">
+                            <option value="">-- 请选择语言 --</option>
+                        </select>
+                    </div>
+
+                    <!-- 默写区域 -->
+                    <div class="mb-6 p-5 bg-neutral-light rounded-xl">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">单词：</label>
+                            <div id="quiz-key" class="p-3 bg-white rounded-lg text-xl font-semibold shadow-sm"></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">提示：</label>
+                            <div id="quiz-hint" class="text-gray-600 italic"></div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="quiz-answer" class="block text-sm font-medium text-gray-700 mb-2">请输入对应的 <span id="quiz-language-name" class="font-semibold">...</span>：</label>
+                            <input type="text" id="quiz-answer" class="block w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200" placeholder="输入答案...">
+                        </div>
+                    </div>
+
+                    <!-- 反馈区域 -->
+                    <div id="quiz-feedback" class="hidden p-4 rounded-lg mb-6"></div>
+
+                    <!-- 控制按钮 -->
+                    <div class="flex justify-between">
+                        <button id="check-answer" class="bg-accent hover:bg-accent/90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                            <i class="fa fa-check mr-2"></i> 检查答案
+                        </button>
+                        <button id="next-quiz" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                            下一个 <i class="fa fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- 进度和统计 -->
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>进度</span>
+                                <span id="quiz-progress-text">0/0</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                <div id="quiz-progress-bar" class="bg-primary h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>正确率</span>
+                                <span id="quiz-accuracy-text">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                <div id="quiz-accuracy-bar" class="bg-secondary h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 选择测试区域 -->
+        <section id="multiple-choice" class="py-12 hidden">
+            <div class="max-w-2xl mx-auto">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2">选择测试</h2>
+                    <p class="text-gray-600">从选项中选择正确的答案</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-card p-6 md:p-8">
+                    <!-- 语言选择 -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">选择测试的语言：</label>
+                        <select id="mcq-language-select" class="block w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200">
+                            <option value="">-- 请选择语言 --</option>
+                        </select>
+                    </div>
+
+                    <!-- 问题区域 -->
+                    <div class="mb-6">
+                        <div class="mb-6 p-5 bg-neutral-light rounded-xl">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">问题：</label>
+                            <div id="mcq-question" class="bg-white p-3 rounded-lg text-xl font-semibold shadow-sm"></div>
+                        </div>
+
+                        <div class="space-y-3" id="mcq-options">
+                            <!-- 选项将通过JS动态生成 -->
+                        </div>
+
+                        <!-- 反馈区域 -->
+                        <div id="mcq-feedback" class="hidden mt-6 p-4 rounded-lg"></div>
+                    </div>
+
+                    <!-- 控制按钮 -->
+                    <div class="flex justify-end">
+                        <button id="next-mcq" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                            下一题 <i class="fa fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- 进度和统计 -->
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>进度</span>
+                                <span id="mcq-progress-text">0/0</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                <div id="mcq-progress-bar" class="bg-primary h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>正确率</span>
+                                <span id="mcq-accuracy-text">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                <div id="mcq-accuracy-bar" class="bg-secondary h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 单词列表区域 -->
+        <section id="word-list" class="py-12 hidden">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2">单词列表</h2>
+                    <p class="text-gray-600">查看所有单词，可以按类型或字母排序</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-card p-6 md:p-8">
+                    <!-- 筛选和排序 -->
+                    <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">排序方式：</label>
+                            <select id="sort-by" class="block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200">
+                                <option value="key-asc">按字母顺序（A-Z）</option>
+                                <option value="key-desc">按字母顺序（Z-A）</option>
+                                <option value="type">按类型</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">按类型筛选：</label>
+                            <select id="filter-by-type" class="block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200">
+                                <option value="">所有类型</option>
+                                <!-- 类型选项将通过JS动态生成 -->
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">搜索：</label>
+                            <div class="relative">
+                                <input type="text" id="search-words" class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200" placeholder="搜索单词...">
+                                <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 单词表格 -->
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr id="word-table-header">
+                                    <!-- 表头将通过JS动态生成 -->
+                                </tr>
+                            </thead>
+                            <tbody id="word-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- 表格内容将通过JS动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 空状态 -->
+                    <div id="word-list-empty" class="hidden py-16 text-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fa fa-search text-gray-400 text-xl"></i>
+                        </div>
+                        <p class="text-gray-500">没有找到匹配的单词</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. 学习统计区域 -->
+        <section id="statistics" class="py-12 hidden">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-2">学习统计</h2>
+                    <p class="text-gray-600">查看你的学习进度和成绩</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 默写统计 -->
+                    <div class="bg-white rounded-xl shadow-card p-6 transform transition-all duration-300 hover:shadow-card-hover">
+                        <h3 class="text-xl font-semibold mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mr-2">
+                                <i class="fa fa-pencil text-accent"></i>
+                            </div>
+                            默写统计
+                        </h3>
+
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>总练习次数</span>
+                                    <span id="quiz-total" class="font-medium">0</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5"></div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>正确次数</span>
+                                    <span id="quiz-correct" class="font-medium">0</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                    <div id="quiz-correct-bar" class="bg-secondary h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>正确率</span>
+                                    <span id="quiz-stat-accuracy" class="font-medium">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                    <div id="quiz-stat-accuracy-bar" class="bg-secondary h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h4 class="font-medium mb-3">各语言默写情况</h4>
+                            <div id="quiz-language-stats" class="space-y-3 max-h-48 overflow-y-auto pr-2">
+                                <!-- 语言统计将通过JS动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 选择测试统计 -->
+                    <div class="bg-white rounded-xl shadow-card p-6 transform transition-all duration-300 hover:shadow-card-hover">
+                        <h3 class="text-xl font-semibold mb-4 flex items-center">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-2">
+                                <i class="fa fa-list-ul text-primary"></i>
+                            </div>
+                            选择测试统计
+                        </h3>
+
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>总测试次数</span>
+                                    <span id="mcq-total" class="font-medium">0</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5"></div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>正确次数</span>
+                                    <span id="mcq-correct" class="font-medium">0</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                    <div id="mcq-correct-bar" class="bg-secondary h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>正确率</span>
+                                    <span id="mcq-stat-accuracy" class="font-medium">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                    <div id="mcq-stat-accuracy-bar" class="bg-secondary h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h4 class="font-medium mb-3">各语言测试情况</h4>
+                            <div id="mcq-language-stats" class="space-y-3 max-h-48 overflow-y-auto pr-2">
+                                <!-- 语言统计将通过JS动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 学习进度 -->
+                    <div class="bg-white rounded-xl shadow-card p-6 md:col-span-2 transform transition-all duration-300 hover:shadow-card-hover">
+                        <h3 class="text-xl font-semibold mb-6 flex items-center">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-2">
+                                <i class="fa fa-line-chart text-primary"></i>
+                            </div>
+                            单词学习进度
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="text-center p-4 bg-neutral-light rounded-xl">
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-3">
+                                    <span id="total-words-count" class="text-2xl font-bold text-primary">0</span>
+                                </div>
+                                <p class="text-gray-600">总单词数</p>
+                            </div>
+
+                            <div class="text-center p-4 bg-neutral-light rounded-xl">
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-secondary/10 mb-3">
+                                    <span id="mastered-words-count" class="text-2xl font-bold text-secondary">0</span>
+                                </div>
+                                <p class="text-gray-600">已掌握单词</p>
+                            </div>
+
+                            <div class="text-center p-4 bg-neutral-light rounded-xl">
+                                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent/10 mb-3">
+                                    <span id="remaining-words-count" class="text-2xl font-bold text-accent">0</span>
+                                </div>
+                                <p class="text-gray-600">剩余单词</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>总体学习进度</span>
+                                <span id="overall-progress-text" class="font-medium">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div id="overall-progress-bar" class="bg-gradient-to-r from-primary to-accent h-full rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-neutral text-white py-8 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa fa-book text-primary text-xl"></i>
+                        <span class="font-bold">单词学习助手</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mt-1">轻松学习和记忆多语言单词</p>
+                </div>
+
+                <div class="text-gray-400 text-sm">
+                    &copy; 2023 单词学习助手 | 用HTML、CSS和JavaScript构建
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 全局变量
+        let wordData = null;          // 存储单词数据
+        let languages = [];           // 存储检测到的语言
+        let flashcardLanguages = [];  // 存储选择的闪卡语言
+        let currentFlashcardIndex = 0;// 当前闪卡索引
+        let shuffledFlashcards = [];  // 打乱顺序的闪卡
+        let quizState = {             // 默写状态
+            language: null,
+            currentIndex: 0,
+            shuffled: [],
+            total: 0,
+            correct: 0
+        };
+        let mcqState = {              // 选择题状态
+            language: null,
+            currentIndex: 0,
+            shuffled: [],
+            total: 0,
+            correct: 0
+        };
+        let stats = {                 // 统计数据
+            quiz: {
+                total: 0,
+                correct: 0,
+                languages: {}
+            },
+            mcq: {
+                total: 0,
+                correct: 0,
+                languages: {}
+            },
+            masteredWords: []
+        };
+
+        // DOM 加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            // 移动端菜单切换
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', function () {
+                mobileMenu.classList.toggle('hidden');
+                const icon = mobileMenuButton.querySelector('i');
+                if (mobileMenu.classList.contains('hidden')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                }
+            });
+
+            // 导航链接点击处理
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    // 移除所有导航链接的活跃状态
+                    navLinks.forEach(l => l.classList.remove('border-primary', 'text-primary'));
+                    // 添加当前链接的活跃状态
+                    this.classList.add('border-primary', 'text-primary');
+                });
+            });
+
+            // 文件上传处理
+            const fileInput = document.getElementById('file-input');
+            const dropArea = document.getElementById('drop-area');
+
+            fileInput.addEventListener('change', handleFileUpload);
+
+            // 拖放事件处理
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight() {
+                dropArea.classList.add('border-primary', 'bg-primary/5');
+            }
+
+            function unhighlight() {
+                dropArea.classList.remove('border-primary', 'bg-primary/5');
+            }
+
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file) {
+                    handleFile(file);
+                }
+            }
+
+            // 下载模板文件
+            document.getElementById('download-template').addEventListener('click', downloadTemplate);
+
+            // 闪卡功能
+            document.getElementById('flashcard-inner').addEventListener('click', flipFlashcard);
+            document.getElementById('next-flashcard').addEventListener('click', showNextFlashcard);
+            document.getElementById('prev-flashcard').addEventListener('click', showPrevFlashcard);
+
+            // 默写功能
+            document.getElementById('check-answer').addEventListener('click', checkQuizAnswer);
+            document.getElementById('next-quiz').addEventListener('click', showNextQuiz);
+            document.getElementById('quiz-language-select').addEventListener('change', handleQuizLanguageChange);
+
+            // 选择题功能
+            document.getElementById('next-mcq').addEventListener('click', showNextMcq);
+            document.getElementById('mcq-language-select').addEventListener('change', handleMcqLanguageChange);
+
+            // 单词列表功能
+            document.getElementById('sort-by').addEventListener('change', updateWordList);
+            document.getElementById('filter-by-type').addEventListener('change', updateWordList);
+            document.getElementById('search-words').addEventListener('input', updateWordList);
+
+            // 从本地存储加载数据
+            loadFromLocalStorage();
+
+            // 添加滚动时导航栏样式变化
+            window.addEventListener('scroll', function () {
+                const header = document.querySelector('header');
+                if (window.scrollY > 10) {
+                    header.classList.add('shadow');
+                } else {
+                    header.classList.remove('shadow');
+                }
+            });
+        });
+
+        // 处理文件上传
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        // 处理文件
+        function handleFile(file) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    // 获取第一个工作表
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+
+                    // 转换为JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                    // 验证数据格式
+                    if (validateDataFormat(jsonData)) {
+                        wordData = jsonData;
+                        extractLanguages();
+                        initWordTypes();
+                        saveToLocalStorage();
+                        showImportResult();
+                        setupAllSections();
+                        showSection('flashcards');
+
+                        // 重置表单
+                        document.getElementById('file-input').value = '';
+                    }
+                } catch (error) {
+                    alert('文件解析错误: ' + error.message);
+                    console.error(error);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 验证数据格式
+        function validateDataFormat(data) {
+            if (!data || data.length === 0) {
+                alert('Excel文件中没有数据');
+                return false;
+            }
+
+            // 检查是否有key列
+            const firstRow = data[0];
+            if (!('key' in firstRow)) {
+                alert('Excel文件必须包含"key"列');
+                return false;
+            }
+
+            // 检查是否有语言列
+            let hasLanguageColumn = false;
+            for (const key in firstRow) {
+                if (key.startsWith('语言_')) {
+                    hasLanguageColumn = true;
+                    break;
+                }
+            }
+
+            if (!hasLanguageColumn) {
+                alert('Excel文件必须包含至少一个以"语言_"开头的列（如：语言_英语）');
+                return false;
+            }
+
+            return true;
+        }
+
+        // 提取语言
+        function extractLanguages() {
+            languages = [];
+            const firstRow = wordData[0];
+
+            for (const key in firstRow) {
+                if (key.startsWith('语言_')) {
+                    const language = key.replace('语言_', '');
+                    languages.push({
+                        code: key,
+                        name: language
+                    });
+                }
+            }
+        }
+
+        // 初始化单词类型
+        function initWordTypes() {
+            const typeSelect = document.getElementById('filter-by-type');
+            // 清空现有选项（保留"所有类型"）
+            while (typeSelect.options.length > 1) {
+                typeSelect.remove(1);
+            }
+
+            // 收集所有类型
+            const types = new Set();
+            wordData.forEach(word => {
+                if (word.type && word.type.trim() !== '') {
+                    types.add(word.type.trim());
+                }
+            });
+
+            // 添加到下拉菜单
+            Array.from(types).sort().forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                typeSelect.appendChild(option);
+            });
+        }
+
+        // 显示导入结果
+        function showImportResult() {
+            const importSection = document.getElementById('import');
+            const initialPrompt = document.getElementById('initial-prompt');
+            const importResult = document.getElementById('import-result');
+            const importCount = document.getElementById('import-count');
+            const languageColumns = document.getElementById('language-columns');
+
+            // 隐藏初始提示，显示导入区域
+            initialPrompt.classList.add('hidden');
+            importSection.classList.remove('hidden');
+
+            // 更新导入结果
+            importCount.textContent = wordData.length;
+            languageColumns.innerHTML = '';
+
+            languages.forEach(lang => {
+                const badge = document.createElement('span');
+                badge.className = 'bg-primary/10 text-primary px-3 py-1 rounded-full text-sm';
+                badge.textContent = lang.name;
+                languageColumns.appendChild(badge);
+            });
+
+            importResult.classList.remove('hidden');
+        }
+
+        // 设置所有功能区域
+        function setupAllSections() {
+            setupFlashcards();
+            setupQuiz();
+            setupMultipleChoice();
+            setupWordList();
+            setupStatistics();
+
+            // 显示所有导航区域
+            document.querySelectorAll('section').forEach(section => {
+                if (section.id !== 'initial-prompt') {
+                    section.classList.remove('hidden');
+                }
+            });
+        }
+
+        // 设置闪卡区域 - 优化布局防止文字重叠
+        function setupFlashcards() {
+            const languageSelector = document.getElementById('flashcard-language-selector');
+            languageSelector.innerHTML = '';
+
+            languages.forEach(lang => {
+                const checkbox = document.createElement('label');
+                checkbox.className = 'inline-flex items-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-all duration-200';
+                checkbox.innerHTML = `
+                        <input type="checkbox" class="form-checkbox h-4 w-4 text-primary rounded" value="${lang.code}">
+                        <span class="ml-2">${lang.name}</span>
+                    `;
+
+                // 默认选中第一个语言
+                if (languages.indexOf(lang) === 0) {
+                    checkbox.querySelector('input').checked = true;
+                    flashcardLanguages.push(lang.code);
+                }
+
+                checkbox.querySelector('input').addEventListener('change', function () {
+                    if (this.checked) {
+                        flashcardLanguages.push(this.value);
+                    } else {
+                        flashcardLanguages = flashcardLanguages.filter(l => l !== this.value);
+                    }
+
+                    // 至少保留一个选中的语言
+                    if (flashcardLanguages.length === 0) {
+                        this.checked = true;
+                        flashcardLanguages.push(this.value);
+                    }
+
+                    resetFlashcards();
+                });
+
+                languageSelector.appendChild(checkbox);
+            });
+
+            resetFlashcards();
+        }
+
+        // 重置闪卡
+        function resetFlashcards() {
+            shuffledFlashcards = [...wordData];
+            shuffleArray(shuffledFlashcards);
+            currentFlashcardIndex = 0;
+            showFlashcard(currentFlashcardIndex);
+            updateFlashcardProgress();
+        }
+
+        // 显示闪卡 - 优化内容布局
+        function showFlashcard(index) {
+            if (index < 0 || index >= shuffledFlashcards.length) return;
+
+            const word = shuffledFlashcards[index];
+            document.getElementById('flashcard-key').textContent = word.key || '';
+            document.getElementById('flashcard-hint').textContent = word.提示 ? `提示: ${word.提示}` : '';
+            document.getElementById('flashcard-type').textContent = word.type ? `类型: ${word.type}` : '';
+
+            // 构建多语言值，优化显示格式
+            let valueHtml = '';
+            flashcardLanguages.forEach(langCode => {
+                const lang = languages.find(l => l.code === langCode);
+                if (lang && word[langCode]) {
+                    valueHtml += `<div class="mb-2"><strong>${lang.name}:</strong> ${word[langCode]}</div>`;
+                }
+            });
+
+            document.getElementById('flashcard-value').innerHTML = valueHtml;
+
+            // 重置卡片状态
+            document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+
+            // 更新按钮状态
+            document.getElementById('prev-flashcard').disabled = index === 0;
+        }
+
+        // 翻转闪卡
+        function flipFlashcard() {
+            document.getElementById('flashcard-inner').classList.toggle('rotate-y-180');
+        }
+
+        // 显示下一个闪卡
+        function showNextFlashcard() {
+            if (currentFlashcardIndex < shuffledFlashcards.length - 1) {
+                currentFlashcardIndex++;
+                showFlashcard(currentFlashcardIndex);
+                updateFlashcardProgress();
+            }
+        }
+
+        // 显示上一个闪卡
+        function showPrevFlashcard() {
+            if (currentFlashcardIndex > 0) {
+                currentFlashcardIndex--;
+                showFlashcard(currentFlashcardIndex);
+                updateFlashcardProgress();
+            }
+        }
+
+        // 更新闪卡进度
+        function updateFlashcardProgress() {
+            const progress = ((currentFlashcardIndex + 1) / shuffledFlashcards.length) * 100;
+            document.getElementById('flashcard-progress-bar').style.width = `${progress}%`;
+            document.getElementById('flashcard-progress-text').textContent =
+                `${currentFlashcardIndex + 1}/${shuffledFlashcards.length}`;
+        }
+
+        // 设置默写区域
+        function setupQuiz() {
+            const languageSelect = document.getElementById('quiz-language-select');
+            languageSelect.innerHTML = '<option value="">-- 请选择语言 --</option>';
+
+            languages.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang.code;
+                option.textContent = lang.name;
+                languageSelect.appendChild(option);
+            });
+
+            // 重置默写状态
+            resetQuiz();
+        }
+
+        // 处理默写语言变化
+        function handleQuizLanguageChange() {
+            const selectedLanguage = this.value;
+            quizState.language = selectedLanguage;
+
+            if (selectedLanguage) {
+                const lang = languages.find(l => l.code === selectedLanguage);
+                document.getElementById('quiz-language-name').textContent = lang ? lang.name : '';
+                resetQuiz();
+            } else {
+                document.getElementById('quiz-key').textContent = '';
+                document.getElementById('quiz-hint').textContent = '';
+                document.getElementById('quiz-answer').value = '';
+                document.getElementById('quiz-feedback').classList.add('hidden');
+                document.getElementById('next-quiz').disabled = true;
+            }
+        }
+
+        // 重置默写
+        function resetQuiz() {
+            if (!quizState.language) return;
+
+            // 过滤掉没有该语言值的单词
+            const validWords = wordData.filter(word => word[quizState.language]);
+
+            quizState.shuffled = [...validWords];
+            shuffleArray(quizState.shuffled);
+            quizState.currentIndex = 0;
+            quizState.total = 0;
+            quizState.correct = 0;
+
+            showQuiz(quizState.currentIndex);
+            updateQuizProgress();
+            document.getElementById('next-quiz').disabled = true;
+            document.getElementById('quiz-answer').value = '';
+            document.getElementById('quiz-feedback').classList.add('hidden');
+        }
+
+        // 显示默写题目
+        function showQuiz(index) {
+            if (!quizState.language || index < 0 || index >= quizState.shuffled.length) return;
+
+            const word = quizState.shuffled[index];
+            document.getElementById('quiz-key').textContent = word.key || '';
+            document.getElementById('quiz-hint').textContent = word.提示 ? `提示: ${word.提示}` : '无提示';
+            document.getElementById('quiz-answer').value = '';
+            document.getElementById('quiz-answer').focus();
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('next-quiz').disabled = true;
+        }
+
+        // 检查默写答案
+        function checkQuizAnswer() {
+            if (!quizState.language || quizState.currentIndex >= quizState.shuffled.length) return;
+
+            const word = quizState.shuffled[quizState.currentIndex];
+            const userAnswer = document.getElementById('quiz-answer').value.trim();
+            const correctAnswer = (word[quizState.language] || '').trim();
+            const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+
+            const feedbackElement = document.getElementById('quiz-feedback');
+
+            if (isCorrect) {
+                feedbackElement.className = 'bg-green-50 border border-green-200 text-green-800 p-4 rounded-lg animate-fadeIn';
+                feedbackElement.innerHTML = `<i class="fa fa-check-circle mr-2"></i> 正确！答案是: ${correctAnswer}`;
+
+                // 更新统计
+                quizState.correct++;
+
+                // 标记为掌握的单词
+                if (!stats.masteredWords.includes(word.key)) {
+                    stats.masteredWords.push(word.key);
+                }
+            } else {
+                feedbackElement.className = 'bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg animate-fadeIn';
+                feedbackElement.innerHTML = `<i class="fa fa-times-circle mr-2"></i> 错误。你的答案: ${userAnswer}，正确答案: ${correctAnswer}`;
+
+                // 从掌握的单词中移除
+                stats.masteredWords = stats.masteredWords.filter(key => key !== word.key);
+            }
+
+            // 更新总次数
+            quizState.total++;
+
+            // 更新全局统计
+            stats.quiz.total++;
+            if (isCorrect) {
+                stats.quiz.correct++;
+            }
+
+            // 更新语言统计
+            const langName = languages.find(l => l.code === quizState.language)?.name;
+            if (langName) {
+                if (!stats.quiz.languages[langName]) {
+                    stats.quiz.languages[langName] = { total: 0, correct: 0 };
+                }
+                stats.quiz.languages[langName].total++;
+                if (isCorrect) {
+                    stats.quiz.languages[langName].correct++;
+                }
+            }
+
+            feedbackElement.classList.remove('hidden');
+            document.getElementById('next-quiz').disabled = false;
+            updateQuizProgress();
+            saveStats();
+            updateStatistics();
+        }
+
+        // 显示下一个默写题目
+        function showNextQuiz() {
+            if (quizState.currentIndex < quizState.shuffled.length - 1) {
+                quizState.currentIndex++;
+                showQuiz(quizState.currentIndex);
+                updateQuizProgress();
+            } else {
+                // 如果是最后一题，重置
+                alert(`练习结束！你的正确率是: ${Math.round((quizState.correct / quizState.total) * 100)}%`);
+                resetQuiz();
+            }
+        }
+
+        // 更新默写进度
+        function updateQuizProgress() {
+            const progress = ((quizState.currentIndex + 1) / quizState.shuffled.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+            document.getElementById('quiz-progress-text').textContent =
+                `${quizState.currentIndex + 1}/${quizState.shuffled.length}`;
+
+            // 更新正确率
+            let accuracy = 0;
+            if (quizState.total > 0) {
+                accuracy = (quizState.correct / quizState.total) * 100;
+            }
+            document.getElementById('quiz-accuracy-bar').style.width = `${accuracy}%`;
+            document.getElementById('quiz-accuracy-text').textContent = `${Math.round(accuracy)}%`;
+        }
+
+        // 设置选择题区域
+        function setupMultipleChoice() {
+            const languageSelect = document.getElementById('mcq-language-select');
+            languageSelect.innerHTML = '<option value="">-- 请选择语言 --</option>';
+
+            languages.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang.code;
+                option.textContent = lang.name;
+                languageSelect.appendChild(option);
+            });
+
+            // 重置选择题状态
+            resetMcq();
+        }
+
+        // 处理选择题语言变化
+        function handleMcqLanguageChange() {
+            const selectedLanguage = this.value;
+            mcqState.language = selectedLanguage;
+
+            if (selectedLanguage) {
+                resetMcq();
+            } else {
+                document.getElementById('mcq-question').textContent = '';
+                document.getElementById('mcq-options').innerHTML = '';
+                document.getElementById('mcq-feedback').classList.add('hidden');
+                document.getElementById('next-mcq').disabled = true;
+            }
+        }
+
+        // 重置选择题
+        function resetMcq() {
+            if (!mcqState.language) return;
+
+            // 过滤掉没有该语言值的单词
+            const validWords = wordData.filter(word => word[mcqState.language]);
+
+            mcqState.shuffled = [...validWords];
+            shuffleArray(mcqState.shuffled);
+            mcqState.currentIndex = 0;
+            mcqState.total = 0;
+            mcqState.correct = 0;
+
+            showMcq(mcqState.currentIndex);
+            updateMcqProgress();
+            document.getElementById('next-mcq').disabled = true;
+            document.getElementById('mcq-feedback').classList.add('hidden');
+        }
+
+        // 显示选择题
+        function showMcq(index) {
+            if (!mcqState.language || index < 0 || index >= mcqState.shuffled.length) return;
+
+            const optionsContainer = document.getElementById('mcq-options');
+            optionsContainer.innerHTML = '';
+
+            const currentWord = mcqState.shuffled[index];
+            document.getElementById('mcq-question').textContent = currentWord.key || '';
+
+            // 获取正确答案
+            const correctAnswer = currentWord[mcqState.language] || '';
+
+            // 收集其他可能的答案
+            const otherWords = wordData
+                .filter(word => word !== currentWord && word[mcqState.language])
+                .map(word => word[mcqState.language]);
+
+            // 随机选择2个其他答案
+            const wrongAnswers = [];
+            while (wrongAnswers.length < 2 && otherWords.length > 0) {
+                const randomIndex = Math.floor(Math.random() * otherWords.length);
+                const selected = otherWords.splice(randomIndex, 1)[0];
+                if (!wrongAnswers.includes(selected) && selected !== correctAnswer) {
+                    wrongAnswers.push(selected);
+                }
+            }
+
+            // 组合所有选项并打乱顺序
+            const allOptions = [correctAnswer, ...wrongAnswers];
+            shuffleArray(allOptions);
+
+            // 创建选项元素
+            allOptions.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-all duration-200';
+                optionElement.textContent = option;
+                optionElement.dataset.correct = option === correctAnswer;
+
+                optionElement.addEventListener('click', function () {
+                    // 移除其他选项的选中状态
+                    document.querySelectorAll('#mcq-options > div').forEach(el => {
+                        el.classList.remove('border-primary', 'bg-primary/5', 'border-red-500', 'bg-red-50', 'border-green-500', 'bg-green-50');
+                    });
+
+                    // 标记当前选项
+                    const isCorrect = this.dataset.correct === 'true';
+                    if (isCorrect) {
+                        this.classList.add('border-green-500', 'bg-green-50');
+                    } else {
+                        this.classList.add('border-red-500', 'bg-red-50');
+
+                        // 显示正确答案
+                        document.querySelectorAll('#mcq-options > div').forEach(el => {
+                            if (el.dataset.correct === 'true') {
+                                el.classList.add('border-green-500', 'bg-green-50');
+                            }
+                        });
+                    }
+
+                    // 显示反馈
+                    const feedbackElement = document.getElementById('mcq-feedback');
+                    if (isCorrect) {
+                        feedbackElement.className = 'bg-green-50 border border-green-200 text-green-800 p-4 rounded-lg animate-fadeIn';
+                        feedbackElement.innerHTML = '<i class="fa fa-check-circle mr-2"></i> 正确！';
+
+                        // 更新统计
+                        mcqState.correct++;
+
+                        // 标记为掌握的单词
+                        if (!stats.masteredWords.includes(currentWord.key)) {
+                            stats.masteredWords.push(currentWord.key);
+                        }
+                    } else {
+                        feedbackElement.className = 'bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg animate-fadeIn';
+                        feedbackElement.innerHTML = '<i class="fa fa-times-circle mr-2"></i> 错误，请查看正确答案。';
+
+                        // 从掌握的单词中移除
+                        stats.masteredWords = stats.masteredWords.filter(key => key !== currentWord.key);
+                    }
+
+                    // 更新总次数
+                    mcqState.total++;
+
+                    // 更新全局统计
+                    stats.mcq.total++;
+                    if (isCorrect) {
+                        stats.mcq.correct++;
+                    }
+
+                    // 更新语言统计
+                    const langName = languages.find(l => l.code === mcqState.language)?.name;
+                    if (langName) {
+                        if (!stats.mcq.languages[langName]) {
+                            stats.mcq.languages[langName] = { total: 0, correct: 0 };
+                        }
+                        stats.mcq.languages[langName].total++;
+                        if (isCorrect) {
+                            stats.mcq.languages[langName].correct++;
+                        }
+                    }
+
+                    feedbackElement.classList.remove('hidden');
+                    document.getElementById('next-mcq').disabled = false;
+
+                    // 禁用所有选项
+                    document.querySelectorAll('#mcq-options > div').forEach(el => {
+                        el.style.pointerEvents = 'none';
+                    });
+
+                    updateMcqProgress();
+                    saveStats();
+                    updateStatistics();
+                });
+
+                optionsContainer.appendChild(optionElement);
+            });
+        }
+
+        // 显示下一个选择题
+        function showNextMcq() {
+            if (mcqState.currentIndex < mcqState.shuffled.length - 1) {
+                mcqState.currentIndex++;
+                showMcq(mcqState.currentIndex);
+                updateMcqProgress();
+            } else {
+                // 如果是最后一题，重置
+                alert(`测试结束！你的正确率是: ${Math.round((mcqState.correct / mcqState.total) * 100)}%`);
+                resetMcq();
+            }
+        }
+
+        // 更新选择题进度
+        function updateMcqProgress() {
+            const progress = ((mcqState.currentIndex + 1) / mcqState.shuffled.length) * 100;
+            document.getElementById('mcq-progress-bar').style.width = `${progress}%`;
+            document.getElementById('mcq-progress-text').textContent =
+                `${mcqState.currentIndex + 1}/${mcqState.shuffled.length}`;
+
+            // 更新正确率
+            let accuracy = 0;
+            if (mcqState.total > 0) {
+                accuracy = (mcqState.correct / mcqState.total) * 100;
+            }
+            document.getElementById('mcq-accuracy-bar').style.width = `${accuracy}%`;
+            document.getElementById('mcq-accuracy-text').textContent = `${Math.round(accuracy)}%`;
+        }
+
+        // 设置单词列表
+        function setupWordList() {
+            // 创建表头
+            const headerRow = document.getElementById('word-table-header');
+            headerRow.innerHTML = '';
+
+            // 添加key列
+            const keyHeader = document.createElement('th');
+            keyHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+            keyHeader.textContent = '单词/短语';
+            headerRow.appendChild(keyHeader);
+
+            // 添加语言列
+            languages.forEach(lang => {
+                const langHeader = document.createElement('th');
+                langHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                langHeader.textContent = lang.name;
+                headerRow.appendChild(langHeader);
+            });
+
+            // 添加提示列
+            const hintHeader = document.createElement('th');
+            hintHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+            hintHeader.textContent = '提示';
+            headerRow.appendChild(hintHeader);
+
+            // 添加类型列
+            const typeHeader = document.createElement('th');
+            typeHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+            typeHeader.textContent = '类型';
+            headerRow.appendChild(typeHeader);
+
+            // 添加掌握状态列
+            const statusHeader = document.createElement('th');
+            statusHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+            statusHeader.textContent = '状态';
+            headerRow.appendChild(statusHeader);
+
+            // 初始显示单词列表
+            updateWordList();
+        }
+
+        // 更新单词列表
+        function updateWordList() {
+            const sortBy = document.getElementById('sort-by').value;
+            const filterType = document.getElementById('filter-by-type').value;
+            const searchTerm = document.getElementById('search-words').value.toLowerCase();
+
+            // 复制并筛选数据
+            let filteredData = [...wordData];
+
+            // 按类型筛选
+            if (filterType) {
+                filteredData = filteredData.filter(word => word.type && word.type.trim() === filterType);
+            }
+
+            // 搜索筛选
+            if (searchTerm) {
+                filteredData = filteredData.filter(word => {
+                    // 检查key是否匹配
+                    if (word.key && word.key.toLowerCase().includes(searchTerm)) {
+                        return true;
+                    }
+
+                    // 检查语言列是否匹配
+                    for (const lang of languages) {
+                        if (word[lang.code] && word[lang.code].toLowerCase().includes(searchTerm)) {
+                            return true;
+                        }
+                    }
+
+                    // 检查提示是否匹配
+                    if (word.提示 && word.提示.toLowerCase().includes(searchTerm)) {
+                        return true;
+                    }
+
+                    // 检查类型是否匹配
+                    if (word.type && word.type.toLowerCase().includes(searchTerm)) {
+                        return true;
+                    }
+
+                    return false;
+                });
+            }
+
+            // 排序
+            filteredData.sort((a, b) => {
+                if (sortBy === 'key-asc') {
+                    return (a.key || '').localeCompare(b.key || '');
+                } else if (sortBy === 'key-desc') {
+                    return (b.key || '').localeCompare(a.key || '');
+                } else if (sortBy === 'type') {
+                    return (a.type || '').localeCompare(b.type || '');
+                }
+                return 0;
+            });
+
+            // 更新表格内容
+            const tableBody = document.getElementById('word-table-body');
+            tableBody.innerHTML = '';
+
+            // 显示空状态或表格内容
+            if (filteredData.length === 0) {
+                document.getElementById('word-list-empty').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('word-list-empty').classList.add('hidden');
+            }
+
+            filteredData.forEach(word => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-all duration-200';
+
+                // 添加key单元格
+                const keyCell = document.createElement('td');
+                keyCell.className = 'px-6 py-4 whitespace-nowrap';
+                keyCell.textContent = word.key || '';
+                row.appendChild(keyCell);
+
+                // 添加语言单元格
+                languages.forEach(lang => {
+                    const langCell = document.createElement('td');
+                    langCell.className = 'px-6 py-4 whitespace-nowrap';
+                    langCell.textContent = word[lang.code] || '';
+                    row.appendChild(langCell);
+                });
+
+                // 添加提示单元格
+                const hintCell = document.createElement('td');
+                hintCell.className = 'px-6 py-4 max-w-xs truncate';
+                hintCell.title = word.提示 || '';
+                hintCell.textContent = word.提示 || '';
+                row.appendChild(hintCell);
+
+                // 添加类型单元格
+                const typeCell = document.createElement('td');
+                typeCell.className = 'px-6 py-4 whitespace-nowrap';
+                if (word.type) {
+                    typeCell.innerHTML = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${word.type}</span>`;
+                }
+                row.appendChild(typeCell);
+
+                // 添加状态单元格
+                const statusCell = document.createElement('td');
+                statusCell.className = 'px-6 py-4 whitespace-nowrap';
+                const isMastered = stats.masteredWords.includes(word.key);
+                if (isMastered) {
+                    statusCell.innerHTML = '<span class="text-green-600"><i class="fa fa-check-circle mr-1"></i> 已掌握</span>';
+                } else {
+                    statusCell.innerHTML = '<span class="text-gray-500"><i class="fa fa-circle-o mr-1"></i> 学习中</span>';
+                }
+                row.appendChild(statusCell);
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 设置统计区域
+        function setupStatistics() {
+            updateStatistics();
+        }
+
+        // 更新统计数据
+        function updateStatistics() {
+            // 更新默写统计
+            document.getElementById('quiz-total').textContent = stats.quiz.total;
+            document.getElementById('quiz-correct').textContent = stats.quiz.correct;
+
+            let quizAccuracy = 0;
+            if (stats.quiz.total > 0) {
+                quizAccuracy = (stats.quiz.correct / stats.quiz.total) * 100;
+            }
+            document.getElementById('quiz-stat-accuracy').textContent = `${Math.round(quizAccuracy)}%`;
+            document.getElementById('quiz-correct-bar').style.width = `${quizAccuracy}%`;
+            document.getElementById('quiz-stat-accuracy-bar').style.width = `${quizAccuracy}%`;
+
+            // 更新默写语言统计
+            const quizLangStatsContainer = document.getElementById('quiz-language-stats');
+            quizLangStatsContainer.innerHTML = '';
+
+            // 按语言名称排序
+            const sortedQuizLangs = Object.keys(stats.quiz.languages).sort();
+            sortedQuizLangs.forEach(lang => {
+                const langStats = stats.quiz.languages[lang];
+                const langAccuracy = langStats.total > 0 ? (langStats.correct / langStats.total) * 100 : 0;
+
+                const langStatsElement = document.createElement('div');
+                langStatsElement.innerHTML = `
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>${lang}</span>
+                            <span>${langStats.correct}/${langStats.total} (${Math.round(langAccuracy)}%)</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-secondary h-1.5 rounded-full transition-all duration-1000 ease-out" style="width: ${langAccuracy}%"></div>
+                        </div>
+                    `;
+
+                quizLangStatsContainer.appendChild(langStatsElement);
+            });
+
+            // 更新选择题统计
+            document.getElementById('mcq-total').textContent = stats.mcq.total;
+            document.getElementById('mcq-correct').textContent = stats.mcq.correct;
+
+            let mcqAccuracy = 0;
+            if (stats.mcq.total > 0) {
+                mcqAccuracy = (stats.mcq.correct / stats.mcq.total) * 100;
+            }
+            document.getElementById('mcq-stat-accuracy').textContent = `${Math.round(mcqAccuracy)}%`;
+            document.getElementById('mcq-correct-bar').style.width = `${mcqAccuracy}%`;
+            document.getElementById('mcq-stat-accuracy-bar').style.width = `${mcqAccuracy}%`;
+
+            // 更新选择题语言统计
+            const mcqLangStatsContainer = document.getElementById('mcq-language-stats');
+            mcqLangStatsContainer.innerHTML = '';
+
+            // 按语言名称排序
+            const sortedMcqLangs = Object.keys(stats.mcq.languages).sort();
+            sortedMcqLangs.forEach(lang => {
+                const langStats = stats.mcq.languages[lang];
+                const langAccuracy = langStats.total > 0 ? (langStats.correct / langStats.total) * 100 : 0;
+
+                const langStatsElement = document.createElement('div');
+                langStatsElement.innerHTML = `
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>${lang}</span>
+                            <span>${langStats.correct}/${langStats.total} (${Math.round(langAccuracy)}%)</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-secondary h-1.5 rounded-full transition-all duration-1000 ease-out" style="width: ${langAccuracy}%"></div>
+                        </div>
+                    `;
+
+                mcqLangStatsContainer.appendChild(langStatsElement);
+            });
+
+            // 更新学习进度
+            const totalWords = wordData ? wordData.length : 0;
+            const masteredWords = [...new Set(stats.masteredWords)].length;
+            const remainingWords = totalWords - masteredWords;
+            const overallProgress = totalWords > 0 ? (masteredWords / totalWords) * 100 : 0;
+
+            document.getElementById('total-words-count').textContent = totalWords;
+            document.getElementById('mastered-words-count').textContent = masteredWords;
+            document.getElementById('remaining-words-count').textContent = remainingWords;
+            document.getElementById('overall-progress-text').textContent = `${Math.round(overallProgress)}%`;
+            document.getElementById('overall-progress-bar').style.width = `${overallProgress}%`;
+        }
+
+        // 下载模板文件
+        function downloadTemplate() {
+            // 创建工作簿和工作表
+            const wb = XLSX.utils.book_new();
+
+            // 创建示例数据
+            const sampleData = [
+                {
+                    key: "hello",
+                    "语言_英语": "hello",
+                    "语言_中文": "你好",
+                    "语言_法语": "bonjour",
+                    提示: "用于问候",
+                    类型: "问候语"
+                },
+                {
+                    key: "goodbye",
+                    "语言_英语": "goodbye",
+                    "语言_中文": "再见",
+                    "语言_法语": "au revoir",
+                    提示: "用于告别",
+                    类型: "问候语"
+                }
+            ];
+
+            // 创建工作表
+            const ws = XLSX.utils.json_to_sheet(sampleData);
+
+            // 添加工作表到工作簿
+            XLSX.utils.book_append_sheet(wb, ws, "单词表");
+
+            // 生成并下载文件
+            XLSX.writeFile(wb, "单词学习模板.xlsx");
+        }
+
+        // 保存数据到本地存储
+        function saveToLocalStorage() {
+            if (wordData) {
+                localStorage.setItem('vocabData', JSON.stringify(wordData));
+                localStorage.setItem('vocabLanguages', JSON.stringify(languages));
+            }
+            saveStats();
+        }
+
+        // 保存统计数据
+        function saveStats() {
+            localStorage.setItem('vocabStats', JSON.stringify(stats));
+        }
+
+        // 从本地存储加载数据
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('vocabData');
+            const savedLanguages = localStorage.getItem('vocabLanguages');
+            const savedStats = localStorage.getItem('vocabStats');
+
+            if (savedData && savedLanguages) {
+                try {
+                    wordData = JSON.parse(savedData);
+                    languages = JSON.parse(savedLanguages);
+
+                    // 显示导入结果
+                    showImportResult();
+                    setupAllSections();
+                } catch (error) {
+                    console.error('Failed to load data from localStorage:', error);
+                    // 清除损坏的数据
+                    localStorage.removeItem('vocabData');
+                    localStorage.removeItem('vocabLanguages');
+                }
+            }
+
+            if (savedStats) {
+                try {
+                    stats = JSON.parse(savedStats);
+                } catch (error) {
+                    console.error('Failed to load stats from localStorage:', error);
+                    localStorage.removeItem('vocabStats');
+                }
+            }
+        }
+
+        // 显示指定区域
+        function showSection(sectionId) {
+            // 隐藏所有区域
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // 显示指定区域
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.remove('hidden');
+
+                // 滚动到该区域
+                section.scrollIntoView({ behavior: 'smooth' });
+
+                // 更新导航链接状态
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('border-primary', 'text-primary');
+                    if (link.getAttribute('href') === `#${sectionId}`) {
+                        link.classList.add('border-primary', 'text-primary');
+                    }
+                });
+            }
+        }
+
+        // 打乱数组顺序
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href').substring(1);
+                showSection(targetId);
+
+                // 如果是移动菜单，点击后关闭
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                    const icon = document.getElementById('mobile-menu-button').querySelector('i');
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

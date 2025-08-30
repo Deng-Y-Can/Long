@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词轮播展示</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入SheetJS用于处理Excel文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        serif: ['Georgia', 'serif'],
+                        mono: ['Courier New', 'monospace'],
+                        display: ['Montserrat', 'sans-serif'],
+                        cursive: ['Comic Sans MS', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+            .card-shadow-hover {
+                transition: box-shadow 0.3s ease;
+            }
+            .card-shadow-hover:hover {
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            .transition-custom {
+                transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .scale-hover {
+                transition: transform 0.3s ease;
+            }
+            .scale-hover:hover {
+                transform: scale(1.03);
+            }
+        }
+    </style>
+    
+    <style>
+        /* 导入多种字体用于不同列的显示 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700&family=Roboto:wght@400;500&family=Lora:ital@0;1&family=Poppins:wght@400;500&display=swap');
+        
+        /* 轮播动画效果 */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 500ms, transform 500ms;
+        }
+        .slide-enter {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        .slide-enter-active {
+            opacity: 1;
+            transform: translateX(0);
+            transition: opacity 600ms, transform 600ms;
+        }
+        .zoom-enter {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        .zoom-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 500ms, transform 500ms;
+        }
+        .flip-enter {
+            opacity: 0;
+            transform: rotateY(90deg);
+        }
+        .flip-enter-active {
+            opacity: 1;
+            transform: rotateY(0);
+            transition: opacity 600ms, transform 600ms;
+        }
+        .exit-active {
+            opacity: 0;
+            transition: opacity 300ms;
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* 图片加载动画 */
+        .image-loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* 按钮波纹效果 */
+        .btn-ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-ripple:after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform 0.5s, opacity 0.8s;
+        }
+        .btn-ripple:active:after {
+            transform: scale(0, 0);
+            opacity: 0.3;
+            transition: 0s;
+        }
+        
+        /* 数据统计动画 */
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stat-animation {
+            animation: countUp 0.6s ease forwards;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-light to-slate-100 min-h-screen font-sans text-dark">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-10">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent mb-3">
+                单词轮播展示
+            </h1>
+            <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+                上传Excel文件，展示单词及其相关信息，支持自定义轮播设置
+            </p>
+        </header>
+        
+        <!-- 文件上传区域 -->
+        <div id="upload-section" class="mb-10 bg-white rounded-xl p-6 card-shadow card-shadow-hover transition-custom">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="w-full md:w-2/3">
+                    <label for="excel-file" class="block text-lg font-medium text-slate-700 mb-2">
+                        选择Excel文件
+                    </label>
+                    <div class="flex items-center">
+                        <input type="file" id="excel-file" accept=".xlsx, .xls" 
+                            class="block w-full text-sm text-slate-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-lg file:border-0
+                                file:text-sm file:font-medium
+                                file:bg-primary file:text-white
+                                hover:file:bg-primary/90
+                                transition-all duration-300"
+                        >
+                    </div>
+                    <p class="mt-2 text-sm text-slate-500">
+                        Excel文件需包含：key、语言、显示 三列，其他列可自定义
+                    </p>
+                </div>
+                <div class="w-full md:w-1/3 flex justify-center md:justify-end">
+                    <button id="load-data" disabled 
+                        class="px-6 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed transition-all duration-300 btn-ripple">
+                        <i class="fa fa-refresh mr-2"></i>加载数据
+                    </button>
+                </div>
+            </div>
+            <div id="file-error" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                <i class="fa fa-exclamation-circle mr-2"></i>
+                <span>请上传正确格式的Excel文件，且文件必须包含key、语言、显示三列。</span>
+            </div>
+            <div id="load-success" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-600 text-sm">
+                <i class="fa fa-check-circle mr-2"></i>
+                <span>数据加载成功！</span>
+            </div>
+        </div>
+        
+        <!-- 数据统计 -->
+        <div id="stats-section" class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 hidden">
+            <div class="bg-white rounded-xl p-5 card-shadow transition-custom">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-primary mr-4">
+                        <i class="fa fa-file-text-o text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-sm">总记录数</p>
+                        <p id="total-records" class="text-2xl font-bold text-slate-800">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-5 card-shadow transition-custom">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-secondary mr-4">
+                        <i class="fa fa-eye text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-sm">显示记录数</p>
+                        <p id="display-records" class="text-2xl font-bold text-slate-800">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-5 card-shadow transition-custom">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-accent mr-4">
+                        <i class="fa fa-columns text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-sm">信息列数</p>
+                        <p id="total-columns" class="text-2xl font-bold text-slate-800">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 轮播控制区域 -->
+        <div id="control-panel" class="mb-8 bg-white rounded-xl p-6 card-shadow transition-custom hidden">
+            <h2 class="text-xl font-semibold mb-6 flex items-center">
+                <i class="fa fa-sliders mr-2 text-primary"></i>轮播设置
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">播放模式</label>
+                    <div class="flex items-center space-x-4">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="play-mode" value="sequence" checked 
+                                class="form-radio h-5 w-5 text-primary focus:ring-primary">
+                            <span class="ml-2 text-slate-700">顺序</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="play-mode" value="random" 
+                                class="form-radio h-5 w-5 text-primary focus:ring-primary">
+                            <span class="ml-2 text-slate-700">随机</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label for="duration" class="block text-sm font-medium text-slate-700 mb-1">
+                        显示时间 (秒)
+                    </label>
+                    <div class="flex items-center">
+                        <input type="range" id="duration-slider" min="1" max="60" value="5" 
+                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary">
+                        <span id="duration-value" class="ml-2 text-slate-700 min-w-[3rem] text-center">5</span>
+                    </div>
+                </div>
+                <div>
+                    <label for="animation" class="block text-sm font-medium text-slate-700 mb-1">
+                        切换动画
+                    </label>
+                    <select id="animation" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="fade">淡入淡出</option>
+                        <option value="slide">滑动</option>
+                        <option value="zoom">缩放</option>
+                        <option value="flip">翻转</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="font-size" class="block text-sm font-medium text-slate-700 mb-1">
+                        字体大小
+                    </label>
+                    <select id="font-size" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="small">小</option>
+                        <option value="medium" selected>中</option>
+                        <option value="large">大</option>
+                        <option value="x-large">特大</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex flex-wrap gap-3 justify-center md:justify-end">
+                <button id="play-pause" class="px-6 py-2.5 bg-primary text-white rounded-lg font-medium transition-all duration-300 scale-hover btn-ripple">
+                    <i class="fa fa-pause mr-2"></i>暂停
+                </button>
+                <button id="shuffle-btn" class="px-6 py-2.5 bg-slate-200 text-slate-700 rounded-lg font-medium transition-all duration-300 scale-hover btn-ripple">
+                    <i class="fa fa-random mr-2"></i>打乱顺序
+                </button>
+                <button id="reset" class="px-6 py-2.5 bg-slate-200 text-slate-700 rounded-lg font-medium transition-all duration-300 scale-hover btn-ripple">
+                    <i class="fa fa-repeat mr-2"></i>重置
+                </button>
+            </div>
+        </div>
+        
+        <!-- 轮播展示区域 -->
+        <div id="carousel-section" class="mb-10 hidden">
+            <div class="bg-white rounded-xl overflow-hidden card-shadow transition-custom">
+                <!-- 轮播计数 -->
+                <div class="bg-slate-50 px-6 py-3 border-b border-slate-200 flex justify-between items-center">
+                    <div class="text-slate-600 text-sm">
+                        <span id="current-index">1</span> / <span id="total-count">0</span>
+                    </div>
+                    <div class="text-sm font-medium text-primary">
+                        当前单词: <span id="current-key">-</span>
+                    </div>
+                </div>
+                
+                <!-- 轮播内容 -->
+                <div id="carousel-content" class="p-6 md:p-10 min-h-[400px] flex flex-col md:flex-row gap-8 items-center justify-center">
+                    <!-- 左侧图片区域 -->
+                    <div class="w-full md:w-1/2 flex justify-center">
+                        <div id="image-container" class="relative w-full max-w-md aspect-square rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center shadow-inner">
+                            <img id="word-image" src="" alt="单词图片" class="hidden w-full h-full object-contain transition-custom">
+                            <div id="no-image" class="text-slate-400 text-center p-6">
+                                <i class="fa fa-picture-o text-5xl mb-3 opacity-30"></i>
+                                <p>无相关图片</p>
+                            </div>
+                            <div id="image-loading-indicator" class="image-loading absolute inset-0 hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧内容区域 -->
+                    <div class="w-full md:w-1/2">
+                        <div id="word-content" class="space-y-6">
+                            <!-- 主要语言内容 -->
+                            <div id="main-language" class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-slate-800"></div>
+                            
+                            <!-- 其他列内容 -->
+                            <div id="additional-info" class="space-y-3 max-h-[300px] overflow-y-auto pr-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 轮播导航按钮 -->
+                <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-center gap-4">
+                    <button id="prev-btn" class="p-3 bg-white rounded-full shadow hover:bg-slate-50 transition-all duration-300 scale-hover disabled:opacity-50 disabled:cursor-not-allowed btn-ripple">
+                        <i class="fa fa-chevron-left text-slate-700"></i>
+                    </button>
+                    <button id="next-btn" class="p-3 bg-white rounded-full shadow hover:bg-slate-50 transition-all duration-300 scale-hover disabled:opacity-50 disabled:cursor-not-allowed btn-ripple">
+                        <i class="fa fa-chevron-right text-slate-700"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部信息 -->
+        <footer class="text-center text-slate-500 text-sm py-6">
+            <p>单词轮播展示 &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局变量
+        let excelData = [];          // 存储处理后的Excel数据
+        let filteredData = [];       // 存储过滤后（显示为true或空）的数据
+        let originalData = [];       // 原始过滤数据，用于重置
+        let currentIndex = 0;        // 当前显示的索引
+        let carouselInterval = null; // 轮播定时器
+        let isPlaying = true;        // 是否正在播放
+        let imageFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp']; // 支持的图片格式
+        let totalColumns = 0;        // 总列数
+        
+        // 字体列表，用于不同列的显示
+        const fontList = [
+            'font-["Inter","sans-serif"]',
+            'font-["Montserrat","sans-serif"]',
+            'font-["Roboto","sans-serif"]',
+            'font-["Lora","serif"]',
+            'font-["Poppins","sans-serif"]',
+            'font-serif',
+            'font-mono',
+            'font-cursive'
+        ];
+        
+        // DOM元素
+        const excelFileInput = document.getElementById('excel-file');
+        const loadDataBtn = document.getElementById('load-data');
+        const fileError = document.getElementById('file-error');
+        const loadSuccess = document.getElementById('load-success');
+        const controlPanel = document.getElementById('control-panel');
+        const carouselSection = document.getElementById('carousel-section');
+        const statsSection = document.getElementById('stats-section');
+        const totalRecordsEl = document.getElementById('total-records');
+        const displayRecordsEl = document.getElementById('display-records');
+        const totalColumnsEl = document.getElementById('total-columns');
+        const currentIndexEl = document.getElementById('current-index');
+        const totalCountEl = document.getElementById('total-count');
+        const currentKeyEl = document.getElementById('current-key');
+        const wordImage = document.getElementById('word-image');
+        const noImage = document.getElementById('no-image');
+        const imageLoadingIndicator = document.getElementById('image-loading-indicator');
+        const mainLanguage = document.getElementById('main-language');
+        const additionalInfo = document.getElementById('additional-info');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const playPauseBtn = document.getElementById('play-pause');
+        const resetBtn = document.getElementById('reset');
+        const shuffleBtn = document.getElementById('shuffle-btn');
+        const durationSlider = document.getElementById('duration-slider');
+        const durationValue = document.getElementById('duration-value');
+        const animationSelect = document.getElementById('animation');
+        const fontSizeSelect = document.getElementById('font-size');
+        
+        // 初始化事件监听
+        function initEventListeners() {
+            // 文件选择变化
+            excelFileInput.addEventListener('change', handleFileSelect);
+            
+            // 加载数据按钮
+            loadDataBtn.addEventListener('click', loadExcelData);
+            
+            // 上一页/下一页按钮
+            prevBtn.addEventListener('click', showPrevious);
+            nextBtn.addEventListener('click', showNext);
+            
+            // 播放/暂停按钮
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            
+            // 重置按钮
+            resetBtn.addEventListener('click', resetCarousel);
+            
+            // 打乱顺序按钮
+            shuffleBtn.addEventListener('click', shuffleData);
+            
+            // 播放模式切换
+            document.querySelectorAll('input[name="play-mode"]').forEach(radio => {
+                radio.addEventListener('change', resetCarousel);
+            });
+            
+            // 时长滑块变化
+            durationSlider.addEventListener('input', function() {
+                durationValue.textContent = this.value;
+                if (isPlaying) {
+                    clearInterval(carouselInterval);
+                    startCarousel();
+                }
+            });
+            
+            // 动画效果变化
+            animationSelect.addEventListener('change', () => {
+                // 立即应用动画效果
+                addAnimationEffect(true);
+            });
+            
+            // 字体大小变化
+            fontSizeSelect.addEventListener('change', adjustFontSize);
+            
+            // 键盘导航
+            document.addEventListener('keydown', handleKeyPress);
+        }
+        
+        // 处理键盘事件
+        function handleKeyPress(e) {
+            if (filteredData.length === 0) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    showPrevious();
+                    break;
+                case 'ArrowRight':
+                    showNext();
+                    break;
+                case ' ': // 空格键
+                    togglePlayPause();
+                    e.preventDefault(); // 防止页面滚动
+                    break;
+                case 'r':
+                case 'R':
+                    resetCarousel();
+                    break;
+            }
+        }
+        
+        // 处理文件选择
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // 检查文件类型
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+                    loadDataBtn.disabled = false;
+                    loadDataBtn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                    loadDataBtn.classList.add('bg-primary', 'text-white', 'hover:bg-primary/90');
+                    fileError.classList.add('hidden');
+                    
+                    // 显示文件名
+                    const fileNameEl = document.createElement('div');
+                    fileNameEl.className = 'mt-2 text-sm text-slate-600';
+                    fileNameEl.innerHTML = `<i class="fa fa-file-excel-o mr-1"></i> 已选择: ${file.name}`;
+                    
+                    // 移除已有的文件名显示
+                    const existingFileName = document.querySelector('.mt-2.text-sm.text-slate-600');
+                    if (existingFileName) {
+                        existingFileName.remove();
+                    }
+                    
+                    excelFileInput.parentNode.parentNode.appendChild(fileNameEl);
+                } else {
+                    loadDataBtn.disabled = true;
+                    loadDataBtn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                    loadDataBtn.classList.remove('bg-primary', 'text-white', 'hover:bg-primary/90');
+                    fileError.classList.remove('hidden');
+                    fileError.querySelector('span').textContent = '请上传.xlsx或.xls格式的Excel文件。';
+                }
+            } else {
+                loadDataBtn.disabled = true;
+                loadDataBtn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+                loadDataBtn.classList.remove('bg-primary', 'text-white', 'hover:bg-primary/90');
+                
+                // 移除文件名显示
+                const existingFileName = document.querySelector('.mt-2.text-sm.text-slate-600');
+                if (existingFileName) {
+                    existingFileName.remove();
+                }
+            }
+        }
+        
+        // 加载Excel数据
+        function loadExcelData() {
+            const file = excelFileInput.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 获取第一个工作表
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // 转换为JSON
+                    excelData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // 验证数据结构
+                    if (validateExcelData()) {
+                        // 过滤数据（只保留显示为true或空的记录）
+                        filterData();
+                        originalData = [...filteredData]; // 保存一份原始数据用于重置
+                        
+                        // 计算总列数
+                        totalColumns = excelData.length > 0 ? Object.keys(excelData[0]).length : 0;
+                        
+                        // 更新统计信息
+                        updateStats();
+                        
+                        // 显示控制面板、统计区域和轮播区域
+                        statsSection.classList.remove('hidden');
+                        controlPanel.classList.remove('hidden');
+                        carouselSection.classList.remove('hidden');
+                        
+                        // 更新总数
+                        totalCountEl.textContent = filteredData.length;
+                        
+                        // 应用字体大小设置
+                        adjustFontSize();
+                        
+                        // 开始轮播
+                        currentIndex = 0;
+                        showCurrentItem();
+                        startCarousel();
+                        
+                        // 显示成功消息
+                        loadSuccess.classList.remove('hidden');
+                        fileError.classList.add('hidden');
+                        
+                        // 添加统计数字动画
+                        setTimeout(() => {
+                            document.querySelectorAll('#stats-section p.text-2xl').forEach((el, i) => {
+                                el.classList.add('stat-animation');
+                                el.style.animationDelay = `${i * 0.1}s`;
+                            });
+                        }, 100);
+                        
+                        // 滚动到轮播区域
+                        carouselSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        throw new Error('Excel文件必须包含key、语言、显示三列。');
+                    }
+                } catch (error) {
+                    console.error('加载Excel数据出错:', error);
+                    loadSuccess.classList.add('hidden');
+                    fileError.classList.remove('hidden');
+                    fileError.querySelector('span').textContent = error.message;
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            totalRecordsEl.textContent = excelData.length;
+            displayRecordsEl.textContent = filteredData.length;
+            totalColumnsEl.textContent = totalColumns;
+        }
+        
+        // 验证Excel数据结构
+        function validateExcelData() {
+            if (excelData.length === 0) return false;
+            
+            const firstRow = excelData[0];
+            // 检查是否包含必要的列
+            return 'key' in firstRow && '语言' in firstRow && '显示' in firstRow;
+        }
+        
+        // 过滤数据
+        function filterData() {
+            filteredData = excelData.filter(item => {
+                // 显示列的值为false则不显示，其他情况（true或空）都显示
+                const displayValue = item['显示'];
+                return displayValue !== false && displayValue !== 'false';
+            });
+        }
+        
+        // 打乱数据顺序
+        function shuffleData() {
+            if (filteredData.length <= 1) return;
+            
+            //  Fisher-Yates 洗牌算法
+            for (let i = filteredData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [filteredData[i], filteredData[j]] = [filteredData[j], filteredData[i]];
+            }
+            
+            // 重置当前索引
+            currentIndex = 0;
+            showCurrentItem();
+            
+            // 重置定时器
+            if (isPlaying) {
+                clearInterval(carouselInterval);
+                startCarousel();
+            }
+            
+            // 添加提示
+            const shuffleToast = document.createElement('div');
+            shuffleToast.className = 'fixed top-4 right-4 bg-accent text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-y-0 opacity-100';
+            shuffleToast.innerHTML = '<i class="fa fa-random mr-2"></i>顺序已打乱';
+            document.body.appendChild(shuffleToast);
+            
+            setTimeout(() => {
+                shuffleToast.classList.add('opacity-0', 'translate-y-[-20px]');
+                setTimeout(() => shuffleToast.remove(), 300);
+            }, 1500);
+        }
+        
+        // 显示当前项目
+        function showCurrentItem() {
+            if (filteredData.length === 0) return;
+            
+            const item = filteredData[currentIndex];
+            
+            // 更新当前索引和key显示
+            currentIndexEl.textContent = currentIndex + 1;
+            currentKeyEl.textContent = item['key'] || '-';
+            
+            // 加载图片
+            loadImage(item['key']);
+            
+            // 显示主要语言内容
+            mainLanguage.textContent = item['语言'] || '';
+            
+            // 显示其他列内容
+            displayAdditionalInfo(item);
+            
+            // 添加动画效果
+            addAnimationEffect();
+        }
+        
+        // 加载图片
+        function loadImage(key) {
+            if (!key) {
+                wordImage.classList.add('hidden');
+                noImage.classList.remove('hidden');
+                return;
+            }
+            
+            // 显示加载指示器
+            imageLoadingIndicator.classList.remove('hidden');
+            noImage.classList.add('hidden');
+            wordImage.classList.add('hidden');
+            
+            // 尝试不同格式的图片
+            let triedFormats = 0;
+            
+            function tryNextFormat() {
+                if (triedFormats >= imageFormats.length) {
+                    // 所有格式都尝试过，显示无图片
+                    imageLoadingIndicator.classList.add('hidden');
+                    noImage.classList.remove('hidden');
+                    return;
+                }
+                
+                const format = imageFormats[triedFormats];
+                const imageUrl = `image/${key}.${format}`;
+                
+                // 检查图片是否存在
+                const img = new Image();
+                img.onload = function() {
+                    // 图片存在，显示图片
+                    wordImage.src = imageUrl;
+                    wordImage.alt = `单词 ${key} 的图片`;
+                    imageLoadingIndicator.classList.add('hidden');
+                    wordImage.classList.remove('hidden');
+                    
+                    // 添加图片加载动画
+                    wordImage.style.opacity = '0';
+                    wordImage.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        wordImage.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                        wordImage.style.opacity = '1';
+                        wordImage.style.transform = 'scale(1)';
+                    }, 50);
+                };
+                
+                img.onerror = function() {
+                    // 图片不存在，尝试下一种格式
+                    triedFormats++;
+                    tryNextFormat();
+                };
+                
+                img.src = imageUrl;
+            }
+            
+            tryNextFormat();
+        }
+        
+        // 显示其他列信息
+        function displayAdditionalInfo(item) {
+            additionalInfo.innerHTML = '';
+            let fontIndex = 0;
+            
+            // 遍历所有属性
+            for (const [key, value] of Object.entries(item)) {
+                // 跳过已显示的列
+                if (key === 'key' || key === '语言' || key === '显示') continue;
+                
+                // 只显示有值的列
+                if (value !== undefined && value !== null && value !== '') {
+                    const infoItem = document.createElement('div');
+                    // 循环使用字体列表
+                    const fontClass = fontList[fontIndex % fontList.length];
+                    infoItem.className = `${fontClass} text-slate-700`;
+                    infoItem.innerHTML = `<span class="font-semibold text-slate-900">${key}：</span>${value}`;
+                    additionalInfo.appendChild(infoItem);
+                    
+                    fontIndex++;
+                }
+            }
+        }
+        
+        // 调整字体大小
+        function adjustFontSize() {
+            const size = fontSizeSelect.value;
+            let mainSize, additionalSize;
+            
+            switch(size) {
+                case 'small':
+                    mainSize = 'clamp(1rem, 2vw, 1.8rem)';
+                    additionalSize = 'text-sm';
+                    break;
+                case 'medium':
+                    mainSize = 'clamp(1.5rem, 3vw, 2.5rem)';
+                    additionalSize = 'text-sm md:text-base';
+                    break;
+                case 'large':
+                    mainSize = 'clamp(1.8rem, 4vw, 3rem)';
+                    additionalSize = 'text-base md:text-lg';
+                    break;
+                case 'x-large':
+                    mainSize = 'clamp(2rem, 5vw, 3.5rem)';
+                    additionalSize = 'text-base md:text-lg';
+                    break;
+            }
+            
+            mainLanguage.style.fontSize = mainSize;
+            
+            // 更新附加信息的字体大小
+            document.querySelectorAll('#additional-info > div').forEach(el => {
+                el.className = el.className.replace(/text-sm|text-base|text-lg/g, '');
+                el.classList.add(...additionalSize.split(' '));
+            });
+        }
+        
+        // 添加动画效果
+        function addAnimationEffect(force = false) {
+            const content = document.getElementById('word-content');
+            const animation = animationSelect.value;
+            
+            // 移除所有动画类
+            content.classList.remove('fade-enter', 'fade-enter-active', 
+                                     'slide-enter', 'slide-enter-active',
+                                     'zoom-enter', 'zoom-enter-active',
+                                     'flip-enter', 'flip-enter-active',
+                                     'exit-active');
+                                     
+            // 如果是强制应用或不是初始加载，添加动画
+            if (force || currentIndex !== 0) {
+                content.classList.add(`${animation}-enter`);
+                
+                setTimeout(() => {
+                    content.classList.add(`${animation}-enter-active`);
+                    setTimeout(() => {
+                        content.classList.remove(`${animation}-enter`, `${animation}-enter-active`);
+                    }, animation === 'flip' ? 600 : 500);
+                }, 10);
+            }
+        }
+        
+        // 显示上一项
+        function showPrevious() {
+            if (filteredData.length === 0) return;
+            
+            currentIndex = (currentIndex - 1 + filteredData.length) % filteredData.length;
+            showCurrentItem();
+            
+            // 重置定时器
+            if (isPlaying) {
+                clearInterval(carouselInterval);
+                startCarousel();
+            }
+        }
+        
+        // 显示下一项
+        function showNext() {
+            if (filteredData.length === 0) return;
+            
+            const playMode = document.querySelector('input[name="play-mode"]:checked').value;
+            if (playMode === 'random') {
+                // 随机模式
+                const randomIndex = Math.floor(Math.random() * filteredData.length);
+                // 确保不会连续显示同一个
+                currentIndex = randomIndex === currentIndex && filteredData.length > 1 
+                    ? (randomIndex + 1) % filteredData.length 
+                    : randomIndex;
+            } else {
+                // 顺序模式
+                currentIndex = (currentIndex + 1) % filteredData.length;
+            }
+            
+            showCurrentItem();
+            
+            // 重置定时器
+            if (isPlaying) {
+                clearInterval(carouselInterval);
+                startCarousel();
+            }
+        }
+        
+        // 开始轮播
+        function startCarousel() {
+            const duration = parseInt(durationSlider.value) * 1000; // 转换为毫秒
+            carouselInterval = setInterval(showNext, duration);
+        }
+        
+        // 切换播放/暂停状态
+        function togglePlayPause() {
+            if (isPlaying) {
+                // 暂停
+                clearInterval(carouselInterval);
+                playPauseBtn.innerHTML = '<i class="fa fa-play mr-2"></i>播放';
+                playPauseBtn.classList.remove('bg-primary');
+                playPauseBtn.classList.add('bg-secondary');
+                
+                // 显示暂停提示
+                showToast('已暂停轮播');
+            } else {
+                // 播放
+                startCarousel();
+                playPauseBtn.innerHTML = '<i class="fa fa-pause mr-2"></i>暂停';
+                playPauseBtn.classList.remove('bg-secondary');
+                playPauseBtn.classList.add('bg-primary');
+                
+                // 显示播放提示
+                showToast('已开始轮播');
+            }
+            isPlaying = !isPlaying;
+        }
+        
+        // 显示提示消息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-primary text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-y-0 opacity-100';
+            toast.innerHTML = `<i class="fa fa-info-circle mr-2"></i>${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-20px]');
+                setTimeout(() => toast.remove(), 300);
+            }, 1500);
+        }
+        
+        // 重置轮播
+        function resetCarousel() {
+            // 清除定时器
+            clearInterval(carouselInterval);
+            
+            // 恢复原始数据顺序
+            filteredData = [...originalData];
+            
+            // 重置到第一项
+            currentIndex = 0;
+            showCurrentItem();
+            
+            // 重新开始轮播
+            if (isPlaying) {
+                startCarousel();
+            }
+            
+            showToast('已重置轮播');
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', initEventListeners);
+    </script>
+</body>
+</html>

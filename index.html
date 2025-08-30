@@ -54,33 +54,46 @@
             }
         }
         h1 {
-            font-size: clamp(2.5rem, 8vw, 6rem);
+            /* 调整基础字体大小，确保初始足够醒目 */
+            font-size: clamp(4rem, 15vw, 10rem);
             text-align: center;
             margin: 30px 0;
             font-weight: bold;
             transition: all 1s ease;
             background-size: 200% auto;
-            animation: textShine 3s linear infinite;
+            /* 同时生效文字渐变与大小呼吸动画 */
+            animation: textShine 3s linear infinite, textScale 4s ease-in-out infinite alternate;
         }
+        /* 文字渐变流动动画 */
         @keyframes textShine {
             to {
                 background-position: 200% center;
             }
         }
-        /* 下拉菜单样式优化 */
+        /* 文字大小呼吸动画（慢慢变大再变小） */
+        @keyframes textScale {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.3);
+            }
+        }
+        /* 下拉菜单样式（修复选项显示不全） */
         .dropdown-container {
             position: absolute;
             top: 20px;
             right: 20px;
-            z-index: 1000; /* 确保下拉框在最上层 */
+            z-index: 1000; /* 确保下拉框层级最高 */
         }
         .custom-select {
             position: relative;
             font-family: 'Arial', sans-serif;
             width: 180px;
+            max-width: 100%; /* 适配小屏幕 */
         }
         .custom-select select {
-            display: none; /* 隐藏原始select */
+            display: none; /* 隐藏原生下拉框 */
         }
         .select-selected {
             background-color: rgba(255, 255, 255, 0.1);
@@ -119,9 +132,22 @@
             right: 0;
             z-index: 99;
             margin-top: 5px;
-            max-height: 0;
-            overflow: hidden;
+            /* 核心修复：足够高度+滚动条，确保所有选项可见 */
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
             transition: max-height 0.3s ease;
+        }
+        /* 美化滚动条（仅webkit内核浏览器） */
+        .select-items::-webkit-scrollbar {
+            width: 6px;
+        }
+        .select-items::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        .select-items::-webkit-scrollbar-track {
+            background-color: transparent;
         }
         .select-hide {
             display: none;
@@ -131,52 +157,59 @@
             padding: 12px 20px;
             cursor: pointer;
             transition: all 0.2s ease;
+            /* 防止文字换行，节省空间 */
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
         .select-items div:hover {
             background-color: rgba(255, 255, 255, 0.1);
         }
         .select-selected.select-arrow-active ~ .select-items {
-            max-height: 300px;
+            max-height: 400px; /* 与默认高度一致，确保展开完整 */
         }
-        /* 当前选中项样式 */
+        /* 当前选中项高亮 */
         .same-as-selected {
             background-color: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
 <body>
+    <!-- 下拉菜单容器 -->
     <div class="dropdown-container">
         <div class="custom-select" id="customSelect">
             <select id="menu1">
                 <option value="index.html">主页</option>
-				<option value="Page/game/SmallTurntable/index.html">小转盘</option>  
+                <option value="Page/game/SmallTurntable/index.html">小转盘</option>  
                 <option value="Page/tool/calculator.html">计算器</option>
-				<option value="Page/tool/clock/index.html">时钟</option>
+                <option value="Page/tool/clock/index.html">时钟</option>
                 <option value="books-navigation.html">阅读</option> 
                 <option value="Page/student/index.html">Candy学习小平台</option> 
-				 <option value="Page/Brithday/Dad/index.html">老爸，生日快乐</option>  
-                 <option value="Page/game/tetris/tetris.html">俄罗斯方块</option>  
-				<option value="Page/game/Gomoku/index.html">五子棋</option>  
-				<option value="Page/game/Minesweeper/index.html">扫雷</option>  				
+                <option value="Page/Brithday/Dad/index.html">老爸，生日快乐</option>  
+                <option value="Page/game/tetris/tetris.html">俄罗斯方块</option>  
+                <option value="Page/game/Gomoku/index.html">五子棋</option>  
+                <option value="Page/game/Minesweeper/index.html">扫雷</option> 
+                <option value="Page/game/Sudoku/index.html">数独</option> 				
             </select>
         </div>
     </div>
     
+    <!-- 顶部图标 -->
     <div class="logo-container">
         <p class="left"></p>
         <p class="right"></p>
     </div>
     
+    <!-- 主标题 -->
     <h1 id="mainTitle">熊二，加油哦！</h1>
 
     <script>
-        // 自定义下拉菜单功能 - 修复选择问题
+        // 自定义下拉菜单功能（确保选项点击跳转正常）
         document.addEventListener('DOMContentLoaded', function() {
-            // 获取自定义选择器和原生select元素
             const customSelect = document.getElementById("customSelect");
             const selectElement = customSelect.querySelector("select");
             
-            // 创建选中项显示元素
+            // 创建选中项显示区域
             const selectedDiv = document.createElement("div");
             selectedDiv.className = "select-selected";
             selectedDiv.textContent = selectElement.options[selectElement.selectedIndex].text;
@@ -187,31 +220,29 @@
             itemsDiv.className = "select-items select-hide";
             customSelect.appendChild(itemsDiv);
             
-            // 生成所有选项
+            // 生成所有下拉选项
             for (let i = 0; i < selectElement.length; i++) {
                 const itemDiv = document.createElement("div");
                 itemDiv.textContent = selectElement.options[i].text;
                 itemDiv.setAttribute("data-value", selectElement.options[i].value);
                 itemDiv.setAttribute("data-index", i);
                 
-                // 为当前选中项添加特殊样式
+                // 标记当前选中项
                 if (i === selectElement.selectedIndex) {
                     itemDiv.classList.add("same-as-selected");
                 }
                 
-                // 点击选项时的处理函数 - 修复核心问题
+                // 选项点击事件（跳转+状态更新）
                 itemDiv.addEventListener("click", function() {
                     const value = this.getAttribute("data-value");
                     const index = this.getAttribute("data-index");
                     
-                    // 更新原生select的值和选中状态
+                    // 更新原生select状态
                     selectElement.value = value;
                     selectElement.selectedIndex = index;
                     
-                    // 更新显示文本
+                    // 更新显示文本与选中状态
                     selectedDiv.textContent = this.textContent;
-                    
-                    // 更新选项高亮状态
                     const allItems = itemsDiv.querySelectorAll("div");
                     allItems.forEach(item => item.classList.remove("same-as-selected"));
                     this.classList.add("same-as-selected");
@@ -220,39 +251,33 @@
                     selectedDiv.classList.remove("select-arrow-active");
                     itemsDiv.classList.add("select-hide");
                     
-                    // 执行页面跳转
+                    // 页面跳转
                     window.location.href = value;
                 });
                 
                 itemsDiv.appendChild(itemDiv);
             }
             
-            // 点击下拉框显示/隐藏选项
+            // 下拉框展开/收起切换
             selectedDiv.addEventListener("click", function(e) {
                 e.stopPropagation();
                 this.classList.toggle("select-arrow-active");
-                
-                // 手动控制选项框显示/隐藏
-                if (this.classList.contains("select-arrow-active")) {
-                    itemsDiv.classList.remove("select-hide");
-                } else {
-                    itemsDiv.classList.add("select-hide");
-                }
+                itemsDiv.classList.toggle("select-hide");
             });
             
-            // 点击页面其他地方关闭下拉框
+            // 点击页面其他区域关闭下拉框
             document.addEventListener("click", function() {
                 selectedDiv.classList.remove("select-arrow-active");
                 itemsDiv.classList.add("select-hide");
             });
             
-            // 阻止事件冒泡，避免点击选项时关闭下拉框
+            // 阻止选项列表事件冒泡
             itemsDiv.addEventListener("click", function(e) {
                 e.stopPropagation();
             });
         });
 
-        // 生成随机颜色的函数
+        // 随机颜色生成函数
         function getRandomColor() {
             const letters = '0123456789ABCDEF';
             let color = '#';
@@ -262,7 +287,7 @@
             return color;
         }
 
-        // 生成随机渐变颜色组合
+        // 随机渐变生成函数
         function getRandomGradient() {
             const color1 = getRandomColor();
             const color2 = getRandomColor();
@@ -274,7 +299,7 @@
             document.body.style.backgroundColor = getRandomColor();
         }
 
-        // 更新文字渐变色
+        // 更新标题文字渐变
         function updateTextGradient() {
             const title = document.getElementById('mainTitle');
             const gradient = getRandomGradient();
@@ -284,11 +309,11 @@
             title.style.backgroundSize = '200% auto';
         }
 
-        // 初始设置
+        // 初始样式设置
         updateBackgroundColor();
         updateTextGradient();
 
-        // 定时更新（3秒一次）
+        // 定时更新背景与文字渐变（3秒一次）
         setInterval(() => {
             updateBackgroundColor();
             updateTextGradient();

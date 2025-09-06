@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地区信息展示平台</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --color-primary: #3b82f6;
+            --color-secondary: #10b981;
+            --color-accent: #f59e0b;
+            --color-highlight: #fef3c7;
+            --color-dark: #1e293b;
+            --font-inter: 'Inter', sans-serif;
+        }
+
+        @utility smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @utility card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .highlight {
+            background-color: var(--color-highlight);
+            font-weight: 500;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .map-marker {
+            transition: transform 0.2s ease;
+        }
+
+            .map-marker:hover {
+                transform: scale(1.2);
+            }
+
+        body {
+            font-family: var(--font-inter);
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen text-gray-800">
+    <div class="container mx-auto px-4 py-8">
+        <!-- 头部区域 -->
+        <header class="mb-6 flex justify-between items-center flex-wrap gap-4">
+            <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-map-signs text-primary mr-3"></i>
+                地区信息展示平台
+            </h1>
+            <!-- 随机数据展示区域（右上角） -->
+            <div id="randomCard" class="bg-white rounded-xl p-4 card-shadow smooth-transition w-full md:w-80 overflow-hidden">
+                <h2 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                    <i class="fas fa-random text-accent mr-2"></i>随机地区
+                </h2>
+                <div class="flex flex-col">
+                    <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2 self-center">
+                        <i class="fas fa-map-marked-alt text-primary text-xl"></i>
+                    </div>
+                    <p class="text-gray-500 text-sm" id="randomInfo">加载中...</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主内容区域 -->
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- 左侧省份菜单栏 -->
+            <div class="lg:w-1/5 bg-white rounded-xl p-4 card-shadow overflow-hidden transform smooth-transition hover:shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-800">省份筛选</h2>
+                    <span class="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full" id="provinceCount">0 个省份</span>
+                </div>
+
+                <div class="relative">
+                    <input type="text" id="provinceSearch" placeholder="搜索省份..."
+                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-primary focus:border-primary">
+                    <i class="fas fa-search absolute right-3 top-2 text-gray-400"></i>
+                </div>
+
+                <div class="space-y-1 max-h-[calc(100vh-300px)] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200" id="provinceMenu">
+                    <button class="province-btn w-full text-left px-3 py-2 rounded-lg hover:bg-primary/10 smooth-transition bg-primary/10 text-primary font-medium flex items-center justify-between group">
+                        <span><i class="fas fa-globe-americas mr-2"></i>全部省份</span>
+                        <span class="bg-primary text-white text-xs px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 smooth-transition">
+                            全部
+                        </span>
+                    </button>
+                    <!-- 省份按钮将通过JS动态生成 -->
+                </div>
+
+                <!-- 可视化地图区域 -->
+                <div class="mt-6 pt-4 border-t border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-map text-secondary mr-2"></i>地区可视化
+                    </h3>
+                    <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                        <canvas id="locationMap" width="400" height="300"></canvas>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-3 max-h-32 overflow-y-auto pr-1" id="selectedLocations">
+                        <div class="text-xs text-gray-500 italic">未选择地区</div>
+                    </div>
+                    <button id="clearSelected" class="w-full text-xs py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg smooth-transition text-gray-600">
+                        <i class="fas fa-trash-alt mr-1"></i>清空选择
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧内容区域 -->
+            <div class="lg:w-4/5 flex flex-col">
+                <!-- 筛选和查询区域 -->
+                <div class="bg-white rounded-xl p-4 card-shadow mb-4 transform smooth-transition hover:shadow-md">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="search" class="block text-sm font-medium text-gray-700 mb-1">搜索地区</label>
+                            <div class="relative">
+                                <input type="text" id="search" placeholder="输入城市/区县/景点..."
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary smooth-transition">
+                                <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary smooth-transition">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">排序方式</label>
+                            <select id="sort" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary smooth-transition">
+                                <option value="default">默认排序</option>
+                                <option value="province">按省份</option>
+                                <option value="city">按城市</option>
+                                <option value="county">按区县</option>
+                                <option value="distance">按距离</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                按距离筛选
+                                <span id="locationStatus" class="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                    <i class="fas fa-location-arrow mr-1"></i>获取位置中...
+                                </span>
+                            </label>
+                            <div class="flex flex-col">
+                                <div class="flex items-center mb-2">
+                                    <label for="targetLng" class="w-24 text-sm text-gray-700">目标经度：</label>
+                                    <input type="number" id="targetLng" step="0.000001" placeholder="自动获取中..."
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                                </div>
+                                <div class="flex items-center">
+                                    <label for="targetLat" class="w-24 text-sm text-gray-700">目标纬度：</label>
+                                    <input type="number" id="targetLat" step="0.000001" placeholder="自动获取中..."
+                                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                                </div>
+                                <button id="distanceFilter" class="mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 smooth-transition flex items-center justify-center">
+                                    <i class="fas fa-compass mr-2"></i>按距离筛选
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据展示区域 -->
+                <div class="bg-white rounded-xl p-4 card-shadow flex-grow transform smooth-transition hover:shadow-md">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-list-alt text-primary mr-2"></i>地区信息列表
+                        </h2>
+                        <div class="text-sm text-gray-500" id="dataCount">共 0 条数据</div>
+                    </div>
+                    <div id="dataContainer" class="space-y-3">
+                        <!-- 数据将通过JS动态插入 -->
+                        <div class="text-center text-gray-500 py-12">
+                            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                                <i class="fas fa-database text-gray-400 text-2xl"></i>
+                            </div>
+                            <p>数据加载中...</p>
+                        </div>
+                    </div>
+                    <!-- 分页区域 -->
+                    <div class="flex justify-center mt-8" id="pagination">
+                        <!-- 分页按钮将通过JS动态插入 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let allAreas = [];
+        const provinces = new Set();
+        let currentPage = 1;
+        const pageSize = 20;
+        let filteredData = [];
+        let currentSearch = '';
+        let userLocation = { lng: null, lat: null };
+        let selectedLocations = [];
+        let mapChart = null;
+
+        // DOM 加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 获取用户地理位置
+            getUserLocation();
+
+            // 从JSON文件读取数据
+            fetch('areas.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 扁平化JSON数据，将所有地区信息放入一个数组，并提取所有省份
+                    for (const region in data) {
+                        if (data.hasOwnProperty(region)) {
+                            const areaList = data[region];
+                            allAreas = allAreas.concat(areaList);
+                            areaList.forEach(area => {
+                                provinces.add(area.province);
+                            });
+                        }
+                    }
+
+                    // 更新省份计数
+                    document.getElementById('provinceCount').textContent = `${provinces.size} 个省份`;
+
+                    // 渲染省份筛选按钮
+                    renderProvinceButtons();
+                    // 初始化数据
+                    filteredData = allAreas;
+                    updateDataDisplay();
+                    // 初始展示一个随机地区
+                    showRandomArea();
+                    // 定时切换随机地区，每5秒一次
+                    setInterval(showRandomArea, 5000);
+                    // 初始化地图
+                    initMap();
+                })
+                .catch(error => {
+                    console.error('读取JSON数据失败：', error);
+                    const container = document.getElementById('dataContainer');
+                    container.innerHTML = `
+                    <div class="text-center text-red-500 py-12">
+                      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-50 flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i>
+                      </div>
+                      <p>数据加载失败，请检查JSON文件是否存在或格式是否正确</p>
+                    </div>
+                  `;
+                });
+
+            // 绑定事件监听器
+            bindEventListeners();
+        });
+
+        // 当前筛选条件
+        let currentProvince = 'all';
+        let currentSort = 'default';
+        let currentTargetLng = null;
+        let currentTargetLat = null;
+
+        // 获取用户地理位置
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        userLocation.lng = position.coords.longitude;
+                        userLocation.lat = position.coords.latitude;
+
+                        document.getElementById('targetLng').value = userLocation.lng.toFixed(6);
+                        document.getElementById('targetLat').value = userLocation.lat.toFixed(6);
+
+                        currentTargetLng = userLocation.lng;
+                        currentTargetLat = userLocation.lat;
+
+                        document.getElementById('locationStatus').innerHTML =
+                            '<i class="fas fa-check text-green-500 mr-1"></i>已获取位置';
+                        document.getElementById('locationStatus').className =
+                            'ml-2 text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full';
+                    },
+                    error => {
+                        console.error('获取地理位置失败：', error);
+                        document.getElementById('locationStatus').innerHTML =
+                            '<i class="fas fa-exclamation text-amber-500 mr-1"></i>无法获取位置';
+                        document.getElementById('locationStatus').className =
+                            'ml-2 text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full';
+                    }
+                );
+            } else {
+                document.getElementById('locationStatus').innerHTML =
+                    '<i class="fas fa-exclamation text-amber-500 mr-1"></i>浏览器不支持';
+                document.getElementById('locationStatus').className =
+                    'ml-2 text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full';
+            }
+        }
+
+        // 初始化地图
+        function initMap() {
+            const ctx = document.getElementById('locationMap').getContext('2d');
+
+            // 创建基础地图
+            mapChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '选中地区',
+                        data: [],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointLabel: {
+                            display: true,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }, {
+                        label: '当前位置',
+                        data: userLocation.lng && userLocation.lat ? [{
+                            x: userLocation.lng,
+                            y: userLocation.lat
+                        }] : [],
+                        backgroundColor: 'rgba(249, 115, 22, 0.7)',
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        borderWidth: 1,
+                        pointRadius: 7,
+                        pointHoverRadius: 9,
+                        pointStyle: 'star'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '经度',
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 8
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '纬度',
+                                font: {
+                                    size: 10
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 8
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 9
+                                },
+                                boxWidth: 10
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.dataset.label || '';
+                                    if (label === '选中地区' && context.raw.name) {
+                                        return `${context.raw.name}: (${context.raw.x.toFixed(4)}, ${context.raw.y.toFixed(4)})`;
+                                    }
+                                    return `${label}: (${context.raw.x.toFixed(4)}, ${context.raw.y.toFixed(4)})`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // 更新地图
+        function updateMap() {
+            if (!mapChart) return;
+
+            // 更新选中地区数据
+            mapChart.data.datasets[0].data = selectedLocations.map(area => ({
+                x: area.longitude,
+                y: area.latitude,
+                name: `${area.province} ${area.county}`
+            }));
+
+            // 更新当前位置
+            if (userLocation.lng && userLocation.lat) {
+                mapChart.data.datasets[1].data = [{
+                    x: userLocation.lng,
+                    y: userLocation.lat
+                }];
+            }
+
+            mapChart.update();
+
+            // 更新选中地区列表
+            const container = document.getElementById('selectedLocations');
+            container.innerHTML = '';
+
+            if (selectedLocations.length === 0) {
+                container.innerHTML = '<div class="text-xs text-gray-500 italic">未选择地区</div>';
+                return;
+            }
+
+            selectedLocations.forEach((area, index) => {
+                const badge = document.createElement('div');
+                badge.className = 'bg-primary/10 text-primary text-xs px-2 py-1 rounded-full flex items-center';
+                badge.innerHTML = `
+                  ${area.county}
+                  <button class="ml-1 text-primary/70 hover:text-primary" data-index="${index}">
+                    <i class="fas fa-times-circle"></i>
+                  </button>
+                `;
+                container.appendChild(badge);
+
+                // 绑定删除事件
+                badge.querySelector('button').addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const idx = parseInt(this.dataset.index);
+                    selectedLocations.splice(idx, 1);
+                    updateMap();
+                });
+            });
+        }
+
+        // 添加地区到地图
+        function addLocationToMap(area) {
+            // 检查是否已添加
+            const exists = selectedLocations.some(item => item.id_prefix === area.id_prefix);
+            if (exists) return;
+
+            selectedLocations.push(area);
+            // 限制最多显示10个地点
+            if (selectedLocations.length > 10) {
+                selectedLocations.shift();
+            }
+            updateMap();
+        }
+
+        // 渲染省份筛选按钮
+        function renderProvinceButtons() {
+            const provinceContainer = document.getElementById('provinceMenu');
+            const provincesArray = Array.from(provinces).sort();
+
+            provincesArray.forEach(province => {
+                // 计算该省份的地区数量
+                const count = allAreas.filter(area => area.province === province).length;
+
+                const btn = document.createElement('button');
+                btn.className = 'province-btn w-full text-left px-3 py-2 rounded-lg hover:bg-primary/10 smooth-transition flex items-center justify-between group';
+                btn.dataset.province = province;
+                btn.innerHTML = `
+                  <span><i class="fas fa-map-marker-alt mr-2"></i>${province}</span>
+                  <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 smooth-transition">
+                    ${count}
+                  </span>
+                `;
+                provinceContainer.appendChild(btn);
+            });
+
+            // 为省份按钮添加点击事件
+            document.querySelectorAll('.province-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    // 重置其他按钮样式
+                    document.querySelectorAll('.province-btn').forEach(b => {
+                        b.classList.remove('bg-primary/10', 'text-primary', 'font-medium');
+                    });
+                    // 设置当前按钮样式
+                    this.classList.add('bg-primary/10', 'text-primary', 'font-medium');
+
+                    currentProvince = this.dataset.province;
+                    currentPage = 1; // 重置到第一页
+                    updateDataDisplay();
+                });
+            });
+
+            // 省份搜索功能
+            document.getElementById('provinceSearch').addEventListener('input', function () {
+                const searchTerm = this.value.toLowerCase().trim();
+                document.querySelectorAll('.province-btn[data-province]').forEach(btn => {
+                    const province = btn.dataset.province.toLowerCase();
+                    if (searchTerm === '' || province.includes(searchTerm)) {
+                        btn.style.display = 'flex';
+                    } else {
+                        btn.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // 渲染数据到页面（带分页和关键字高亮）
+        function renderData(data, page) {
+            const container = document.getElementById('dataContainer');
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = `
+                  <div class="text-center text-gray-500 py-12">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                      <i class="fas fa-search text-gray-400 text-2xl"></i>
+                    </div>
+                    <p>未找到匹配数据</p>
+                  </div>
+                `;
+                document.getElementById('pagination').innerHTML = '';
+                document.getElementById('dataCount').textContent = `共 0 条数据`;
+                return;
+            }
+
+            const startIndex = (page - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, data.length);
+            const pageData = data.slice(startIndex, endIndex);
+
+            pageData.forEach(area => {
+                const card = document.createElement('div');
+                card.className = 'border border-gray-200 rounded-xl p-4 smooth-transition hover:shadow-lg transform hover:-translate-y-0.5';
+
+                // 关键字高亮处理
+                let provinceText = area.province;
+                let cityText = area.city;
+                let countyText = area.county;
+                let sceneryText = area.feature_scenery;
+                let foodText = area.feature_food;
+
+                if (currentSearch) {
+                    const regex = new RegExp(currentSearch, 'gi');
+                    provinceText = provinceText.replace(regex, match => `<span class="highlight">${match}</span>`);
+                    cityText = cityText.replace(regex, match => `<span class="highlight">${match}</span>`);
+                    countyText = countyText.replace(regex, match => `<span class="highlight">${match}</span>`);
+                    sceneryText = sceneryText.replace(regex, match => `<span class="highlight">${match}</span>`);
+                    foodText = foodText.replace(regex, match => `<span class="highlight">${match}</span>`);
+                }
+
+                // 如果有距离信息，则显示
+                const distanceHtml = area.distance ?
+                    `<span class="text-xs bg-accent/10 text-accent px-2 py-1 rounded-full">
+                    <i class="fas fa-road mr-1"></i>距离：${area.distance.toFixed(2)}公里
+                  </span>` : '';
+
+                card.innerHTML = `
+                  <div class="flex flex-col md:flex-row">
+                    <div class="md:w-1/5 mb-4 md:mb-0 md:border-r md:border-gray-100 md:pr-4">
+                      <h3 class="text-lg font-semibold text-gray-800 mb-1">${countyText}</h3>
+                      <p class="text-gray-600 text-sm mb-3">${provinceText} ${cityText}</p>
+                      <p class="text-gray-500 text-sm mb-1 flex items-center">
+                        <i class="fas fa-long-arrow-alt-east text-gray-400 mr-2 w-4"></i>
+                        经度：${area.longitude.toFixed(6)}
+                      </p>
+                      <p class="text-gray-500 text-sm flex items-center">
+                        <i class="fas fa-long-arrow-alt-north text-gray-400 mr-2 w-4"></i>
+                        纬度：${area.latitude.toFixed(6)}
+                      </p>
+                      <button class="mt-3 w-full text-xs py-1.5 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-lg smooth-transition flex items-center justify-center add-to-map">
+                        <i class="fas fa-map-pin mr-1"></i>添加到地图
+                      </button>
+                    </div>
+                    <div class="md:w-4/5 md:pl-4">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <h4 class="text-sm font-medium text-gray-700 mb-1 flex items-center">
+                            <i class="fas fa-camera text-primary mr-1"></i>特色景点
+                          </h4>
+                          <p class="text-gray-600 text-sm line-clamp-2">${sceneryText}</p>
+                        </div>
+                        <div>
+                          <h4 class="text-sm font-medium text-gray-700 mb-1 flex items-center">
+                            <i class="fas fa-utensils text-accent mr-1"></i>特色美食
+                          </h4>
+                          <p class="text-gray-600 text-sm line-clamp-2">${foodText}</p>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <span class="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                          <i class="fas fa-envelope mr-1"></i>邮编：${area.zip_code}
+                        </span>
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                          <i class="fas fa-car mr-1"></i>车牌：${area.license_plate_prefix}
+                        </span>
+                        ${distanceHtml}
+                      </div>
+                    </div>
+                  </div>
+                `;
+                container.appendChild(card);
+
+                // 绑定添加到地图事件
+                card.querySelector('.add-to-map').addEventListener('click', () => {
+                    addLocationToMap(area);
+                    // 添加动画效果
+                    card.querySelector('.add-to-map').innerHTML = '<i class="fas fa-check mr-1"></i>已添加';
+                    card.querySelector('.add-to-map').className = 'mt-3 w-full text-xs py-1.5 bg-green-100 text-green-600 rounded-lg smooth-transition flex items-center justify-center';
+
+                    setTimeout(() => {
+                        card.querySelector('.add-to-map').innerHTML = '<i class="fas fa-map-pin mr-1"></i>添加到地图';
+                        card.querySelector('.add-to-map').className = 'mt-3 w-full text-xs py-1.5 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-lg smooth-transition flex items-center justify-center add-to-map';
+                    }, 1500);
+                });
+            });
+
+            // 渲染分页
+            renderPagination(data.length, page);
+            document.getElementById('dataCount').textContent = `共 ${data.length} 条数据`;
+        }
+
+        // 渲染分页
+        function renderPagination(total, currentPage) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            const totalPages = Math.ceil(total / pageSize);
+            if (totalPages <= 1) return;
+
+            // 上一页
+            const prevBtn = document.createElement('button');
+            prevBtn.className = `px-3 py-2 rounded-lg mx-1 ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-primary/5 text-gray-700 smooth-transition border border-gray-200'}`;
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage = currentPage - 1;
+                    renderData(filteredData, currentPage);
+                    scrollToTop();
+                }
+            });
+            pagination.appendChild(prevBtn);
+
+            // 页码（仅显示当前页附近的页码，避免过多页码）
+            const showPageNumbers = 5; // 最多显示的页码数量
+            let startPage = Math.max(1, currentPage - Math.floor(showPageNumbers / 2));
+            let endPage = startPage + showPageNumbers - 1;
+
+            if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - showPageNumbers + 1);
+            }
+
+            // 显示第一页
+            if (startPage > 1) {
+                const firstBtn = createPageButton(1);
+                pagination.appendChild(firstBtn);
+
+                // 如果有间隔，显示省略号
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'px-2 py-2 text-gray-500';
+                    ellipsis.textContent = '...';
+                    pagination.appendChild(ellipsis);
+                }
+            }
+
+            // 显示中间页码
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = createPageButton(i);
+                pagination.appendChild(pageBtn);
+            }
+
+            // 显示最后一页
+            if (endPage < totalPages) {
+                // 如果有间隔，显示省略号
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'px-2 py-2 text-gray-500';
+                    ellipsis.textContent = '...';
+                    pagination.appendChild(ellipsis);
+                }
+
+                const lastBtn = createPageButton(totalPages);
+                pagination.appendChild(lastBtn);
+            }
+
+            // 下一页
+            const nextBtn = document.createElement('button');
+            nextBtn.className = `px-3 py-2 rounded-lg mx-1 ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-primary/5 text-gray-700 smooth-transition border border-gray-200'}`;
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage = currentPage + 1;
+                    renderData(filteredData, currentPage);
+                    scrollToTop();
+                }
+            });
+            pagination.appendChild(nextBtn);
+        }
+
+        // 创建页码按钮
+        function createPageButton(pageNum) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `px-4 py-2 rounded-lg mx-0.5 ${pageNum === currentPage ? 'bg-primary text-white' : 'bg-white hover:bg-primary/5 text-gray-700 smooth-transition border border-gray-200'}`;
+            pageBtn.textContent = pageNum;
+            pageBtn.addEventListener('click', () => {
+                currentPage = pageNum;
+                renderData(filteredData, currentPage);
+                scrollToTop();
+            });
+            return pageBtn;
+        }
+
+        // 平滑滚动到数据区域顶部
+        function scrollToTop() {
+            const dataContainer = document.getElementById('dataContainer');
+            dataContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // 更新数据展示（结合筛选、搜索、排序等条件）
+        function updateDataDisplay() {
+            let data = [...allAreas]; // 复制数组，避免修改原数据
+
+            // 按省份筛选
+            if (currentProvince !== 'all') {
+                data = data.filter(area => area.province === currentProvince);
+            }
+
+            // 按搜索关键词筛选
+            currentSearch = document.getElementById('search').value.toLowerCase().trim();
+            if (currentSearch) {
+                data = data.filter(area => {
+                    return area.province.toLowerCase().includes(currentSearch) ||
+                        area.city.toLowerCase().includes(currentSearch) ||
+                        area.county.toLowerCase().includes(currentSearch) ||
+                        area.feature_scenery.toLowerCase().includes(currentSearch) ||
+                        area.feature_food.toLowerCase().includes(currentSearch);
+                });
+            }
+
+            // 确定目标经纬度（优先使用用户输入，否则使用自动获取的位置）
+            const inputLng = parseFloat(document.getElementById('targetLng').value);
+            const inputLat = parseFloat(document.getElementById('targetLat').value);
+
+            const targetLng = !isNaN(inputLng) ? inputLng : (userLocation.lng || null);
+            const targetLat = !isNaN(inputLat) ? inputLat : (userLocation.lat || null);
+
+            // 按距离筛选或排序
+            if (targetLng !== null && targetLat !== null) {
+                // Haversine公式计算两点间距离（单位：公里）
+                const calculateDistance = (lat1, lon1, lat2, lon2) => {
+                    const R = 6371; // 地球半径（公里）
+                    const dLat = (lat2 - lat1) * Math.PI / 180;
+                    const dLon = (lon2 - lon1) * Math.PI / 180;
+                    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                    return R * c;
+                };
+
+                // 计算每个地区到目标点的距离
+                data = data.map(area => {
+                    const distance = calculateDistance(targetLat, targetLng, area.latitude, area.longitude);
+                    return { ...area, distance };
+                });
+
+                // 如果排序方式是按距离，则进行排序
+                if (currentSort === 'distance') {
+                    data.sort((a, b) => a.distance - b.distance);
+                }
+            } else {
+                // 移除可能存在的距离属性
+                data = data.map(area => {
+                    const { distance, ...rest } = area;
+                    return rest;
+                });
+            }
+
+            // 处理其他排序方式
+            if (currentSort === 'province' && currentSort !== 'distance') {
+                data.sort((a, b) => a.province.localeCompare(b.province));
+            } else if (currentSort === 'city' && currentSort !== 'distance') {
+                data.sort((a, b) => a.city.localeCompare(b.city));
+            } else if (currentSort === 'county' && currentSort !== 'distance') {
+                data.sort((a, b) => a.county.localeCompare(b.county));
+            }
+
+            filteredData = data;
+            renderData(filteredData, currentPage);
+        }
+
+        // 随机展示功能
+        function showRandomArea() {
+            if (allAreas.length === 0) return;
+            const randomIndex = Math.floor(Math.random() * allAreas.length);
+            const randomArea = allAreas[randomIndex];
+            const randomInfoEl = document.getElementById('randomInfo');
+
+            // 添加淡入淡出动画
+            randomInfoEl.style.opacity = '0';
+
+            setTimeout(() => {
+                // 计算距离（如果有位置信息）
+                let distanceHtml = '';
+                if (userLocation.lng && userLocation.lat) {
+                    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+                        const R = 6371; // 地球半径（公里）
+                        const dLat = (lat2 - lat1) * Math.PI / 180;
+                        const dLon = (lon2 - lon1) * Math.PI / 180;
+                        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        return R * c;
+                    };
+
+                    const distance = calculateDistance(
+                        userLocation.lat,
+                        userLocation.lng,
+                        randomArea.latitude,
+                        randomArea.longitude
+                    );
+
+                    distanceHtml = `<p class="text-gray-600 text-sm mt-1"><i class="fas fa-road mr-1 text-accent"></i> 距离：${distance.toFixed(2)}公里</p>`;
+                }
+
+                randomInfoEl.innerHTML = `
+                  <div class="text-lg font-semibold text-gray-800 mb-1">${randomArea.county}（${randomArea.province} ${randomArea.city}）</div>
+                  <p class="text-gray-600 text-sm mb-1"><i class="fas fa-map-marker-alt mr-1 text-primary"></i> 经纬度：${randomArea.longitude.toFixed(6)}, ${randomArea.latitude.toFixed(6)}</p>
+                  <p class="text-gray-600 text-sm line-clamp-1"><i class="fas fa-utensils mr-1 text-accent"></i> 特色美食：${randomArea.feature_food}</p>
+                  ${distanceHtml}
+                `;
+
+                randomInfoEl.style.opacity = '1';
+            }, 300);
+        }
+
+        // 绑定事件监听器
+        function bindEventListeners() {
+            // 搜索功能
+            const searchInput = document.getElementById('search');
+            searchInput.addEventListener('input', function () {
+                currentPage = 1; // 重置到第一页
+                updateDataDisplay();
+            });
+
+            // 排序功能
+            const sortSelect = document.getElementById('sort');
+            sortSelect.addEventListener('change', function () {
+                currentSort = this.value;
+                currentPage = 1; // 重置到第一页
+                updateDataDisplay();
+            });
+
+            // 按距离筛选功能
+            const distanceFilterBtn = document.getElementById('distanceFilter');
+            distanceFilterBtn.addEventListener('click', function () {
+                const targetLng = parseFloat(document.getElementById('targetLng').value);
+                const targetLat = parseFloat(document.getElementById('targetLat').value);
+
+                if (isNaN(targetLng) || isNaN(targetLat)) {
+                    alert('请输入有效的经纬度');
+                    return;
+                }
+
+                currentTargetLng = targetLng;
+                currentTargetLat = targetLat;
+                currentPage = 1; // 重置到第一页
+                updateDataDisplay();
+            });
+
+            // 清空选择按钮
+            document.getElementById('clearSelected').addEventListener('click', function () {
+                selectedLocations = [];
+                updateMap();
+            });
+
+            // 为输入框添加失去焦点事件
+            document.getElementById('targetLng').addEventListener('blur', function () {
+                if (this.value.trim() === '' && userLocation.lng) {
+                    this.value = userLocation.lng.toFixed(6);
+                }
+            });
+
+            document.getElementById('targetLat').addEventListener('blur', function () {
+                if (this.value.trim() === '' && userLocation.lat) {
+                    this.value = userLocation.lat.toFixed(6);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

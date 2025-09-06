@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分组管理工具v1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#6366F1',
+                        neutral: '#64748B',
+                        danger: '#EF4444',
+                        light: '#F1F5F9',
+                        dark: '#1E293B'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .group-item {
+                @apply bg-white p-3 rounded-lg shadow-sm mb-2 cursor-move transition-all duration-200 hover:shadow-md hover:bg-light border border-transparent;
+            }
+
+            .group-container {
+                @apply bg-white rounded-xl shadow-md p-4 h-full overflow-y-auto transition-all duration-300 border-2 border-transparent hover:border-primary/30;
+            }
+
+            .dragging {
+                @apply opacity-50 scale-105 border-2 border-primary/50;
+            }
+
+            .drag-over {
+                @apply border-primary bg-primary/5;
+            }
+
+            .btn-small {
+                @apply px-2 py-1 rounded text-sm flex items-center transition-colors;
+            }
+
+            .btn-action {
+                @apply btn-small bg-gray-100 text-neutral hover:bg-primary hover:text-white;
+            }
+
+            .btn-action-danger {
+                @apply btn-small bg-gray-100 text-neutral hover:bg-danger hover:text-white;
+            }
+
+            .member-actions {
+                @apply opacity-0 transition-opacity duration-200;
+            }
+
+            .group-item:hover .member-actions {
+                @apply opacity-100;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <i class="fa fa-object-group text-primary text-2xl mr-3"></i>
+                <h1 class="text-[clamp(1.2rem,3vw,1.8rem)] font-bold text-dark">分组管理工具</h1>
+            </div>
+
+            <div class="flex flex-wrap gap-3 justify-center">
+                <label for="file-upload" class="flex items-center px-4 py-2 bg-primary text-white rounded-lg shadow hover:bg-primary/90 transition-all cursor-pointer">
+                    <i class="fa fa-upload mr-2"></i>
+                    导入Excel
+                </label>
+                <input id="file-upload" type="file" accept=".xlsx,.xls" class="hidden">
+
+                <button id="add-group-btn" class="flex items-center px-4 py-2 bg-accent text-white rounded-lg shadow hover:bg-accent/90 transition-all">
+                    <i class="fa fa-plus mr-2"></i>
+                    新增分组
+                </button>
+
+                <button id="export-btn" class="flex items-center px-4 py-2 bg-secondary text-white rounded-lg shadow hover:bg-secondary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fa fa-download mr-2"></i>
+                    导出Excel
+                </button>
+
+                <button id="help-btn" class="flex items-center px-4 py-2 bg-neutral text-white rounded-lg shadow hover:bg-neutral/90 transition-all">
+                    <i class="fa fa-question-circle mr-2"></i>
+                    帮助
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 初始状态提示 -->
+        <div id="initial-state" class="text-center py-16">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+                <i class="fa fa-file-excel-o text-2xl"></i>
+            </div>
+            <h2 class="text-xl font-semibold text-dark mb-2">请导入Excel文件开始</h2>
+            <p class="text-neutral max-w-md mx-auto">支持.xlsx和.xls格式，Excel中每一列代表一个组，第一行为组名，后续行为组员</p>
+        </div>
+
+        <!-- 分组显示区域 -->
+        <div id="groups-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <!-- 分组内容将通过JavaScript动态生成 -->
+        </div>
+    </main>
+
+    <!-- 帮助模态框 -->
+    <div id="help-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-dark">使用帮助</h3>
+                    <button id="close-help" class="text-neutral hover:text-dark transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <h4 class="font-semibold text-primary mb-2">1. 成员操作</h4>
+                    <p class="text-neutral">将鼠标悬停在成员上可显示操作按钮：</p>
+                    <ul class="list-disc pl-5 text-neutral mt-1 space-y-1">
+                        <li>点击成员名称可直接编辑</li>
+                        <li>使用"编辑"按钮修改成员信息</li>
+                        <li>使用"删除"按钮移除成员</li>
+                        <li>拖拽成员可调整位置或移动到其他组</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold text-primary mb-2">2. 分组操作</h4>
+                    <p class="text-neutral">每个分组都有以下操作：</p>
+                    <ul class="list-disc pl-5 text-neutral mt-1 space-y-1">
+                        <li>点击组名可直接编辑</li>
+                        <li>"添加成员"按钮可新增组员</li>
+                        <li>"复制组"按钮可复制整个分组及成员</li>
+                        <li>"删除组"按钮可移除整个分组</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="notification" class="fixed bottom-5 right-5 bg-dark text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center">
+        <i id="notification-icon" class="fa fa-check-circle mr-2"></i>
+        <span id="notification-message"></span>
+    </div>
+
+    <script>
+        // 全局变量
+        let groups = [];
+        let selectedItems = [];
+        let draggedItems = [];
+        let dragSourceGroupIndex = -1;
+
+        // DOM元素
+        const fileUpload = document.getElementById('file-upload');
+        const exportBtn = document.getElementById('export-btn');
+        const addGroupBtn = document.getElementById('add-group-btn');
+        const initialState = document.getElementById('initial-state');
+        const groupsContainer = document.getElementById('groups-container');
+        const helpBtn = document.getElementById('help-btn');
+        const helpModal = document.getElementById('help-modal');
+        const closeHelp = document.getElementById('close-help');
+        const notification = document.getElementById('notification');
+        const notificationIcon = document.getElementById('notification-icon');
+        const notificationMessage = document.getElementById('notification-message');
+
+        // 初始化事件监听
+        function initEventListeners() {
+            // 导入文件
+            fileUpload.addEventListener('change', handleFileUpload);
+
+            // 导出文件
+            exportBtn.addEventListener('click', exportToExcel);
+
+            // 新增分组
+            addGroupBtn.addEventListener('click', addNewGroup);
+
+            // 帮助模态框
+            helpBtn.addEventListener('click', () => {
+                helpModal.classList.remove('hidden');
+                setTimeout(() => {
+                    helpModal.classList.add('opacity-100');
+                    helpModal.querySelector('div').classList.remove('scale-95');
+                    helpModal.querySelector('div').classList.add('scale-100');
+                }, 10);
+            });
+
+            closeHelp.addEventListener('click', closeHelpModal);
+
+            helpModal.addEventListener('click', (e) => {
+                if (e.target === helpModal) {
+                    closeHelpModal();
+                }
+            });
+
+            // 点击空白处清除选中状态
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.group-item') && selectedItems.length > 0) {
+                    clearSelectedItems();
+                }
+            });
+        }
+
+        // 初始化应用
+        function initApp() {
+            initEventListeners();
+        }
+
+        // 关闭帮助模态框
+        function closeHelpModal() {
+            helpModal.classList.remove('opacity-100');
+            helpModal.querySelector('div').classList.remove('scale-100');
+            helpModal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                helpModal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 显示通知
+        function showNotification(message, isError = false) {
+            notificationMessage.textContent = message;
+            notificationIcon.className = isError ? 'fa fa-exclamation-circle mr-2' : 'fa fa-check-circle mr-2';
+            notification.classList.remove('translate-y-20', 'opacity-0');
+            notification.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                notification.classList.remove('translate-y-0', 'opacity-100');
+                notification.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // 处理文件上传
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 检查文件类型
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                showNotification('请上传.xlsx或.xls格式的Excel文件', true);
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    // 获取第一个工作表
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+
+                    // 转换为JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    // 解析数据为分组结构
+                    parseGroups(jsonData);
+
+                    // 显示分组
+                    renderGroups();
+
+                    // 启用导出按钮
+                    exportBtn.disabled = false;
+
+                    showNotification('文件导入成功');
+                } catch (error) {
+                    console.error('解析Excel出错:', error);
+                    showNotification('文件解析失败，请检查文件格式', true);
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 解析数据为分组结构
+        function parseGroups(jsonData) {
+            groups = [];
+
+            // 如果没有数据，返回空数组
+            if (!jsonData || jsonData.length === 0) return;
+
+            // 第一行是组名
+            const groupNames = jsonData[0];
+            if (!groupNames || groupNames.length === 0) {
+                showNotification('Excel文件格式不正确，未找到组名', true);
+                return;
+            }
+
+            // 遍历每一列作为一个组
+            for (let col = 0; col < groupNames.length; col++) {
+                if (groupNames[col] === undefined) continue;
+
+                const groupName = groupNames[col] || `未命名组${col + 1}`;
+                const members = [];
+
+                // 从第二行开始是成员
+                for (let row = 1; row < jsonData.length; row++) {
+                    const member = jsonData[row] ? jsonData[row][col] : undefined;
+                    if (member) {
+                        members.push(member.toString().trim());
+                    }
+                }
+
+                groups.push({
+                    id: `group-${Date.now()}-${col}`,
+                    name: groupName,
+                    members: members
+                });
+            }
+
+            if (groups.length === 0) {
+                showNotification('未解析到任何分组数据，请检查Excel格式', true);
+            }
+        }
+
+        // 渲染分组
+        function renderGroups() {
+            // 清空容器
+            groupsContainer.innerHTML = '';
+
+            // 隐藏初始状态，显示分组容器
+            initialState.classList.add('hidden');
+            groupsContainer.classList.remove('hidden');
+
+            // 渲染每个组
+            groups.forEach((group, groupIndex) => {
+                const groupElement = document.createElement('div');
+                groupElement.className = 'group-container';
+                groupElement.setAttribute('data-group-id', group.id);
+
+                // 组标题栏（包含操作按钮）
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'flex flex-wrap justify-between items-center mb-4 pb-2 border-b gap-2';
+
+                // 组名（可编辑）
+                const groupNameContainer = document.createElement('div');
+                groupNameContainer.className = 'flex items-center';
+
+                const groupNameSpan = document.createElement('span');
+                groupNameSpan.className = 'font-bold text-lg text-dark mr-2 cursor-text hover:text-primary transition-colors';
+                groupNameSpan.textContent = group.name;
+                groupNameSpan.addEventListener('click', () => makeGroupNameEditable(groupIndex));
+
+                const memberCount = document.createElement('span');
+                memberCount.className = 'bg-primary/10 text-primary px-2 py-1 rounded text-sm';
+                memberCount.textContent = `${group.members.length}人`;
+
+                groupNameContainer.appendChild(groupNameSpan);
+                groupNameContainer.appendChild(memberCount);
+
+                // 组操作按钮
+                const groupActions = document.createElement('div');
+                groupActions.className = 'flex space-x-2';
+
+                // 添加成员按钮
+                const addMemberBtn = document.createElement('button');
+                addMemberBtn.className = 'btn-action';
+                addMemberBtn.innerHTML = '<i class="fa fa-user-plus mr-1"></i> 添加成员';
+                addMemberBtn.addEventListener('click', () => addNewMember(groupIndex));
+
+                // 复制组按钮
+                const copyGroupBtn = document.createElement('button');
+                copyGroupBtn.className = 'btn-action';
+                copyGroupBtn.innerHTML = '<i class="fa fa-copy mr-1"></i> 复制组';
+                copyGroupBtn.addEventListener('click', () => copyGroup(groupIndex));
+
+                // 删除组按钮
+                const deleteGroupBtn = document.createElement('button');
+                deleteGroupBtn.className = 'btn-action-danger';
+                deleteGroupBtn.innerHTML = '<i class="fa fa-trash mr-1"></i> 删除组';
+                deleteGroupBtn.addEventListener('click', () => deleteGroup(groupIndex));
+
+                groupActions.appendChild(addMemberBtn);
+                groupActions.appendChild(copyGroupBtn);
+                groupActions.appendChild(deleteGroupBtn);
+
+                // 组装组标题
+                groupHeader.appendChild(groupNameContainer);
+                groupHeader.appendChild(groupActions);
+
+                // 成员列表
+                const membersList = document.createElement('div');
+                membersList.className = 'members-list space-y-2 min-h-[100px]';
+                membersList.setAttribute('data-group-index', groupIndex);
+
+                // 添加拖放事件监听
+                membersList.addEventListener('dragover', handleDragOver);
+                membersList.addEventListener('dragenter', handleDragEnter);
+                membersList.addEventListener('dragleave', handleDragLeave);
+                membersList.addEventListener('drop', handleDrop);
+
+                // 添加成员
+                if (group.members.length === 0) {
+                    const emptyIndicator = document.createElement('div');
+                    emptyIndicator.className = 'text-neutral text-center py-4';
+                    emptyIndicator.innerHTML = '<i class="fa fa-info-circle mr-1"></i> 暂无成员，点击"添加成员"按钮添加';
+                    membersList.appendChild(emptyIndicator);
+                } else {
+                    group.members.forEach((member, memberIndex) => {
+                        const memberElement = createMemberElement(member, groupIndex, memberIndex);
+                        membersList.appendChild(memberElement);
+                    });
+                }
+
+                // 组装组元素
+                groupElement.appendChild(groupHeader);
+                groupElement.appendChild(membersList);
+                groupsContainer.appendChild(groupElement);
+            });
+        }
+
+        // 创建成员元素
+        function createMemberElement(member, groupIndex, memberIndex) {
+            const memberElement = document.createElement('div');
+            memberElement.className = 'group-item flex justify-between items-center';
+            memberElement.draggable = true;
+            memberElement.setAttribute('data-group-index', groupIndex);
+            memberElement.setAttribute('data-member-index', memberIndex);
+
+            // 成员名称（可编辑）
+            const memberName = document.createElement('span');
+            memberName.className = 'cursor-text flex-1';
+            memberName.textContent = member;
+            memberName.addEventListener('click', (e) => {
+                e.stopPropagation();
+                makeMemberNameEditable(groupIndex, memberIndex);
+            });
+
+            // 成员操作按钮组
+            const memberActions = document.createElement('div');
+            memberActions.className = 'member-actions flex space-x-1';
+
+            // 编辑成员按钮
+            const editMemberBtn = document.createElement('button');
+            editMemberBtn.className = 'btn-action';
+            editMemberBtn.innerHTML = '<i class="fa fa-pencil mr-1"></i> 编辑';
+            editMemberBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                makeMemberNameEditable(groupIndex, memberIndex);
+            });
+
+            // 删除成员按钮
+            const deleteMemberBtn = document.createElement('button');
+            deleteMemberBtn.className = 'btn-action-danger';
+            deleteMemberBtn.innerHTML = '<i class="fa fa-times mr-1"></i> 删除';
+            deleteMemberBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteMember(groupIndex, memberIndex);
+            });
+
+            memberActions.appendChild(editMemberBtn);
+            memberActions.appendChild(deleteMemberBtn);
+
+            // 组装成员元素
+            memberElement.appendChild(memberName);
+            memberElement.appendChild(memberActions);
+
+            // 添加事件监听
+            memberElement.addEventListener('dragstart', handleDragStart);
+            memberElement.addEventListener('dragend', handleDragEnd);
+            memberElement.addEventListener('click', handleMemberClick);
+
+            return memberElement;
+        }
+
+        // 处理成员点击事件（支持多选）
+        function handleMemberClick(e) {
+            // 如果不是Ctrl/Cmd键按下，清空已选列表
+            if (!e.ctrlKey && !e.metaKey) {
+                clearSelectedItems();
+            }
+
+            // 切换当前项的选中状态
+            const isSelected = selectedItems.includes(this);
+            if (isSelected) {
+                selectedItems = selectedItems.filter(item => item !== this);
+                this.classList.remove('bg-primary/10', 'border-primary');
+            } else {
+                selectedItems.push(this);
+                this.classList.add('bg-primary/10', 'border-primary');
+            }
+
+            // 阻止事件冒泡，避免触发容器事件
+            e.stopPropagation();
+        }
+
+        // 清除选中状态
+        function clearSelectedItems() {
+            selectedItems.forEach(item => {
+                item.classList.remove('bg-primary/10', 'border-primary');
+            });
+            selectedItems = [];
+        }
+
+        // 处理拖拽开始
+        function handleDragStart(e) {
+            // 记录源组索引
+            dragSourceGroupIndex = parseInt(this.getAttribute('data-group-index'));
+
+            // 如果有选中的项目，拖拽选中的项目，否则只拖拽当前项目
+            draggedItems = selectedItems.length > 0 ? [...selectedItems] : [this];
+
+            // 设置拖拽数据
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                sourceGroupIndex: dragSourceGroupIndex
+            }));
+
+            // 延迟添加拖拽样式
+            setTimeout(() => {
+                draggedItems.forEach(item => {
+                    item.classList.add('dragging');
+                });
+            }, 0);
+        }
+
+        // 处理拖拽结束
+        function handleDragEnd() {
+            // 移除拖拽样式
+            if (draggedItems && draggedItems.length > 0) {
+                draggedItems.forEach(item => {
+                    if (item && item.classList) {
+                        item.classList.remove('dragging');
+                    }
+                });
+            }
+
+            // 清除所有拖放目标样式
+            document.querySelectorAll('.members-list').forEach(list => {
+                list.classList.remove('drag-over');
+            });
+
+            // 重置选中状态
+            clearSelectedItems();
+            draggedItems = [];
+            dragSourceGroupIndex = -1;
+        }
+
+        // 处理拖拽经过
+        function handleDragOver(e) {
+            e.preventDefault(); // 允许放置
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        // 处理拖拽进入
+        function handleDragEnter(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        }
+
+        // 处理拖拽离开
+        function handleDragLeave() {
+            // 只有当鼠标完全离开容器时才移除样式
+            if (!this.contains(event.relatedTarget)) {
+                this.classList.remove('drag-over');
+            }
+        }
+
+        // 处理放置
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+
+            // 获取目标组索引
+            const targetGroupIndex = parseInt(this.getAttribute('data-group-index'));
+
+            // 收集要移动的成员及其原始位置
+            const membersToMove = [];
+            draggedItems.forEach(item => {
+                const sourceGroupIndex = parseInt(item.getAttribute('data-group-index'));
+                const sourceMemberIndex = parseInt(item.getAttribute('data-member-index'));
+
+                // 保存成员数据和原始位置
+                membersToMove.push({
+                    member: groups[sourceGroupIndex].members[sourceMemberIndex],
+                    sourceGroupIndex,
+                    sourceMemberIndex
+                });
+            });
+
+            // 如果没有要移动的成员，直接返回
+            if (membersToMove.length === 0) return;
+
+            // 从源组中移除成员（按索引降序处理，避免索引偏移）
+            membersToMove.sort((a, b) => {
+                if (a.sourceGroupIndex !== b.sourceGroupIndex) {
+                    return b.sourceGroupIndex - a.sourceGroupIndex;
+                }
+                return b.sourceMemberIndex - a.sourceMemberIndex;
+            }).forEach(({ sourceGroupIndex, sourceMemberIndex }) => {
+                if (groups[sourceGroupIndex] && groups[sourceGroupIndex].members) {
+                    groups[sourceGroupIndex].members.splice(sourceMemberIndex, 1);
+                }
+            });
+
+            // 确定放置位置
+            let targetMemberIndex = groups[targetGroupIndex].members.length; // 默认添加到末尾
+
+            // 查找放置位置（在哪个成员前面）
+            const targetElement = e.target.closest('.group-item, .members-list');
+            if (targetElement && targetElement.classList.contains('group-item')) {
+                // 计算原始索引（未移除成员前的索引）
+                let originalIndex = parseInt(targetElement.getAttribute('data-member-index'));
+
+                // 如果是同一组内移动，需要调整目标索引
+                if (dragSourceGroupIndex === targetGroupIndex) {
+                    // 计算有多少个被移动的成员在目标索引之前
+                    const movedBefore = membersToMove.filter(m =>
+                        m.sourceGroupIndex === targetGroupIndex && m.sourceMemberIndex < originalIndex
+                    ).length;
+                    targetMemberIndex = originalIndex - movedBefore;
+                } else {
+                    targetMemberIndex = originalIndex;
+                }
+            }
+
+            // 向目标组添加成员
+            const membersToAdd = membersToMove.map(m => m.member);
+            groups[targetGroupIndex].members.splice(targetMemberIndex, 0, ...membersToAdd);
+
+            // 重新渲染所有组
+            renderGroups();
+
+            showNotification('成员移动成功');
+        }
+
+        // 使组名可编辑
+        function makeGroupNameEditable(groupIndex) {
+            const group = groups[groupIndex];
+            if (!group) return;
+
+            const newName = prompt('请输入新的组名:', group.name);
+            if (newName !== null && newName.trim() !== '') {
+                groups[groupIndex].name = newName.trim();
+                renderGroups();
+                showNotification('组名修改成功');
+            }
+        }
+
+        // 使成员名可编辑
+        function makeMemberNameEditable(groupIndex, memberIndex) {
+            const group = groups[groupIndex];
+            if (!group || !group.members[memberIndex]) return;
+
+            const currentName = group.members[memberIndex];
+            const newName = prompt('请输入新的成员名:', currentName);
+            if (newName !== null && newName.trim() !== '') {
+                groups[groupIndex].members[memberIndex] = newName.trim();
+                renderGroups();
+                showNotification('成员名修改成功');
+            }
+        }
+
+        // 添加新成员
+        function addNewMember(groupIndex) {
+            const newMember = prompt('请输入新成员的姓名:');
+            if (newMember !== null && newMember.trim() !== '') {
+                groups[groupIndex].members.push(newMember.trim());
+                renderGroups();
+                showNotification('成员添加成功');
+            }
+        }
+
+        // 删除成员
+        function deleteMember(groupIndex, memberIndex) {
+            const memberName = groups[groupIndex].members[memberIndex];
+            if (confirm(`确定要删除成员"${memberName}"吗?`)) {
+                groups[groupIndex].members.splice(memberIndex, 1);
+                renderGroups();
+                showNotification('成员删除成功');
+            }
+        }
+
+        // 新增分组
+        function addNewGroup() {
+            const groupName = prompt('请输入新分组的名称:', `新分组${groups.length + 1}`);
+            if (groupName !== null && groupName.trim() !== '') {
+                groups.push({
+                    id: `group-${Date.now()}-${groups.length}`,
+                    name: groupName.trim(),
+                    members: []
+                });
+                renderGroups();
+                showNotification('分组添加成功');
+                // 启用导出按钮
+                exportBtn.disabled = false;
+            }
+        }
+
+        // 复制分组
+        function copyGroup(groupIndex) {
+            const originalGroup = groups[groupIndex];
+            const newGroupName = `${originalGroup.name}（副本）`;
+
+            // 创建分组副本
+            const newGroup = {
+                id: `group-${Date.now()}-${groups.length}`,
+                name: newGroupName,
+                members: [...originalGroup.members] // 复制成员数组
+            };
+
+            groups.push(newGroup);
+            renderGroups();
+            showNotification('分组复制成功');
+        }
+
+        // 删除分组
+        function deleteGroup(groupIndex) {
+            const groupName = groups[groupIndex].name;
+            if (groups.length <= 1) {
+                showNotification('至少保留一个分组', true);
+                return;
+            }
+
+            if (confirm(`确定要删除分组"${groupName}"吗? 该分组下的所有成员也将被删除。`)) {
+                groups.splice(groupIndex, 1);
+                renderGroups();
+                showNotification('分组删除成功');
+            }
+        }
+
+        // 导出到Excel
+        function exportToExcel() {
+            if (groups.length === 0) {
+                showNotification('没有可导出的分组数据', true);
+                return;
+            }
+
+            // 准备导出数据
+            const exportData = [];
+
+            // 第一行是组名
+            const groupNames = groups.map(group => group.name);
+            exportData.push(groupNames);
+
+            // 确定最大成员数
+            const maxMembers = Math.max(...groups.map(group => group.members.length), 0);
+
+            // 填充成员数据
+            for (let i = 0; i < maxMembers; i++) {
+                const row = [];
+                groups.forEach(group => {
+                    row.push(group.members[i] || '');
+                });
+                exportData.push(row);
+            }
+
+            // 创建工作簿和工作表
+            const worksheet = XLSX.utils.aoa_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, '分组数据');
+
+            // 导出文件
+            const fileName = `分组数据_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+
+            showNotification('文件导出成功');
+        }
+
+        // 初始化应用
+        initApp();
+    </script>
+</body>
+</html>

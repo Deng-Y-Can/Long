@@ -1,0 +1,2551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强版系统监控仪表板</title>
+    <!-- 引入外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- 配置Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        success: '#00B42A',
+                        dark: '#1D2129',
+                        'dark-light': '#272E3B',
+                        chart: {
+                            cpu: '#3B82F6',
+                            memory: '#8B5CF6',
+                            battery: '#F59E0B',
+                            network: '#10B981',
+                            download: '#10B981',
+                            upload: '#EF4444',
+                            audio: '#EC4899'
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类和样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+
+                .card-hover:hover {
+                    transform: translateY(-5px);
+                }
+
+            .pulse-indicator {
+                position: relative;
+            }
+
+                .pulse-indicator::after {
+                    content: '';
+                    position: absolute;
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background-color: #00B42A;
+                    top: 0;
+                    right: 0;
+                    animation: pulse 2s infinite;
+                }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(0.95);
+                    box-shadow: 0 0 0 0 rgba(0, 180, 42, 0.7);
+                }
+
+                70% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 10px rgba(0, 180, 42, 0);
+                }
+
+                100% {
+                    transform: scale(0.95);
+                    box-shadow: 0 0 0 0 rgba(0, 180, 42, 0);
+                }
+            }
+
+            .audio-visualizer {
+                display: flex;
+                align-items: flex-end;
+                justify-content: center;
+                gap: 2px;
+                height: 100px;
+            }
+
+            .audio-bar {
+                width: 3px;
+                background-color: theme('colors.chart.audio');
+                border-radius: 1px;
+                transition: height 0.1s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-dark min-h-screen transition-colors duration-300">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10">
+                    <i class="fa fa-tachometer text-primary text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                    增强版系统监控仪表板V1.0
+                </h1>
+            </div>
+
+            <div class="flex items-center space-x-4 mt-2 md:mt-0">
+                <div class="hidden md:flex items-center space-x-2 pulse-indicator pr-4">
+                    <i class="fa fa-refresh text-primary animate-spin"></i>
+                    <span id="update-status" class="text-sm font-medium">实时更新中</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-1 px-3 py-1.5 rounded-full bg-gray-100">
+                    <i class="fa fa-clock-o text-gray-500"></i>
+                    <span id="current-time" class="text-sm"></span>
+                </div>
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
+                    <i class="fa fa-moon-o text-gray-600"></i>
+                </button>
+                <button id="settings-btn" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                    <i class="fa fa-cog text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- 系统概览卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-4 shadow-sm card-hover border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">系统状态</p>
+                        <h3 class="text-lg font-semibold mt-1" id="system-status">正常运行中</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-success">
+                        <i class="fa fa-check"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-gray-500">
+                    <span>监控开始于: </span>
+                    <span id="start-time">-</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 shadow-sm card-hover border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">电池电量</p>
+                        <h3 class="text-lg font-semibold mt-1" id="battery-percentage">-</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-chart-battery" id="battery-icon">
+                        <i class="fa fa-battery-three-quarters"></i>
+                    </div>
+                </div>
+                <div class="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div id="battery-bar" class="h-full bg-chart-battery rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    <span id="battery-status">-</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 shadow-sm card-hover border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">网络状态</p>
+                        <h3 class="text-lg font-semibold mt-1" id="network-status">-</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-chart-network" id="network-icon">
+                        <i class="fa fa-wifi"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-gray-500 flex justify-between">
+                    <span>↓ <span id="download-speed">-</span></span>
+                    <span>↑ <span id="upload-speed">-</span></span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 shadow-sm card-hover border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">声音强度</p>
+                        <h3 class="text-lg font-semibold mt-1" id="audio-level">-</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center text-chart-audio" id="audio-icon">
+                        <i class="fa fa-microphone"></i>
+                    </div>
+                </div>
+                <div class="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div id="audio-bar" class="h-full bg-chart-audio rounded-full transition-all duration-100" style="width: 0%"></div>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    <span id="audio-status">未激活</span>
+                    <button id="toggle-audio" class="ml-2 text-primary hover:underline">激活</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新增的环境和传感器数据卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-4 shadow-sm card-hover border border-gray-100" id="orientation-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">设备方向</p>
+                        <h3 class="text-lg font-semibold mt-1" id="orientation-status">-</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-primary">
+                        <i class="fa fa-compass"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-gray-500 grid grid-cols-3 gap-1">
+                    <div>α: <span id="orientation-alpha">-</span>°</div>
+                    <div>β: <span id="orientation-beta">-</span>°</div>
+                    <div>γ: <span id="orientation-gamma">-</span>°</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 shadow-sm card-hover border border-gray-100" id="motion-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">设备运动</p>
+                        <h3 class="text-lg font-semibold mt-1" id="motion-status">-</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-accent">
+                        <i class="fa fa-arrows-alt"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-gray-500 grid grid-cols-3 gap-1">
+                    <div>X: <span id="motion-x">-</span></div>
+                    <div>Y: <span id="motion-y">-</span></div>
+                    <div>Z: <span id="motion-z">-</span></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 shadow-sm card-hover border border-gray-100" id="light-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">环境光</p>
+                        <h3 class="text-lg font-semibold mt-1" id="light-level">-</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-warning">
+                        <i class="fa fa-sun-o"></i>
+                    </div>
+                </div>
+                <div class="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div id="light-bar" class="h-full bg-warning rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    <span id="light-status">-</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 shadow-sm card-hover border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-xs uppercase tracking-wider">设备内存</p>
+                        <h3 class="text-lg font-semibold mt-1" id="memory-info">-</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-chart-memory">
+                        <i class="fa fa-memory"></i>
+                    </div>
+                </div>
+                <div class="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div id="memory-bar" class="h-full bg-chart-memory rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    <span id="memory-usage">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- 电池监控 -->
+            <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center text-chart-battery">
+                            <i class="fa fa-battery-full"></i>
+                        </div>
+                        <h2 class="text-base font-semibold">电池监控</h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm text-gray-600"><i class="fa fa-clock-o text-gray-500 mr-1"></i> <span id="battery-time-remaining">-</span></span>
+                        <button class="configure-chart p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors" data-chart="battery">
+                            <i class="fa fa-sliders text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="h-64">
+                    <canvas id="battery-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- 网络监控 -->
+            <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-chart-network">
+                            <i class="fa fa-exchange"></i>
+                        </div>
+                        <h2 class="text-base font-semibold">网络流量</h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm text-gray-600"><i class="fa fa-signal text-gray-500 mr-1"></i> <span id="network-type">-</span></span>
+                        <button class="configure-chart p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors" data-chart="network">
+                            <i class="fa fa-sliders text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="h-64">
+                    <canvas id="network-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- 声音监控 -->
+            <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-chart-audio">
+                            <i class="fa fa-volume-up"></i>
+                        </div>
+                        <h2 class="text-base font-semibold">声音强度</h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm text-gray-600"><i class="fa fa-db text-gray-500 mr-1"></i> <span id="audio-decibels">-</span> dB</span>
+                        <button class="configure-chart p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors" data-chart="audio">
+                            <i class="fa fa-sliders text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="h-64">
+                    <canvas id="audio-chart"></canvas>
+                </div>
+                <div class="mt-4 audio-visualizer" id="audio-visualizer">
+                    <!-- 音频可视化条将通过JS动态生成 -->
+                </div>
+            </div>
+
+            <!-- 传感器数据 -->
+            <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100">
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-primary">
+                            <i class="fa fa-sensors"></i>
+                        </div>
+                        <h2 class="text-base font-semibold">传感器数据</h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm text-gray-600"><i class="fa fa-refresh text-gray-500 mr-1"></i> <span id="sensor-update-rate">100ms</span></span>
+                        <button class="configure-chart p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors" data-chart="sensors">
+                            <i class="fa fa-sliders text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="h-64">
+                    <canvas id="sensors-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设备信息 -->
+        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-base font-semibold flex items-center">
+                    <i class="fa fa-info-circle text-primary mr-2"></i>
+                    设备信息
+                </h2>
+                <button id="refresh-device-info" class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center">
+                    <i class="fa fa-refresh mr-1"></i> 刷新
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">浏览器</p>
+                    <p class="text-base font-medium mt-1" id="browser-info">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">操作系统</p>
+                    <p class="text-base font-medium mt-1" id="os-info">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">设备类型</p>
+                    <p class="text-base font-medium mt-1" id="device-type">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">屏幕分辨率</p>
+                    <p class="text-base font-medium mt-1" id="screen-resolution">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">CPU核心数</p>
+                    <p class="text-base font-medium mt-1" id="cpu-cores">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">最大触摸点数</p>
+                    <p class="text-base font-medium mt-1" id="max-touch-points">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">语言</p>
+                    <p class="text-base font-medium mt-1" id="language">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">地理位置</p>
+                    <p class="text-base font-medium mt-1" id="geolocation">
+                        <button id="get-location" class="text-primary hover:underline">获取位置</button>
+                    </p>
+                </div>
+                <!-- 新增的设备能力信息 -->
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">GPU渲染</p>
+                    <p class="text-base font-medium mt-1" id="gpu-info">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">WebGL支持</p>
+                    <p class="text-base font-medium mt-1" id="webgl-info">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">设备内存</p>
+                    <p class="text-base font-medium mt-1" id="device-memory">-</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider">并发线程数</p>
+                    <p class="text-base font-medium mt-1" id="max-workers">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 详细数据表格 -->
+        <div class="bg-white rounded-xl p-4 md:p-5 shadow-sm border border-gray-100 mb-6">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
+                <h2 class="text-base font-semibold flex items-center">
+                    <i class="fa fa-list-alt text-primary mr-2"></i>
+                    监控数据记录
+                </h2>
+                <div class="flex items-center space-x-2">
+                    <select id="data-retention" class="bg-gray-100 rounded px-2 py-1 text-xs">
+                        <option value="10">保留10条</option>
+                        <option value="20" selected>保留20条</option>
+                        <option value="50">保留50条</option>
+                    </select>
+                    <button id="clear-data" class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center">
+                        <i class="fa fa-trash mr-1"></i> 清空
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">电池电量</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">下载速度</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">上传速度</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">声音强度</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">环境光</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- 数据将通过JavaScript动态填充 -->
+                        <tr>
+                            <td colspan="6" class="px-4 py-8 text-center text-gray-500">监控数据将在这里显示</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 py-5 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-3 md:mb-0">
+                    <p class="text-xs text-gray-500">© 2023 增强版系统监控仪表板 | 显示真实可获取的数据</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-xs text-gray-500 hover:text-primary transition-colors">
+                        <i class="fa fa-question-circle mr-1"></i> 帮助
+                    </a>
+                    <a href="#" class="text-xs text-gray-500 hover:text-primary transition-colors">
+                        <i class="fa fa-info-circle mr-1"></i> 关于
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 图表配置模态框 -->
+    <div id="chart-config-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-5 w-full max-w-md transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold" id="modal-title">图表设置</h3>
+                <button id="close-config" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div id="chart-config-content" class="space-y-4">
+                <!-- 配置内容将动态生成 -->
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="reset-chart-config" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">重置</button>
+                <button id="save-chart-config" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全局设置模态框 -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-5 w-full max-w-md transform transition-all scale-95 opacity-0" id="settings-modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">全局设置</h3>
+                <button id="close-settings" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">数据更新频率</label>
+                    <select id="update-interval" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-sm">
+                        <option value="1000">1秒</option>
+                        <option value="2000">2秒</option>
+                        <option value="5000" selected>5秒</option>
+                        <option value="10000">10秒</option>
+                        <option value="30000">30秒</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="show-notifications" class="form-checkbox h-4 w-4 text-primary rounded">
+                        <span class="ml-2 text-sm text-gray-700">电池电量低时通知</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="audio-threshold-notify" class="form-checkbox h-4 w-4 text-primary rounded">
+                        <span class="ml-2 text-sm text-gray-700">声音超过阈值时通知</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">电池低电量阈值</label>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>电量百分比</span>
+                            <span id="battery-threshold-value">20%</span>
+                        </div>
+                        <input type="range" id="battery-threshold" min="10" max="50" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">声音阈值 (dB)</label>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>分贝值</span>
+                            <span id="audio-threshold-value">60 dB</span>
+                        </div>
+                        <input type="range" id="audio-threshold" min="30" max="100" value="60" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-chart-audio">
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="save-global-settings" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let dataInterval;
+        let updateInterval = 5000; // 默认5秒更新一次
+        let dataRetention = 20; // 默认保留20条数据
+        let dataHistory = [];
+        let startTime;
+        let battery = null;
+        let previousNetworkData = null;
+        let totalJSHeapSize = 0;
+        let usedJSHeapSize = 0;
+        let totalMemory = 0;
+
+        // 音频相关变量
+        let audioContext = null;
+        let mediaStream = null;
+        let analyser = null;
+        let audioActive = false;
+        let audioThreshold = 60; // 默认声音阈值 (dB)
+
+        // 传感器相关变量
+        let sensorData = {
+            orientation: { alpha: 0, beta: 0, gamma: 0, available: false },
+            motion: { x: 0, y: 0, z: 0, available: false },
+            light: { level: 0, available: false }
+        };
+
+        // 图表配置
+        let chartConfigs = {
+            battery: {
+                type: 'line',
+                color: '#F59E0B',
+                showGrid: true,
+                animation: true,
+                fill: true
+            },
+            network: {
+                type: 'line',
+                downloadColor: '#10B981',
+                uploadColor: '#EF4444',
+                showGrid: true,
+                animation: true,
+                fill: true
+            },
+            audio: {
+                type: 'line',
+                color: '#EC4899',
+                showGrid: true,
+                animation: true,
+                fill: true
+            },
+            sensors: {
+                type: 'line',
+                orientationColor: '#3B82F6',
+                motionColor: '#722ED1',
+                lightColor: '#FF7D00',
+                showGrid: true,
+                animation: true,
+                fill: false
+            }
+        };
+        let currentConfigChart = null;
+
+        // DOM元素
+        const elements = {
+            systemStatus: document.getElementById('system-status'),
+            startTime: document.getElementById('start-time'),
+            currentTime: document.getElementById('current-time'),
+            batteryPercentage: document.getElementById('battery-percentage'),
+            batteryBar: document.getElementById('battery-bar'),
+            batteryIcon: document.getElementById('battery-icon'),
+            batteryStatus: document.getElementById('battery-status'),
+            batteryTimeRemaining: document.getElementById('battery-time-remaining'),
+            networkStatus: document.getElementById('network-status'),
+            networkIcon: document.getElementById('network-icon'),
+            downloadSpeed: document.getElementById('download-speed'),
+            uploadSpeed: document.getElementById('upload-speed'),
+            networkType: document.getElementById('network-type'),
+            memoryInfo: document.getElementById('memory-info'),
+            memoryBar: document.getElementById('memory-bar'),
+            memoryUsage: document.getElementById('memory-usage'),
+            // 声音相关元素
+            audioLevel: document.getElementById('audio-level'),
+            audioBar: document.getElementById('audio-bar'),
+            audioIcon: document.getElementById('audio-icon'),
+            audioStatus: document.getElementById('audio-status'),
+            toggleAudio: document.getElementById('toggle-audio'),
+            audioDecibels: document.getElementById('audio-decibels'),
+            audioVisualizer: document.getElementById('audio-visualizer'),
+            // 传感器相关元素
+            orientationStatus: document.getElementById('orientation-status'),
+            orientationAlpha: document.getElementById('orientation-alpha'),
+            orientationBeta: document.getElementById('orientation-beta'),
+            orientationGamma: document.getElementById('orientation-gamma'),
+            orientationCard: document.getElementById('orientation-card'),
+            motionStatus: document.getElementById('motion-status'),
+            motionX: document.getElementById('motion-x'),
+            motionY: document.getElementById('motion-y'),
+            motionZ: document.getElementById('motion-z'),
+            motionCard: document.getElementById('motion-card'),
+            lightLevel: document.getElementById('light-level'),
+            lightBar: document.getElementById('light-bar'),
+            lightStatus: document.getElementById('light-status'),
+            lightCard: document.getElementById('light-card'),
+            sensorUpdateRate: document.getElementById('sensor-update-rate'),
+            // 设备信息元素
+            browserInfo: document.getElementById('browser-info'),
+            osInfo: document.getElementById('os-info'),
+            deviceType: document.getElementById('device-type'),
+            screenResolution: document.getElementById('screen-resolution'),
+            cpuCores: document.getElementById('cpu-cores'),
+            maxTouchPoints: document.getElementById('max-touch-points'),
+            language: document.getElementById('language'),
+            geolocation: document.getElementById('geolocation'),
+            getLocation: document.getElementById('get-location'),
+            gpuInfo: document.getElementById('gpu-info'),
+            webglInfo: document.getElementById('webgl-info'),
+            deviceMemory: document.getElementById('device-memory'),
+            maxWorkers: document.getElementById('max-workers'),
+            // 其他控制元素
+            refreshDeviceInfo: document.getElementById('refresh-device-info'),
+            dataTableBody: document.getElementById('data-table-body'),
+            dataRetention: document.getElementById('data-retention'),
+            clearData: document.getElementById('clear-data'),
+            themeToggle: document.getElementById('theme-toggle'),
+            settingsBtn: document.getElementById('settings-btn'),
+            settingsModal: document.getElementById('settings-modal'),
+            settingsModalContent: document.getElementById('settings-modal-content'),
+            closeSettings: document.getElementById('close-settings'),
+            saveGlobalSettings: document.getElementById('save-global-settings'),
+            updateInterval: document.getElementById('update-interval'),
+            showNotifications: document.getElementById('show-notifications'),
+            audioThresholdNotify: document.getElementById('audio-threshold-notify'),
+            batteryThreshold: document.getElementById('battery-threshold'),
+            batteryThresholdValue: document.getElementById('battery-threshold-value'),
+            audioThreshold: document.getElementById('audio-threshold'),
+            audioThresholdValue: document.getElementById('audio-threshold-value'),
+            chartConfigModal: document.getElementById('chart-config-modal'),
+            modalContent: document.getElementById('modal-content'),
+            modalTitle: document.getElementById('modal-title'),
+            closeConfig: document.getElementById('close-config'),
+            saveChartConfig: document.getElementById('save-chart-config'),
+            resetChartConfig: document.getElementById('reset-chart-config'),
+            chartConfigContent: document.getElementById('chart-config-content')
+        };
+
+        // 图表实例
+        const charts = {};
+
+        // 初始化所有图表
+        function initCharts() {
+            initBatteryChart();
+            initNetworkChart();
+            initAudioChart();
+            initSensorsChart();
+            initAudioVisualizer();
+        }
+
+        // 初始化电池图表
+        function initBatteryChart() {
+            const ctx = document.getElementById('battery-chart').getContext('2d');
+            charts.battery = new Chart(ctx, {
+                type: chartConfigs.battery.type,
+                data: {
+                    labels: Array(20).fill(''),
+                    datasets: [{
+                        label: '电池电量 (%)',
+                        data: Array(20).fill(null),
+                        borderColor: chartConfigs.battery.color,
+                        backgroundColor: chartConfigs.battery.fill ?
+                            chartConfigs.battery.color + '10' : 'transparent',
+                        fill: chartConfigs.battery.fill,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: chartConfigs.battery.color
+                    }]
+                },
+                options: getBatteryChartOptions()
+            });
+        }
+
+        // 获取电池图表配置选项
+        function getBatteryChartOptions() {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        min: 0,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '电池电量 (%)',
+                            font: {
+                                size: 10
+                            }
+                        },
+                        grid: {
+                            display: chartConfigs.battery.showGrid,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 9
+                            }
+                        }
+                    },
+                    x: {
+                        display: false,
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return `电量: ${context.raw}%`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: chartConfigs.battery.animation ? 300 : 0
+                }
+            };
+        }
+
+        // 初始化网络图表
+        function initNetworkChart() {
+            const ctx = document.getElementById('network-chart').getContext('2d');
+            charts.network = new Chart(ctx, {
+                type: chartConfigs.network.type,
+                data: {
+                    labels: Array(20).fill(''),
+                    datasets: [
+                        {
+                            label: '下载速度 (KB/s)',
+                            data: Array(20).fill(null),
+                            borderColor: chartConfigs.network.downloadColor,
+                            backgroundColor: chartConfigs.network.fill ?
+                                chartConfigs.network.downloadColor + '10' : 'transparent',
+                            fill: chartConfigs.network.fill,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 0
+                        },
+                        {
+                            label: '上传速度 (KB/s)',
+                            data: Array(20).fill(null),
+                            borderColor: chartConfigs.network.uploadColor,
+                            backgroundColor: chartConfigs.network.fill ?
+                                chartConfigs.network.uploadColor + '10' : 'transparent',
+                            fill: chartConfigs.network.fill,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: getNetworkChartOptions()
+            });
+        }
+
+        // 获取网络图表配置选项
+        function getNetworkChartOptions() {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        min: 0,
+                        title: {
+                            display: true,
+                            text: '速度 (KB/s)',
+                            font: {
+                                size: 10
+                            }
+                        },
+                        grid: {
+                            display: chartConfigs.network.showGrid,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 9
+                            }
+                        }
+                    },
+                    x: {
+                        display: false,
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            boxWidth: 10,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.dataset.label || '';
+                                return `${label}: ${context.raw.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: chartConfigs.network.animation ? 300 : 0
+                }
+            };
+        }
+
+        // 初始化音频图表
+        function initAudioChart() {
+            const ctx = document.getElementById('audio-chart').getContext('2d');
+            charts.audio = new Chart(ctx, {
+                type: chartConfigs.audio.type,
+                data: {
+                    labels: Array(30).fill(''),
+                    datasets: [{
+                        label: '声音强度 (dB)',
+                        data: Array(30).fill(null),
+                        borderColor: chartConfigs.audio.color,
+                        backgroundColor: chartConfigs.audio.fill ?
+                            chartConfigs.audio.color + '10' : 'transparent',
+                        fill: chartConfigs.audio.fill,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0
+                    },
+                    {
+                        label: '阈值',
+                        data: Array(30).fill(audioThreshold),
+                        borderColor: '#F53F3F',
+                        borderWidth: 1,
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0,
+                        tension: 0
+                    }]
+                },
+                options: getAudioChartOptions()
+            });
+        }
+
+        // 获取音频图表配置选项
+        function getAudioChartOptions() {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        min: 0,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '声音强度 (dB)',
+                            font: {
+                                size: 10
+                            }
+                        },
+                        grid: {
+                            display: chartConfigs.audio.showGrid,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 9
+                            }
+                        }
+                    },
+                    x: {
+                        display: false,
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            boxWidth: 10,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.dataset.label || '';
+                                return `${label}: ${context.raw.toFixed(1)}`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: chartConfigs.audio.animation ? 300 : 0
+                }
+            };
+        }
+
+        // 初始化传感器图表
+        function initSensorsChart() {
+            const ctx = document.getElementById('sensors-chart').getContext('2d');
+            charts.sensors = new Chart(ctx, {
+                type: chartConfigs.sensors.type,
+                data: {
+                    labels: Array(20).fill(''),
+                    datasets: [
+                        {
+                            label: '方向 (α)',
+                            data: Array(20).fill(null),
+                            borderColor: chartConfigs.sensors.orientationColor,
+                            backgroundColor: chartConfigs.sensors.fill ?
+                                chartConfigs.sensors.orientationColor + '10' : 'transparent',
+                            fill: chartConfigs.sensors.fill,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '加速度',
+                            data: Array(20).fill(null),
+                            borderColor: chartConfigs.sensors.motionColor,
+                            backgroundColor: chartConfigs.sensors.fill ?
+                                chartConfigs.sensors.motionColor + '10' : 'transparent',
+                            fill: chartConfigs.sensors.fill,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: '环境光 (相对值)',
+                            data: Array(20).fill(null),
+                            borderColor: chartConfigs.sensors.lightColor,
+                            backgroundColor: chartConfigs.sensors.fill ?
+                                chartConfigs.sensors.lightColor + '10' : 'transparent',
+                            fill: chartConfigs.sensors.fill,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            yAxisID: 'y2'
+                        }
+                    ]
+                },
+                options: getSensorsChartOptions()
+            });
+        }
+
+        // 获取传感器图表配置选项
+        function getSensorsChartOptions() {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: '角度 (°)',
+                            font: {
+                                size: 10,
+                                color: chartConfigs.sensors.orientationColor
+                            }
+                        },
+                        grid: {
+                            display: chartConfigs.sensors.showGrid,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 9
+                            }
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: '加速度',
+                            font: {
+                                size: 10,
+                                color: chartConfigs.sensors.motionColor
+                            }
+                        },
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 9
+                            }
+                        }
+                    },
+                    y2: {
+                        type: 'linear',
+                        display: false,
+                        min: 0,
+                        max: 100
+                    },
+                    x: {
+                        display: false,
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            boxWidth: 10,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: chartConfigs.sensors.animation ? 300 : 0
+                }
+            };
+        }
+
+        // 初始化音频可视化器
+        function initAudioVisualizer() {
+            // 创建32个音频条
+            const barCount = 32;
+            elements.audioVisualizer.innerHTML = '';
+
+            for (let i = 0; i < barCount; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'audio-bar';
+                bar.style.height = '0px';
+                elements.audioVisualizer.appendChild(bar);
+            }
+        }
+
+        // 更新图表配置
+        function updateChartConfig(chartId, newConfig) {
+            chartConfigs[chartId] = { ...chartConfigs[chartId], ...newConfig };
+
+            // 重新初始化图表以应用新配置
+            if (chartId === 'battery') {
+                charts.battery.destroy();
+                initBatteryChart();
+            } else if (chartId === 'network') {
+                charts.network.destroy();
+                initNetworkChart();
+            } else if (chartId === 'audio') {
+                charts.audio.destroy();
+                initAudioChart();
+            } else if (chartId === 'sensors') {
+                charts.sensors.destroy();
+                initSensorsChart();
+            }
+
+            // 用最新数据更新图表
+            if (dataHistory.length > 0) {
+                const latestData = dataHistory[dataHistory.length - 1];
+                updateCharts(latestData);
+            }
+        }
+
+        // 生成图表配置表单
+        function generateChartConfigForm(chartId) {
+            currentConfigChart = chartId;
+            let formHtml = '';
+
+            // 通用配置项
+            formHtml += `
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">图表类型</label>
+                        <select id="chart-type" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 text-sm">
+                            <option value="line" ${chartConfigs[chartId].type === 'line' ? 'selected' : ''}>折线图</option>
+                            <option value="area" ${chartConfigs[chartId].type === 'area' ? 'selected' : ''}>面积图</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="show-grid" class="form-checkbox h-4 w-4 text-primary rounded" ${chartConfigs[chartId].showGrid ? 'checked' : ''}>
+                            <span class="ml-2 text-sm text-gray-700">显示网格线</span>
+                        </label>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="animation" class="form-checkbox h-4 w-4 text-primary rounded" ${chartConfigs[chartId].animation ? 'checked' : ''}>
+                            <span class="ml-2 text-sm text-gray-700">启用动画效果</span>
+                        </label>
+                    </div>
+                `;
+
+            // 特定图表的配置项
+            if (chartId === 'battery') {
+                formHtml += `
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">线条颜色</label>
+                            <input type="color" id="chart-color" value="${chartConfigs.battery.color}" class="w-full h-10 p-0 border-0 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="fill-area" class="form-checkbox h-4 w-4 text-primary rounded" ${chartConfigs.battery.fill ? 'checked' : ''}>
+                                <span class="ml-2 text-sm text-gray-700">填充区域</span>
+                            </label>
+                        </div>
+                    `;
+            } else if (chartId === 'network') {
+                formHtml += `
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">下载数据颜色</label>
+                            <input type="color" id="download-color" value="${chartConfigs.network.downloadColor}" class="w-full h-10 p-0 border-0 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">上传数据颜色</label>
+                            <input type="color" id="upload-color" value="${chartConfigs.network.uploadColor}" class="w-full h-10 p-0 border-0 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="fill-area" class="form-checkbox h-4 w-4 text-primary rounded" ${chartConfigs.network.fill ? 'checked' : ''}>
+                                <span class="ml-2 text-sm text-gray-700">填充区域</span>
+                            </label>
+                        </div>
+                    `;
+            } else if (chartId === 'audio') {
+                formHtml += `
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">线条颜色</label>
+                            <input type="color" id="chart-color" value="${chartConfigs.audio.color}" class="w-full h-10 p-0 border-0 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="fill-area" class="form-checkbox h-4 w-4 text-primary rounded" ${chartConfigs.audio.fill ? 'checked' : ''}>
+                                <span class="ml-2 text-sm text-gray-700">填充区域</span>
+                            </label>
+                        </div>
+                    `;
+            } else if (chartId === 'sensors') {
+                formHtml += `
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">方向数据颜色</label>
+                            <input type="color" id="orientation-color" value="${chartConfigs.sensors.orientationColor}" class="w-full h-10 p-0 border-0 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">运动数据颜色</label>
+                            <input type="color" id="motion-color" value="${chartConfigs.sensors.motionColor}" class="w-full h-10 p-0 border-0 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">环境光数据颜色</label>
+                            <input type="color" id="light-color" value="${chartConfigs.sensors.lightColor}" class="w-full h-10 p-0 border-0 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="fill-area" class="form-checkbox h-4 w-4 text-primary rounded" ${chartConfigs.sensors.fill ? 'checked' : ''}>
+                                <span class="ml-2 text-sm text-gray-700">填充区域</span>
+                            </label>
+                        </div>
+                    `;
+            }
+
+            elements.chartConfigContent.innerHTML = formHtml;
+            elements.modalTitle.textContent = getChartTitle(chartId) + ' 设置';
+        }
+
+        // 获取图表标题
+        function getChartTitle(chartId) {
+            const titles = {
+                'battery': '电池监控',
+                'network': '网络流量',
+                'audio': '声音强度',
+                'sensors': '传感器数据'
+            };
+            return titles[chartId] || '图表设置';
+        }
+
+        // 获取真实系统数据
+        async function getRealSystemData() {
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+
+            // 初始化数据对象
+            const data = {
+                time: timeStr
+            };
+
+            // 1. 获取电池数据（如果支持）
+            if (battery) {
+                data.batteryLevel = Math.round(battery.level * 100);
+                data.batteryCharging = battery.charging;
+
+                // 电池剩余时间（如果可用）
+                if (battery.charging) {
+                    data.batteryTime = battery.chargingTime > 0 ?
+                        formatTime(battery.chargingTime) + ' 充满' : '已充满';
+                } else {
+                    data.batteryTime = battery.dischargingTime > 0 ?
+                        formatTime(battery.dischargingTime) + ' 剩余' : '未知';
+                }
+
+                // 电池状态文本
+                data.batteryStatusText = battery.charging ? '充电中' : '放电中';
+            }
+
+            // 2. 获取网络数据
+            const networkData = await getNetworkInformation();
+            if (networkData) {
+                data.network = networkData;
+
+                // 计算网络速度（基于前后数据对比）
+                if (previousNetworkData) {
+                    const timeDiff = (now - previousNetworkData.timestamp) / 1000; // 秒
+
+                    if (timeDiff > 0) {
+                        // 计算下载速度 (KB/s)
+                        const downDiff = networkData.bytesReceived - previousNetworkData.bytesReceived;
+                        data.downloadSpeed = (downDiff / 1024) / timeDiff;
+
+                        // 计算上传速度 (KB/s)
+                        const upDiff = networkData.bytesSent - previousNetworkData.bytesSent;
+                        data.uploadSpeed = (upDiff / 1024) / timeDiff;
+                    }
+                }
+
+                // 保存当前网络数据用于下次计算
+                previousNetworkData = {
+                    bytesReceived: networkData.bytesReceived,
+                    bytesSent: networkData.bytesSent,
+                    timestamp: now
+                };
+            }
+
+            // 3. 获取内存数据（仅JS堆内存，浏览器限制）
+            if (performance && performance.memory) {
+                totalJSHeapSize = performance.memory.totalJSHeapSize;
+                usedJSHeapSize = performance.memory.usedJSHeapSize;
+                totalMemory = performance.memory.jsHeapSizeLimit;
+
+                // 计算内存使用率
+                data.memoryUsage = (usedJSHeapSize / totalMemory) * 100;
+
+                // 格式化内存大小 (MB)
+                data.totalMemoryMB = (totalMemory / (1024 * 1024)).toFixed(2);
+                data.usedMemoryMB = (usedJSHeapSize / (1024 * 1024)).toFixed(2);
+            }
+
+            // 4. 获取音频数据（如果已激活）
+            if (audioActive && analyser) {
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(dataArray);
+
+                // 计算平均音量
+                let sum = 0;
+                dataArray.forEach(value => sum += value);
+                const average = sum / dataArray.length;
+
+                // 转换为分贝值 (0-100范围)
+                data.audioLevel = Math.min(Math.round(average * 0.39), 100); // 255 * 0.39 ≈ 100
+
+                // 更新音频可视化
+                updateAudioVisualizer(dataArray);
+
+                // 检查是否超过阈值
+                if (elements.audioThresholdNotify.checked && data.audioLevel > audioThreshold) {
+                    showAudioNotification(data.audioLevel);
+                }
+            }
+
+            // 5. 传感器数据
+            data.sensors = { ...sensorData };
+
+            return data;
+        }
+
+        // 更新音频可视化器
+        function updateAudioVisualizer(dataArray) {
+            const bars = elements.audioVisualizer.querySelectorAll('.audio-bar');
+            const barCount = bars.length;
+            const dataCount = dataArray.length;
+
+            // 从频率数据中为每个条形图分配值
+            bars.forEach((bar, i) => {
+                // 从频率数据中采样
+                const index = Math.floor(i * dataCount / barCount);
+                // 缩放值以适应可视化高度
+                const height = Math.min((dataArray[index] / 255) * 100, 100);
+                bar.style.height = `${height}px`;
+
+                // 根据高度改变颜色
+                if (height < 30) {
+                    bar.style.backgroundColor = '#10B981';
+                } else if (height < 60) {
+                    bar.style.backgroundColor = '#F59E0B';
+                } else {
+                    bar.style.backgroundColor = '#EF4444';
+                }
+            });
+        }
+
+        // 显示声音过大通知
+        function showAudioNotification(level) {
+            if (!('Notification' in window)) {
+                return; // 浏览器不支持通知
+            }
+
+            // 检查通知权限
+            if (Notification.permission === 'granted') {
+                new Notification('声音过大', {
+                    body: `当前声音强度达到 ${level} dB，超过设定阈值 ${audioThreshold} dB`,
+                    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjRUN4ODk5IiBkPSJNMzIwIDM4NGgtMTYwYy0xNy43IDAtMzIgMTQuMy0zMiAzMnY0OGMxNy43IDAgMzIgMTQuMyAzMiAzMnYxMTJoMTYwVjQ0OGMxNy43IDAgMzItMTQuMyAzMi0zMlY0MTZzLTE0LjMtMzItMzItMzJ6bS0xNjAtMjg4aDE2MHYzMkgxNjBWMThjLTE3LjcgMC0zMiAxNC4zLTMyIDMydjQ0OGMxNy43IDAgMzIgMTQuMyAzMiAzMnYzMmg0OFYzMkg0ODB2NDhjMCA1Ni40LTQ1LjYgMTAyLTEwMiAxMDJzLTEwMi00NS42LTEwMi0xMDJoNDhjMCAxNy43LTE0LjMgMzItMzIgMzJ6Ii8+PC9zdmc+'
+                });
+            } else if (Notification.permission !== 'denied') {
+                // 请求通知权限
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        showAudioNotification(level);
+                    }
+                });
+            }
+        }
+
+        // 切换音频监听状态
+        async function toggleAudioMonitoring() {
+            if (audioActive) {
+                // 停止音频监听
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+                audioContext = null;
+                analyser = null;
+                audioActive = false;
+
+                // 更新UI
+                elements.audioStatus.textContent = '未激活';
+                elements.toggleAudio.textContent = '激活';
+                elements.audioIcon.innerHTML = '<i class="fa fa-microphone"></i>';
+                elements.audioLevel.textContent = '-';
+                elements.audioBar.style.width = '0%';
+                elements.audioDecibels.textContent = '-';
+
+                // 重置音频可视化
+                elements.audioVisualizer.querySelectorAll('.audio-bar').forEach(bar => {
+                    bar.style.height = '0px';
+                });
+
+                // 重置音频图表
+                charts.audio.data.datasets[0].data = Array(30).fill(null);
+                charts.audio.update();
+            } else {
+                // 开始音频监听
+                try {
+                    // 请求麦克风权限
+                    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+                    // 创建音频上下文和分析器
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 256;
+
+                    const source = audioContext.createMediaStreamSource(mediaStream);
+                    source.connect(analyser);
+
+                    audioActive = true;
+
+                    // 更新UI
+                    elements.audioStatus.textContent = '监听中';
+                    elements.toggleAudio.textContent = '停止';
+                    elements.audioIcon.innerHTML = '<i class="fa fa-microphone-slash"></i>';
+
+                } catch (error) {
+                    console.error('无法访问麦克风:', error);
+                    elements.audioStatus.textContent = '访问失败';
+                    alert('无法访问麦克风。请确保已授予麦克风权限。');
+                }
+            }
+        }
+
+        // 初始化传感器监听
+        function initSensors() {
+            // 设备方向传感器
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientation', event => {
+                    sensorData.orientation = {
+                        alpha: event.alpha ? Math.round(event.alpha) : 0,
+                        beta: event.beta ? Math.round(event.beta) : 0,
+                        gamma: event.gamma ? Math.round(event.gamma) : 0,
+                        available: true
+                    };
+
+                    // 更新状态文本
+                    let status = '静止';
+                    if (Math.abs(sensorData.orientation.beta) > 30 ||
+                        Math.abs(sensorData.orientation.gamma) > 30) {
+                        status = '倾斜';
+                    }
+                    elements.orientationStatus.textContent = status;
+
+                    // 更新数值显示
+                    elements.orientationAlpha.textContent = sensorData.orientation.alpha;
+                    elements.orientationBeta.textContent = sensorData.orientation.beta;
+                    elements.orientationGamma.textContent = sensorData.orientation.gamma;
+                });
+            } else {
+                // 不支持设备方向传感器，隐藏相关卡片
+                elements.orientationCard.classList.add('opacity-50');
+                elements.orientationStatus.textContent = '不支持';
+            }
+
+            // 设备运动传感器
+            if (window.DeviceMotionEvent) {
+                window.addEventListener('devicemotion', event => {
+                    if (event.acceleration) {
+                        const accel = event.acceleration;
+                        const magnitude = Math.sqrt(accel.x ** 2 + accel.y ** 2 + accel.z ** 2);
+
+                        sensorData.motion = {
+                            x: Math.round(accel.x * 10) / 10,
+                            y: Math.round(accel.y * 10) / 10,
+                            z: Math.round(accel.z * 10) / 10,
+                            available: true
+                        };
+
+                        // 更新状态文本
+                        let status = '静止';
+                        if (magnitude > 1) status = '轻微运动';
+                        if (magnitude > 5) status = '剧烈运动';
+                        elements.motionStatus.textContent = status;
+
+                        // 更新数值显示
+                        elements.motionX.textContent = sensorData.motion.x;
+                        elements.motionY.textContent = sensorData.motion.y;
+                        elements.motionZ.textContent = sensorData.motion.z;
+                    }
+                });
+            } else {
+                // 不支持设备运动传感器，隐藏相关卡片
+                elements.motionCard.classList.add('opacity-50');
+                elements.motionStatus.textContent = '不支持';
+            }
+
+            // 环境光传感器
+            if ('AmbientLightSensor' in window) {
+                try {
+                    const sensor = new AmbientLightSensor();
+
+                    sensor.addEventListener('reading', () => {
+                        // 光线强度 (lux)
+                        const level = sensor.illuminance;
+
+                        // 转换为0-100的相对值
+                        let relativeLevel = 0;
+                        if (level <= 10) relativeLevel = 10;
+                        else if (level <= 100) relativeLevel = 20 + Math.min(Math.round((level - 10) / 90 * 30), 30);
+                        else if (level <= 1000) relativeLevel = 50 + Math.min(Math.round((level - 100) / 900 * 30), 30);
+                        else relativeLevel = 100;
+
+                        sensorData.light = {
+                            level: Math.round(level),
+                            relativeLevel: relativeLevel,
+                            available: true
+                        };
+
+                        // 更新状态文本
+                        let status = '暗';
+                        if (level > 50) status = '适中';
+                        if (level > 500) status = '明亮';
+                        elements.lightStatus.textContent = status;
+
+                        // 更新数值显示
+                        elements.lightLevel.textContent = `${sensorData.light.level} lux`;
+                        elements.lightBar.style.width = `${sensorData.light.relativeLevel}%`;
+                    });
+
+                    sensor.addEventListener('error', (error) => {
+                        console.error('环境光传感器错误:', error);
+                        elements.lightStatus.textContent = '错误';
+                    });
+
+                    sensor.start();
+                } catch (error) {
+                    console.error('无法初始化环境光传感器:', error);
+                    elements.lightCard.classList.add('opacity-50');
+                    elements.lightStatus.textContent = '不支持';
+                }
+            } else {
+                // 不支持环境光传感器，隐藏相关卡片
+                elements.lightCard.classList.add('opacity-50');
+                elements.lightStatus.textContent = '不支持';
+            }
+        }
+
+        // 获取网络信息
+        async function getNetworkInformation() {
+            // 基础网络信息
+            const networkInfo = {
+                online: navigator.onLine,
+                type: getNetworkType(),
+                bytesReceived: 0,
+                bytesSent: 0
+            };
+
+            // 使用Performance API获取网络字节数（如果支持）
+            if (performance && performance.getEntriesByType) {
+                const resources = performance.getEntriesByType('resource');
+                let bytesReceived = 0;
+                let bytesSent = 0;
+
+                resources.forEach(resource => {
+                    if (resource.transferSize) bytesReceived += resource.transferSize;
+                    if (resource.encodedBodySize) bytesSent += resource.encodedBodySize;
+                });
+
+                networkInfo.bytesReceived = bytesReceived;
+                networkInfo.bytesSent = bytesSent;
+            }
+
+            return networkInfo;
+        }
+
+        // 获取网络类型
+        function getNetworkType() {
+            if (!navigator.connection && !navigator.mozConnection && !navigator.webkitConnection) {
+                return navigator.onLine ? '未知' : '离线';
+            }
+
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+            const types = {
+                'bluetooth': '蓝牙',
+                'cellular': '蜂窝网络',
+                'ethernet': '以太网',
+                'none': '无网络',
+                'wifi': 'WiFi',
+                'wimax': 'WiMAX',
+                'other': '其他',
+                'unknown': '未知'
+            };
+
+            return types[connection.type] || connection.type || '未知';
+        }
+
+        // 格式化时间（秒 -> hh:mm:ss）
+        function formatTime(seconds) {
+            if (seconds === Infinity) return '未知';
+
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+
+            let result = '';
+            if (h > 0) result += `${h}h `;
+            if (m > 0 || h > 0) result += `${m}m `;
+            result += `${s}s`;
+
+            return result.trim();
+        }
+
+        // 获取设备信息
+        function getDeviceInfo() {
+            // 1. 浏览器信息
+            const browserInfo = `${getBrowserName()} ${getBrowserVersion()}`;
+            elements.browserInfo.textContent = browserInfo;
+
+            // 2. 操作系统信息
+            const osInfo = getOSName();
+            elements.osInfo.textContent = osInfo;
+
+            // 3. 设备类型
+            let deviceType = '桌面设备';
+            if (/Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                deviceType = '移动设备';
+            }
+            elements.deviceType.textContent = deviceType;
+
+            // 4. 屏幕分辨率
+            const screenResolution = `${screen.width} × ${screen.height}`;
+            elements.screenResolution.textContent = screenResolution;
+
+            // 5. CPU核心数
+            const cpuCores = navigator.hardwareConcurrency || '未知';
+            elements.cpuCores.textContent = cpuCores;
+
+            // 6. 最大触摸点数
+            const maxTouchPoints = navigator.maxTouchPoints || 0;
+            elements.maxTouchPoints.textContent = maxTouchPoints > 0 ? maxTouchPoints : '不支持触摸';
+
+            // 7. 语言
+            const language = navigator.language || navigator.userLanguage;
+            elements.language.textContent = language;
+
+            // 8. GPU信息
+            let gpuInfo = '未知';
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (gl) {
+                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                if (debugInfo) {
+                    gpuInfo = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '未知';
+                }
+            }
+            elements.gpuInfo.textContent = gpuInfo;
+
+            // 9. WebGL支持
+            const webglSupport = gl ? '支持' : '不支持';
+            elements.webglInfo.textContent = webglSupport;
+
+            // 10. 设备内存
+            const deviceMemory = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : '未知';
+            elements.deviceMemory.textContent = deviceMemory;
+
+            // 11. 最大并发线程数
+            const maxWorkers = navigator.hardwareConcurrency ? Math.floor(navigator.hardwareConcurrency * 1.5) : '未知';
+            elements.maxWorkers.textContent = maxWorkers;
+        }
+
+        // 获取浏览器名称
+        function getBrowserName() {
+            const userAgent = navigator.userAgent;
+
+            if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1) {
+                return 'Chrome';
+            } else if (userAgent.indexOf('Firefox') > -1) {
+                return 'Firefox';
+            } else if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('Chrome') === -1) {
+                return 'Safari';
+            } else if (userAgent.indexOf('Edg') > -1) {
+                return 'Edge';
+            } else if (userAgent.indexOf('MSIE') > -1 || userAgent.indexOf('Trident/') > -1) {
+                return 'Internet Explorer';
+            } else {
+                return '未知浏览器';
+            }
+        }
+
+        // 获取浏览器版本
+        function getBrowserVersion() {
+            const userAgent = navigator.userAgent;
+            let version = '未知';
+
+            if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1) {
+                version = userAgent.match(/Chrome\/(\d+\.\d+)/)[1];
+            } else if (userAgent.indexOf('Firefox') > -1) {
+                version = userAgent.match(/Firefox\/(\d+\.\d+)/)[1];
+            } else if (userAgent.indexOf('Safari') > -1 && userAgent.indexOf('Chrome') === -1) {
+                version = userAgent.match(/Version\/(\d+\.\d+)/)[1];
+            } else if (userAgent.indexOf('Edg') > -1) {
+                version = userAgent.match(/Edg\/(\d+\.\d+)/)[1];
+            } else if (userAgent.indexOf('MSIE') > -1) {
+                version = userAgent.match(/MSIE (\d+\.\d+)/)[1];
+            } else if (userAgent.indexOf('Trident/') > -1) {
+                version = userAgent.match(/rv:(\d+\.\d+)/)[1];
+            }
+
+            return version;
+        }
+
+        // 获取操作系统名称
+        function getOSName() {
+            const userAgent = navigator.userAgent;
+
+            if (userAgent.indexOf('Windows') > -1) {
+                return 'Windows';
+            } else if (userAgent.indexOf('Macintosh') > -1) {
+                return 'macOS';
+            } else if (userAgent.indexOf('Linux') > -1) {
+                return 'Linux';
+            } else if (userAgent.indexOf('Android') > -1) {
+                return 'Android';
+            } else if (userAgent.indexOf('iPhone') > -1 || userAgent.indexOf('iPad') > -1) {
+                return 'iOS';
+            } else {
+                return '未知操作系统';
+            }
+        }
+
+        // 获取地理位置
+        function getGeolocation() {
+            if (!navigator.geolocation) {
+                elements.geolocation.textContent = '您的浏览器不支持地理位置';
+                return;
+            }
+
+            elements.geolocation.innerHTML = '<i class="fa fa-spinner fa-spin text-primary"></i> 获取中...';
+
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    // 这里我们只显示经纬度，实际应用中可以通过逆地理编码API获取具体位置
+                    elements.geolocation.textContent =
+                        `纬度: ${position.coords.latitude.toFixed(4)}, 经度: ${position.coords.longitude.toFixed(4)}`;
+                },
+                error => {
+                    let errorMsg = '获取位置失败: ';
+                    switch (error.code) {
+                        case 1:
+                            errorMsg += '用户拒绝授权';
+                            break;
+                        case 2:
+                            errorMsg += '位置信息不可用';
+                            break;
+                        case 3:
+                            errorMsg += '获取位置超时';
+                            break;
+                        default:
+                            errorMsg += '未知错误';
+                    }
+                    elements.geolocation.textContent = errorMsg;
+                }
+            );
+        }
+
+        // 更新UI显示
+        function updateUI(data) {
+            // 更新当前时间
+            const now = new Date();
+            elements.currentTime.textContent = now.toLocaleTimeString();
+
+            // 1. 更新电池信息（如果有数据）
+            if (data.batteryLevel !== undefined) {
+                elements.batteryPercentage.textContent = `${data.batteryLevel}%`;
+                elements.batteryBar.style.width = `${data.batteryLevel}%`;
+                elements.batteryStatus.textContent = data.batteryStatusText;
+                elements.batteryTimeRemaining.textContent = data.batteryTime;
+
+                // 更新电池图标
+                let batteryIcon = 'fa-battery-three-quarters';
+                if (data.batteryLevel < 25) batteryIcon = 'fa-battery-quarter';
+                else if (data.batteryLevel < 50) batteryIcon = 'fa-battery-half';
+                else if (data.batteryLevel < 75) batteryIcon = 'fa-battery-three-quarters';
+                else batteryIcon = 'fa-battery-full';
+
+                // 如果正在充电，添加充电图标
+                if (data.batteryCharging) {
+                    batteryIcon = 'fa-battery-charging';
+                }
+
+                elements.batteryIcon.innerHTML = `<i class="fa ${batteryIcon}"></i>`;
+
+                // 低电量通知
+                if (elements.showNotifications.checked && !data.batteryCharging &&
+                    data.batteryLevel <= parseInt(elements.batteryThreshold.value)) {
+                    showBatteryNotification(data.batteryLevel);
+                }
+            }
+
+            // 2. 更新网络信息（如果有数据）
+            if (data.network) {
+                elements.networkStatus.textContent = data.network.online ? '已连接' : '已断开';
+                elements.networkType.textContent = data.network.type;
+
+                // 更新网络图标
+                let networkIcon = data.network.online ? 'fa-wifi' : 'fa-wifi';
+                elements.networkIcon.innerHTML = `<i class="fa ${networkIcon}"></i>`;
+                elements.networkIcon.className = `w-10 h-10 rounded-full ${data.network.online ? 'bg-green-50' : 'bg-gray-50'} flex items-center justify-center ${data.network.online ? 'text-chart-network' : 'text-gray-500'}`;
+
+                // 更新网络速度
+                if (data.downloadSpeed !== undefined) {
+                    // 转换为合适的单位 (KB/s 或 MB/s)
+                    if (data.downloadSpeed > 1024) {
+                        elements.downloadSpeed.textContent = `${(data.downloadSpeed / 1024).toFixed(2)} MB/s`;
+                    } else {
+                        elements.downloadSpeed.textContent = `${data.downloadSpeed.toFixed(1)} KB/s`;
+                    }
+
+                    if (data.uploadSpeed > 1024) {
+                        elements.uploadSpeed.textContent = `${(data.uploadSpeed / 1024).toFixed(2)} MB/s`;
+                    } else {
+                        elements.uploadSpeed.textContent = `${data.uploadSpeed.toFixed(1)} KB/s`;
+                    }
+                }
+            }
+
+            // 3. 更新内存信息（如果有数据）
+            if (data.memoryUsage !== undefined) {
+                elements.memoryUsage.textContent = `${data.memoryUsage.toFixed(1)}% 已使用`;
+                elements.memoryBar.style.width = `${Math.min(data.memoryUsage, 100)}%`;
+                elements.memoryInfo.textContent = `${data.usedMemoryMB} / ${data.totalMemoryMB} MB`;
+            }
+
+            // 4. 更新音频信息（如果有数据）
+            if (data.audioLevel !== undefined) {
+                elements.audioLevel.textContent = `${data.audioLevel}%`;
+                elements.audioBar.style.width = `${data.audioLevel}%`;
+                elements.audioDecibels.textContent = data.audioLevel;
+
+                // 根据声音强度改变颜色
+                if (data.audioLevel < 30) {
+                    elements.audioBar.style.backgroundColor = '#10B981';
+                } else if (data.audioLevel < 60) {
+                    elements.audioBar.style.backgroundColor = '#F59E0B';
+                } else {
+                    elements.audioBar.style.backgroundColor = '#EF4444';
+                }
+            }
+
+            // 更新图表
+            updateCharts(data);
+
+            // 更新数据表格
+            addDataToTable(data);
+
+            // 保存到历史记录
+            dataHistory.push(data);
+            if (dataHistory.length > dataRetention) {
+                dataHistory.shift();
+            }
+        }
+
+        // 显示电池低电量通知
+        function showBatteryNotification(level) {
+            if (!('Notification' in window)) {
+                return; // 浏览器不支持通知
+            }
+
+            // 检查通知权限
+            if (Notification.permission === 'granted') {
+                new Notification('电池电量低', {
+                    body: `当前电池电量仅为 ${level}%，请及时充电`,
+                    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjRjU5RTAwIiBkPSJNMzIwIDM4NGgtMTYwYy0xNy43IDAtMzIgMTQuMy0zMiAzMnY0OGMxNy43IDAgMzIgMTQuMyAzMiAzMnYxMTJoMTYwVjQ0OGMxNy43IDAgMzItMTQuMyAzMi0zMlY0MTZzLTE0LjMtMzItMzItMzJ6bS0xNjAtMjg4aDE2MHYzMkgxNjBWMTh4MTYwVjBIMThjLTE3LjcgMC0zMiAxNC4zLTMyIDMydjQ0OGMxNy43IDAgMzIgMTQuMyAzMiAzMnYzMkgxNjB2LTMyaDE2MFYxMDBIMThWNDhjMC0xNy43IDE0LjMtMzIgMzItMzJoNDY0YzE3LjcgMCAzMiAxNC4zIDMyIDMydjQ0YzAgMTcuNy0xNC4zIDMyLTMyIDMyaC00OGMwIDU2LjQtNDUuNiAxMDItMTAyIDEwMnMtMTAyLTQ1LjYtMTAyLTEwMmg0OFYzMnptMjQwIDMyMmg0OFYzMkg0ODB2NDRjMCA1Ni40LTQ1LjYgMTAyLTEwMiAxMDJzLTEwMi00NS42LTEwMi0xMDJoNDhjMCAxNy43LTE0LjMgMzItMzIgMzJ6Ii8+PC9zdmc+'
+                });
+            } else if (Notification.permission !== 'denied') {
+                // 请求通知权限
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        showBatteryNotification(level);
+                    }
+                });
+            }
+        }
+
+        // 更新图表数据
+        function updateCharts(data) {
+            // 更新电池图表
+            if (data.batteryLevel !== undefined) {
+                updateLineChart(charts.battery, [data.batteryLevel]);
+            }
+
+            // 更新网络图表
+            if (data.downloadSpeed !== undefined && data.uploadSpeed !== undefined) {
+                updateLineChart(charts.network, [data.downloadSpeed, data.uploadSpeed]);
+            }
+
+            // 更新音频图表
+            if (data.audioLevel !== undefined) {
+                // 确保阈值线数据保持最新
+                charts.audio.data.datasets[1].data = Array(30).fill(audioThreshold);
+                updateLineChart(charts.audio, [data.audioLevel, null]);
+            }
+
+            // 更新传感器图表
+            if (data.sensors) {
+                // 为三个数据集准备数据点
+                const orientationData = data.sensors.orientation.available ? data.sensors.orientation.alpha : null;
+                const motionData = data.sensors.motion.available ?
+                    Math.sqrt(data.sensors.motion.x ** 2 + data.sensors.motion.y ** 2 + data.sensors.motion.z ** 2) : null;
+                const lightData = data.sensors.light.available ? data.sensors.light.relativeLevel : null;
+
+                updateLineChart(charts.sensors, [orientationData, motionData, lightData]);
+            }
+        }
+
+        // 更新线图数据的通用函数
+        function updateLineChart(chart, newValues) {
+            chart.data.labels.push('');
+            newValues.forEach((value, index) => {
+                if (value !== null) {
+                    chart.data.datasets[index].data.push(value);
+                } else {
+                    // 如果没有新值，使用最后一个值或null
+                    const lastValue = chart.data.datasets[index].data.length > 0
+                        ? chart.data.datasets[index].data[chart.data.datasets[index].data.length - 1]
+                        : null;
+                    chart.data.datasets[index].data.push(lastValue);
+                }
+            });
+
+            // 保持图表数据点数量
+            const maxPoints = chart === charts.audio ? 30 : 20;
+            if (chart.data.labels.length > maxPoints) {
+                chart.data.labels.shift();
+                chart.data.datasets.forEach(dataset => {
+                    dataset.data.shift();
+                });
+            }
+
+            chart.update();
+        }
+
+        // 添加数据到表格
+        function addDataToTable(data) {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50 transition-colors';
+
+            // 构建表格内容
+            let batteryCell = '-';
+            if (data.batteryLevel !== undefined) {
+                batteryCell = `${data.batteryLevel}%`;
+            }
+
+            let downloadCell = '-';
+            let uploadCell = '-';
+            if (data.downloadSpeed !== undefined) {
+                downloadCell = data.downloadSpeed > 1024 ?
+                    `${(data.downloadSpeed / 1024).toFixed(2)} MB/s` :
+                    `${data.downloadSpeed.toFixed(1)} KB/s`;
+
+                uploadCell = data.uploadSpeed > 1024 ?
+                    `${(data.uploadSpeed / 1024).toFixed(2)} MB/s` :
+                    `${data.uploadSpeed.toFixed(1)} KB/s`;
+            }
+
+            let audioCell = '-';
+            if (data.audioLevel !== undefined) {
+                audioCell = `${data.audioLevel}% (${data.audioLevel} dB)`;
+            }
+
+            let lightCell = '-';
+            if (data.sensors && data.sensors.light.available) {
+                lightCell = `${data.sensors.light.level} lux`;
+            }
+
+            row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">${data.time}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">${batteryCell}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">${downloadCell}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">${uploadCell}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">${audioCell}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">${lightCell}</td>
+                `;
+
+            // 如果是第一个数据，清空提示行
+            if (elements.dataTableBody.children.length === 1 && elements.dataTableBody.children[0].querySelector('td').colSpan === 6) {
+                elements.dataTableBody.innerHTML = '';
+            }
+
+            // 添加到表格顶部
+            elements.dataTableBody.insertBefore(row, elements.dataTableBody.firstChild);
+
+            // 限制表格行数
+            while (elements.dataTableBody.children.length > dataRetention) {
+                elements.dataTableBody.removeChild(elements.dataTableBody.lastChild);
+            }
+        }
+
+        // 开始数据更新循环
+        async function startDataUpdates() {
+            // 记录开始时间
+            startTime = new Date();
+            elements.startTime.textContent = startTime.toLocaleString();
+
+            // 立即更新一次
+            const initialData = await getRealSystemData();
+            updateUI(initialData);
+
+            // 设置定时器定期更新
+            if (dataInterval) {
+                clearInterval(dataInterval);
+            }
+
+            dataInterval = setInterval(async () => {
+                const newData = await getRealSystemData();
+                updateUI(newData);
+            }, updateInterval);
+        }
+
+        // 显示图表配置模态框
+        function showChartConfigModal(chartId) {
+            generateChartConfigForm(chartId);
+            elements.chartConfigModal.classList.remove('hidden');
+
+            // 触发动画
+            setTimeout(() => {
+                elements.modalContent.classList.remove('scale-95', 'opacity-0');
+                elements.modalContent.classList.add('scale-100', 'opacity-100', 'transition-all', 'duration-300');
+            }, 10);
+        }
+
+        // 隐藏图表配置模态框
+        function hideChartConfigModal() {
+            elements.modalContent.classList.remove('scale-100', 'opacity-100');
+            elements.modalContent.classList.add('scale-95', 'opacity-0', 'transition-all', 'duration-300');
+
+            setTimeout(() => {
+                elements.chartConfigModal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 保存图表配置
+        function saveChartConfig() {
+            if (!currentConfigChart) return;
+
+            const newConfig = {
+                type: document.getElementById('chart-type').value,
+                showGrid: document.getElementById('show-grid').checked,
+                animation: document.getElementById('animation').checked
+            };
+
+            // 根据图表类型添加特定配置
+            if (currentConfigChart === 'battery') {
+                newConfig.color = document.getElementById('chart-color').value;
+                newConfig.fill = document.getElementById('fill-area').checked;
+            } else if (currentConfigChart === 'network') {
+                newConfig.downloadColor = document.getElementById('download-color').value;
+                newConfig.uploadColor = document.getElementById('upload-color').value;
+                newConfig.fill = document.getElementById('fill-area').checked;
+            } else if (currentConfigChart === 'audio') {
+                newConfig.color = document.getElementById('chart-color').value;
+                newConfig.fill = document.getElementById('fill-area').checked;
+            } else if (currentConfigChart === 'sensors') {
+                newConfig.orientationColor = document.getElementById('orientation-color').value;
+                newConfig.motionColor = document.getElementById('motion-color').value;
+                newConfig.lightColor = document.getElementById('light-color').value;
+                newConfig.fill = document.getElementById('fill-area').checked;
+            }
+
+            // 更新图表配置
+            updateChartConfig(currentConfigChart, newConfig);
+            hideChartConfigModal();
+        }
+
+        // 重置图表配置
+        function resetChartConfig() {
+            if (!currentConfigChart) return;
+
+            // 重置为默认配置
+            const defaultConfigs = {
+                battery: {
+                    type: 'line',
+                    color: '#F59E0B',
+                    showGrid: true,
+                    animation: true,
+                    fill: true
+                },
+                network: {
+                    type: 'line',
+                    downloadColor: '#10B981',
+                    uploadColor: '#EF4444',
+                    showGrid: true,
+                    animation: true,
+                    fill: true
+                },
+                audio: {
+                    type: 'line',
+                    color: '#EC4899',
+                    showGrid: true,
+                    animation: true,
+                    fill: true
+                },
+                sensors: {
+                    type: 'line',
+                    orientationColor: '#3B82F6',
+                    motionColor: '#722ED1',
+                    lightColor: '#FF7D00',
+                    showGrid: true,
+                    animation: true,
+                    fill: false
+                }
+            };
+
+            updateChartConfig(currentConfigChart, defaultConfigs[currentConfigChart]);
+            generateChartConfigForm(currentConfigChart); // 刷新表单
+        }
+
+        // 显示全局设置模态框
+        function showSettingsModal() {
+            elements.settingsModal.classList.remove('hidden');
+
+            // 设置当前值
+            elements.updateInterval.value = updateInterval;
+            elements.dataRetention.value = dataRetention;
+            elements.audioThreshold.value = audioThreshold;
+            elements.audioThresholdValue.textContent = `${audioThreshold} dB`;
+
+            // 触发动画
+            setTimeout(() => {
+                elements.settingsModalContent.classList.remove('scale-95', 'opacity-0');
+                elements.settingsModalContent.classList.add('scale-100', 'opacity-100', 'transition-all', 'duration-300');
+            }, 10);
+        }
+
+        // 隐藏全局设置模态框
+        function hideSettingsModal() {
+            elements.settingsModalContent.classList.remove('scale-100', 'opacity-100');
+            elements.settingsModalContent.classList.add('scale-95', 'opacity-0', 'transition-all', 'duration-300');
+
+            setTimeout(() => {
+                elements.settingsModal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 保存全局设置
+        function saveGlobalSettings() {
+            updateInterval = parseInt(elements.updateInterval.value);
+            dataRetention = parseInt(elements.dataRetention.value);
+            audioThreshold = parseInt(elements.audioThreshold.value);
+
+            // 更新音频图表中的阈值线
+            if (charts.audio) {
+                charts.audio.data.datasets[1].data = Array(30).fill(audioThreshold);
+                charts.audio.update();
+            }
+
+            // 重启数据更新
+            startDataUpdates();
+
+            // 调整历史数据数量
+            while (dataHistory.length > dataRetention) {
+                dataHistory.shift();
+            }
+
+            // 更新表格
+            while (elements.dataTableBody.children.length > dataRetention) {
+                elements.dataTableBody.removeChild(elements.dataTableBody.lastChild);
+            }
+
+            hideSettingsModal();
+        }
+
+        // 切换深色/浅色主题
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('bg-gray-900');
+            document.body.classList.toggle('bg-gray-50');
+            document.body.classList.toggle('text-white');
+            document.body.classList.toggle('text-dark');
+
+            // 更新头部和底部样式
+            const header = document.querySelector('header');
+            const footer = document.querySelector('footer');
+
+            if (isDark) {
+                header.classList.remove('bg-white', 'shadow-md');
+                header.classList.add('bg-dark-light', 'shadow-lg');
+
+                footer.classList.remove('bg-white', 'border-t', 'border-gray-200');
+                footer.classList.add('bg-dark-light', 'border-t', 'border-gray-800');
+
+                // 更新图标
+                elements.themeToggle.querySelector('i').classList.remove('fa-moon-o', 'text-gray-600');
+                elements.themeToggle.querySelector('i').classList.add('fa-sun-o', 'text-yellow-400');
+
+                // 更新卡片样式
+                document.querySelectorAll('.bg-white').forEach(el => {
+                    el.classList.remove('bg-white', 'border-gray-100');
+                    el.classList.add('bg-dark-light', 'border-gray-800');
+                });
+
+                // 更新表格样式
+                document.querySelectorAll('.bg-gray-50').forEach(el => {
+                    el.classList.remove('bg-gray-50');
+                    el.classList.add('bg-gray-800');
+                });
+
+                document.querySelectorAll('.hover\\:bg-gray-50').forEach(el => {
+                    el.classList.remove('hover:bg-gray-50');
+                    el.classList.add('hover:bg-gray-800');
+                });
+
+                document.querySelectorAll('.divide-gray-200').forEach(el => {
+                    el.classList.remove('divide-gray-200');
+                    el.classList.add('divide-gray-800');
+                });
+
+                // 更新图表背景
+                Object.values(charts).forEach(chart => {
+                    chart.options.scales.x.grid.color = 'rgba(255, 255, 255, 0.05)';
+                    chart.options.scales.y.grid.color = 'rgba(255, 255, 255, 0.05)';
+                    chart.update();
+                });
+            } else {
+                header.classList.remove('bg-dark-light', 'shadow-lg');
+                header.classList.add('bg-white', 'shadow-md');
+
+                footer.classList.remove('bg-dark-light', 'border-t', 'border-gray-800');
+                footer.classList.add('bg-white', 'border-t', 'border-gray-200');
+
+                // 更新图标
+                elements.themeToggle.querySelector('i').classList.remove('fa-sun-o', 'text-yellow-400');
+                elements.themeToggle.querySelector('i').classList.add('fa-moon-o', 'text-gray-600');
+
+                // 更新卡片样式
+                document.querySelectorAll('.bg-dark-light').forEach(el => {
+                    el.classList.remove('bg-dark-light', 'border-gray-800');
+                    el.classList.add('bg-white', 'border-gray-100');
+                });
+
+                // 更新表格样式
+                document.querySelectorAll('.bg-gray-800').forEach(el => {
+                    el.classList.remove('bg-gray-800');
+                    el.classList.add('bg-gray-50');
+                });
+
+                document.querySelectorAll('.hover\\:bg-gray-800').forEach(el => {
+                    el.classList.remove('hover:bg-gray-800');
+                    el.classList.add('hover:bg-gray-50');
+                });
+
+                document.querySelectorAll('.divide-gray-800').forEach(el => {
+                    el.classList.remove('divide-gray-800');
+                    el.classList.add('divide-gray-200');
+                });
+
+                // 更新图表背景
+                Object.values(charts).forEach(chart => {
+                    chart.options.scales.x.grid.color = 'rgba(0, 0, 0, 0.05)';
+                    chart.options.scales.y.grid.color = 'rgba(0, 0, 0, 0.05)';
+                    chart.update();
+                });
+            }
+        }
+
+        // 事件监听器
+        // 事件监听器  从这里接着写完剩下的代码
+        function initializeEventListeners() {
+            // 1. 音频控制相关
+            elements.toggleAudio.addEventListener('click', function () {
+                toggleAudioMonitoring();
+            });
+
+            // 2. 设备信息相关
+            elements.refreshDeviceInfo.addEventListener('click', function () {
+                getDeviceInfo();
+                showToast('设备信息已刷新');
+            });
+
+            elements.getLocation.addEventListener('click', function () {
+                getGeolocation();
+            });
+
+            // 3. 数据管理相关
+            elements.dataRetention.addEventListener('change', function () {
+                dataRetention = parseInt(this.value);
+                trimDataHistory();
+                updateDataTable();
+            });
+
+            elements.clearData.addEventListener('click', function () {
+                if (confirm('确定要清空所有监控数据吗？')) {
+                    clearAllData();
+                }
+            });
+
+            // 4. 主题切换
+            elements.themeToggle.addEventListener('click', function () {
+                toggleTheme();
+                localStorage.setItem('darkMode', document.body.classList.contains('bg-gray-900'));
+            });
+
+            // 5. 全局设置模态框
+            elements.settingsBtn.addEventListener('click', showSettingsModal);
+            elements.closeSettings.addEventListener('click', hideSettingsModal);
+            elements.saveGlobalSettings.addEventListener('click', function () {
+                saveGlobalSettings();
+                showToast('设置已保存');
+            });
+
+            // 6. 阈值滑块交互
+            elements.audioThreshold.addEventListener('input', function () {
+                elements.audioThresholdValue.textContent = `${this.value} dB`;
+                audioThreshold = parseInt(this.value);
+                updateAudioThresholdLine();
+            });
+
+            elements.batteryThreshold.addEventListener('input', function () {
+                elements.batteryThresholdValue.textContent = `${this.value}%`;
+            });
+
+            // 7. 图表配置相关
+            document.querySelectorAll('.configure-chart').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const chartId = this.getAttribute('data-chart');
+                    showChartConfigModal(chartId);
+                });
+            });
+
+            // 8. 图表配置模态框
+            elements.closeConfig.addEventListener('click', hideChartConfigModal);
+            elements.saveChartConfig.addEventListener('click', function () {
+                saveChartConfig();
+                showToast('图表配置已更新');
+            });
+            elements.resetChartConfig.addEventListener('click', resetChartConfig);
+
+            // 9. 点击模态框外部关闭
+            elements.chartConfigModal.addEventListener('click', function (e) {
+                if (e.target === this) hideChartConfigModal();
+            });
+
+            elements.settingsModal.addEventListener('click', function (e) {
+                if (e.target === this) hideSettingsModal();
+            });
+
+            // 10. 窗口大小变化时重绘图表
+            window.addEventListener('resize', function () {
+                Object.values(charts).forEach(chart => chart.resize());
+            });
+
+            // 11. 页面卸载前清理
+            window.addEventListener('beforeunload', function () {
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                }
+                if (dataInterval) clearInterval(dataInterval);
+            });
+        }
+
+        // 辅助函数：显示提示消息
+        function showToast(message) {
+            // 创建提示元素
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-dark text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-y-10 opacity-0';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // 显示动画
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            }, 10);
+
+            // 3秒后隐藏
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // 辅助函数：修剪数据历史
+        function trimDataHistory() {
+            while (dataHistory.length > dataRetention) {
+                dataHistory.shift();
+            }
+        }
+
+        // 辅助函数：更新数据表格
+        function updateDataTable() {
+            while (elements.dataTableBody.children.length > dataRetention) {
+                elements.dataTableBody.removeChild(elements.dataTableBody.lastChild);
+            }
+        }
+
+        // 辅助函数：清空所有数据
+        function clearAllData() {
+            dataHistory = [];
+            elements.dataTableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="px-4 py-8 text-center text-gray-500">监控数据已清空</td>
+        </tr>
+    `;
+
+            // 重置所有图表
+            Object.values(charts).forEach(chart => {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.data = Array(chart === charts.audio ? 30 : 20).fill(null);
+                });
+                chart.update();
+            });
+        }
+
+        // 辅助函数：更新音频阈值线
+        function updateAudioThresholdLine() {
+            if (charts.audio) {
+                charts.audio.data.datasets[1].data = Array(30).fill(audioThreshold);
+                charts.audio.update();
+            }
+        }
+        // 初始化电池监控
+        async function initBatteryMonitoring() {
+            if ('getBattery' in navigator) {
+                try {
+                    battery = await navigator.getBattery();
+
+                    // 电池状态变化时更新
+                    battery.addEventListener('levelchange', async () => {
+                        const data = await getRealSystemData();
+                        updateUI(data);
+                    });
+
+                    battery.addEventListener('chargingchange', async () => {
+                        const data = await getRealSystemData();
+                        updateUI(data);
+                    });
+
+                    return true;
+                } catch (error) {
+                    console.error('电池监控初始化失败:', error);
+                    return false;
+                }
+            } else {
+                console.log('浏览器不支持电池API');
+                return false;
+            }
+        }
+
+        // 检查并请求通知权限
+        function requestNotificationPermission() {
+            if ('Notification' in window) {
+                Notification.requestPermission();
+            }
+        }
+
+        // 应用初始化函数
+        async function initializeApp() {
+            // 初始化设备信息显示
+            getDeviceInfo();
+
+            // 初始化传感器
+            initSensors();
+
+            // 初始化电池监控
+            await initBatteryMonitoring();
+
+            // 初始化图表
+            initCharts();
+
+            // 设置事件监听器
+            initializeEventListeners();
+
+            // 请求通知权限
+            requestNotificationPermission();
+
+            // 开始数据更新
+            startDataUpdates();
+
+            // 检查本地存储的主题设置
+            if (localStorage.getItem('darkMode') === 'true') {
+                toggleTheme();
+            }
+
+            console.log('应用初始化完成');
+        }
+
+        // 当页面加载完成后初始化应用
+    window.addEventListener('DOMContentLoaded', initializeApp);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>增强版测量工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        /* 顶部导航 */
+        header {
+            background-color: #2563eb;
+            color: white;
+            padding: 10px 15px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .header-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        /* 模式切换 */
+        .mode-bar {
+            position: fixed;
+            top: 40px;
+            left: 0;
+            right: 0;
+            background-color: white;
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            z-index: 90;
+        }
+        
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .mode-btn.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
+        
+        /* 测量类型选择器 */
+        .measure-type-selector {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            background-color: #f9f9f9;
+            display: flex;
+            border-bottom: 1px solid #eee;
+            z-index: 85;
+        }
+        
+        .measure-type-btn {
+            padding: 8px 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .measure-type-btn.active {
+            background-color: #e6f7ff;
+            color: #2563eb;
+        }
+        
+        /* 主内容区 */
+        main {
+            padding-top: 115px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        /* 测量区域 */
+        #measurementArea {
+            width: 100%;
+            height: 60vh;
+            background-color: white;
+            border: 1px solid #ddd;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        /* 网格背景 */
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(#eee 1px, transparent 1px), 
+                             linear-gradient(90deg, #eee 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        /* 刻度尺样式 */
+        .ruler {
+            background-color: white;
+            position: absolute;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        #topRuler {
+            height: 30px;
+            top: 0;
+            left: 30px;
+            right: 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        #leftRuler {
+            width: 30px;
+            top: 30px;
+            left: 0;
+            bottom: 0;
+            border-right: 1px solid #ddd;
+        }
+        
+        .ruler-mark {
+            position: absolute;
+            background-color: #333;
+        }
+        
+        .ruler-label {
+            position: absolute;
+            font-size: 10px;
+            pointer-events: none;
+            background-color: white;
+            padding: 0 2px;
+        }
+        
+        /* 测量元素 */
+        .measure-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #dc2626;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+        }
+        
+        .measure-point-number {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background-color: #2563eb;
+            color: white;
+            font-size: 10px;
+            text-align: center;
+            line-height: 14px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 21;
+            margin-top: -12px;
+            margin-left: -12px;
+        }
+        
+        .measure-line {
+            position: absolute;
+            height: 2px;
+            background-color: #dc2626;
+            transform-origin: 0 0;
+            z-index: 15;
+        }
+        
+        .measure-line-segment {
+            position: absolute;
+            height: 2px;
+            background-color: #2563eb;
+            transform-origin: 0 0;
+            z-index: 16;
+        }
+        
+        .measure-polygon {
+            position: absolute;
+            background-color: rgba(37, 99, 235, 0.1);
+            z-index: 14;
+        }
+        
+        .measure-label {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #dc2626;
+            padding: 2px 5px;
+            font-size: 12px;
+            border-radius: 3px;
+            z-index: 25;
+        }
+        
+        .total-length-label {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #2563eb;
+            padding: 3px 6px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 3px;
+            z-index: 25;
+        }
+        
+        /* 量角器样式 */
+        #protractor {
+            position: absolute;
+            inset: 0;
+            display: none;
+        }
+        
+        .protractor-circle {
+            position: absolute;
+            border: 1px solid #2563eb;
+            border-radius: 50%;
+        }
+        
+        .angle-line {
+            position: absolute;
+            height: 1px;
+            background-color: #64748b;
+            transform-origin: center;
+        }
+        
+        .angle-label {
+            position: absolute;
+            font-size: 10px;
+            transform: translate(-50%, -50%);
+        }
+        
+        .center-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #2563eb;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+        }
+        
+        /* 角度差标签 */
+        .angle-diff-label {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #dc2626;
+            padding: 2px 5px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 3px;
+            z-index: 25;
+        }
+        
+        /* 控制面板 */
+        .control-panel {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .result-display {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .result-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        
+        .results-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .result-item {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .control-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: #333;
+        }
+        
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        .hint-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        /* 设置面板 */
+        #settingsPanel {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100vh;
+            background-color: white;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            z-index: 200;
+            padding: 20px;
+            transition: right 0.3s;
+            overflow-y: auto;
+        }
+        
+        #settingsPanel.open {
+            right: 0;
+        }
+        
+        .settings-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .settings-section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #444;
+        }
+        
+        .setting-item {
+            margin-bottom: 15px;
+        }
+        
+        .setting-label {
+            font-size: 13px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .setting-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+        
+        .setting-select {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .setting-slider {
+            width: 100%;
+        }
+        
+        .close-settings {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .save-settings {
+            width: 100%;
+            padding: 8px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header>
+        <div class="header-title">
+            <i class="fa fa-ruler"></i> 增强版测量工具
+        </div>
+        <button id="settingsBtn" class="header-btn">
+            <i class="fa fa-cog"></i>
+        </button>
+    </header>
+    
+    <!-- 模式切换栏 -->
+    <div class="mode-bar">
+        <button id="rulerMode" class="mode-btn active">
+            <i class="fa fa-arrows-h"></i> 刻度尺
+        </button>
+        <button id="protractorMode" class="mode-btn">
+            <i class="fa fa-circle-o"></i> 量角器
+        </button>
+    </div>
+    
+    <!-- 测量类型选择器 -->
+    <div class="measure-type-selector">
+        <button id="distanceMeasure" class="measure-type-btn active">
+            <i class="fa fa-arrows"></i> 两点距离/角度
+        </button>
+        <button id="polylineMeasure" class="measure-type-btn">
+            <i class="fa fa-minus"></i> 多段线/角度
+        </button>
+        <button id="areaMeasure" class="measure-type-btn">
+            <i class="fa fa-square-o"></i> 面积/多边形角度
+        </button>
+    </div>
+    
+    <!-- 主内容区 -->
+    <main>
+        <!-- 测量区域 -->
+        <div id="measurementArea">
+            <!-- 网格背景 -->
+            <div class="grid-bg"></div>
+            
+            <!-- 顶部刻度尺 -->
+            <div id="topRuler" class="ruler">
+                <div id="topRulerMarks"></div>
+            </div>
+            
+            <!-- 左侧刻度尺 -->
+            <div id="leftRuler" class="ruler">
+                <div id="leftRulerMarks"></div>
+            </div>
+            
+            <!-- 量角器 -->
+            <div id="protractor">
+                <div id="protractorCircle" class="protractor-circle"></div>
+                <div id="angleLines"></div>
+                <div id="centerDot" class="center-dot"></div>
+            </div>
+            
+            <!-- 测量元素容器 -->
+            <div id="measureElements"></div>
+        </div>
+        
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <div class="results-container">
+                <div class="result-item">
+                    <div class="result-label">当前测量</div>
+                    <div id="measurementResult" class="result-value">0 厘米</div>
+                </div>
+                <div class="result-item" id="totalResultContainer" style="display: none;">
+                    <div class="result-label">总计/最大角度</div>
+                    <div id="totalResult" class="result-value">0 厘米</div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button id="undoBtn" class="control-btn btn-secondary" disabled>
+                    <i class="fa fa-undo"></i> 撤销
+                </button>
+                <button id="resetBtn" class="control-btn btn-danger">
+                    <i class="fa fa-refresh"></i> 重置
+                </button>
+                <button id="fullscreenBtn" class="control-btn btn-primary">
+                    <i class="fa fa-expand"></i> 全屏
+                </button>
+            </div>
+            
+            <div id="modeHint" class="hint-text">
+                两点距离模式：点击添加两个点，测量直线距离
+            </div>
+        </div>
+    </main>
+    
+    <!-- 设置面板 -->
+    <div id="settingsPanel">
+        <button id="closeSettings" class="close-settings">
+            <i class="fa fa-times"></i>
+        </button>
+        <h3 class="settings-title">设置</h3>
+        
+        <div class="settings-section">
+            <h4 class="section-title">刻度尺设置</h4>
+            
+            <div class="setting-item">
+                <div class="setting-label">显示刻度尺</div>
+                <div class="setting-checkbox">
+                    <input type="checkbox" id="showTopRuler" checked>
+                    <label for="showTopRuler">顶部刻度尺</label>
+                </div>
+                <div class="setting-checkbox">
+                    <input type="checkbox" id="showLeftRuler" checked>
+                    <label for="showLeftRuler">左侧刻度尺</label>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <label for="rulerPrecision" class="setting-label">刻度精度</label>
+                <select id="rulerPrecision" class="setting-select">
+                    <option value="1">1毫米</option>
+                    <option value="2">2毫米</option>
+                    <option value="5">5毫米</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h4 class="section-title">量角器设置</h4>
+            
+            <div class="setting-item">
+                <label for="protractorSize" class="setting-label">量角器大小</label>
+                <input type="range" id="protractorSize" min="50" max="100" value="80" class="setting-slider">
+            </div>
+            
+            <div class="setting-checkbox">
+                <input type="checkbox" id="showAngleLabels" checked>
+                <label for="showAngleLabels">显示角度标签</label>
+            </div>
+            
+            <div class="setting-checkbox">
+                <input type="checkbox" id="showAllAngles" checked>
+                <label for="showAllAngles">多点模式显示所有角度</label>
+            </div>
+        </div>
+        
+        <button id="saveSettings" class="save-settings">保存设置</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 基础配置
+            const PX_PER_MM = 0.2645833333; // 1px = 0.2646mm (96DPI)
+            let currentMode = 'ruler'; // 'ruler' 或 'protractor'
+            let measureType = 'distance'; // 'distance', 'polyline', 'area'
+            
+            // 测量数据存储
+            const measurementData = {
+                points: [],          // 所有测量点
+                segments: [],        // 线段数据 {start, end, length/angle, element, label}
+                totalLength: 0,      // 总长度（多段线模式）
+                maxAngle: 0,         // 最大角度（量角器多点模式）
+                area: 0,             // 面积（面积模式）
+                history: []          // 历史记录，用于撤销功能
+            };
+            
+            // DOM元素引用
+            const elements = {
+                measurementArea: document.getElementById('measurementArea'),
+                measureElements: document.getElementById('measureElements'),
+                measurementResult: document.getElementById('measurementResult'),
+                totalResult: document.getElementById('totalResult'),
+                totalResultContainer: document.getElementById('totalResultContainer'),
+                modeHint: document.getElementById('modeHint'),
+                rulerMode: document.getElementById('rulerMode'),
+                protractorMode: document.getElementById('protractorMode'),
+                distanceMeasure: document.getElementById('distanceMeasure'),
+                polylineMeasure: document.getElementById('polylineMeasure'),
+                areaMeasure: document.getElementById('areaMeasure'),
+                protractor: document.getElementById('protractor'),
+                protractorCircle: document.getElementById('protractorCircle'),
+                angleLines: document.getElementById('angleLines'),
+                centerDot: document.getElementById('centerDot'),
+                resetBtn: document.getElementById('resetBtn'),
+                undoBtn: document.getElementById('undoBtn'),
+                fullscreenBtn: document.getElementById('fullscreenBtn'),
+                settingsBtn: document.getElementById('settingsBtn'),
+                settingsPanel: document.getElementById('settingsPanel'),
+                closeSettings: document.getElementById('closeSettings'),
+                saveSettings: document.getElementById('saveSettings'),
+                topRuler: document.getElementById('topRuler'),
+                leftRuler: document.getElementById('leftRuler'),
+                topRulerMarks: document.getElementById('topRulerMarks'),
+                leftRulerMarks: document.getElementById('leftRulerMarks'),
+                showTopRuler: document.getElementById('showTopRuler'),
+                showLeftRuler: document.getElementById('showLeftRuler'),
+                rulerPrecision: document.getElementById('rulerPrecision'),
+                protractorSize: document.getElementById('protractorSize'),
+                showAngleLabels: document.getElementById('showAngleLabels'),
+                showAllAngles: document.getElementById('showAllAngles')
+            };
+            
+            // 初始化函数
+            function init() {
+                // 绘制刻度尺
+                drawRulers();
+                
+                // 初始化量角器
+                initProtractor();
+                
+                // 设置事件监听
+                setupEventListeners();
+            }
+            
+            // 绘制刻度尺
+            function drawRulers() {
+                // 绘制顶部水平刻度尺
+                if (elements.showTopRuler.checked) {
+                    elements.topRuler.style.display = 'block';
+                    drawHorizontalRuler();
+                } else {
+                    elements.topRuler.style.display = 'none';
+                }
+                
+                // 绘制左侧垂直刻度尺
+                if (elements.showLeftRuler.checked) {
+                    elements.leftRuler.style.display = 'block';
+                    drawVerticalRuler();
+                } else {
+                    elements.leftRuler.style.display = 'none';
+                }
+            }
+            
+            // 绘制水平刻度尺
+            function drawHorizontalRuler() {
+                elements.topRulerMarks.innerHTML = '';
+                
+                const width = elements.measurementArea.offsetWidth - 30;
+                const precision = parseInt(elements.rulerPrecision.value) || 1;
+                
+                for (let mm = 0; mm <= width * PX_PER_MM; mm += precision) {
+                    const px = mm / PX_PER_MM;
+                    const mark = document.createElement('div');
+                    mark.className = 'ruler-mark';
+                    
+                    if (mm % 10 === 0) {
+                        mark.style.height = '8px';
+                        mark.style.width = '1px';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'ruler-label';
+                        label.textContent = (mm / 10).toFixed(1);
+                        label.style.left = `${px}px`;
+                        label.style.top = '2px';
+                        label.style.transform = 'translateX(-50%)';
+                        elements.topRulerMarks.appendChild(label);
+                    } else if (mm % 5 === 0) {
+                        mark.style.height = '5px';
+                        mark.style.width = '1px';
+                    } else {
+                        mark.style.height = '3px';
+                        mark.style.width = '1px';
+                    }
+                    
+                    mark.style.left = `${px}px`;
+                    mark.style.bottom = '0';
+                    elements.topRulerMarks.appendChild(mark);
+                }
+            }
+            
+            // 绘制垂直刻度尺
+            function drawVerticalRuler() {
+                elements.leftRulerMarks.innerHTML = '';
+                
+                const height = elements.measurementArea.offsetHeight - 30;
+                const precision = parseInt(elements.rulerPrecision.value) || 1;
+                
+                for (let mm = 0; mm <= height * PX_PER_MM; mm += precision) {
+                    const px = mm / PX_PER_MM;
+                    const mark = document.createElement('div');
+                    mark.className = 'ruler-mark';
+                    
+                    if (mm % 10 === 0) {
+                        mark.style.width = '8px';
+                        mark.style.height = '1px';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'ruler-label';
+                        label.textContent = (mm / 10).toFixed(1);
+                        label.style.top = `${px}px`;
+                        label.style.right = '2px';
+                        label.style.transform = 'translateY(-50%)';
+                        elements.leftRulerMarks.appendChild(label);
+                    } else if (mm % 5 === 0) {
+                        mark.style.width = '5px';
+                        mark.style.height = '1px';
+                    } else {
+                        mark.style.width = '3px';
+                        mark.style.height = '1px';
+                    }
+                    
+                    mark.style.top = `${px}px`;
+                    mark.style.right = '0';
+                    elements.leftRulerMarks.appendChild(mark);
+                }
+            }
+            
+            // 初始化量角器
+            function initProtractor() {
+                const center = getCenterPoint();
+                
+                // 设置中心点
+                elements.centerDot.style.left = `${center.x}px`;
+                elements.centerDot.style.top = `${center.y}px`;
+                
+                // 绘制量角器
+                drawProtractor();
+            }
+            
+            // 绘制量角器
+            function drawProtractor() {
+                elements.angleLines.innerHTML = '';
+                
+                const center = getCenterPoint();
+                const sizePercent = parseInt(elements.protractorSize.value) / 100;
+                
+                // 计算最大半径
+                const maxRadius = Math.min(
+                    center.x - 10,
+                    elements.measurementArea.offsetWidth - center.x - 10,
+                    center.y - 10,
+                    elements.measurementArea.offsetHeight - center.y - 10
+                ) * sizePercent;
+                
+                // 设置量角器圆
+                elements.protractorCircle.style.width = `${maxRadius * 2}px`;
+                elements.protractorCircle.style.height = `${maxRadius * 2}px`;
+                elements.protractorCircle.style.left = `${center.x - maxRadius}px`;
+                elements.protractorCircle.style.top = `${center.y - maxRadius}px`;
+                
+                // 绘制角度线
+                for (let angle = 0; angle < 360; angle += 5) {
+                    const line = document.createElement('div');
+                    line.className = 'angle-line';
+                    const lineLength = angle % 10 === 0 ? maxRadius * 0.15 : maxRadius * 0.08;
+                    
+                    line.style.width = `${lineLength}px`;
+                    line.style.left = `${center.x}px`;
+                    line.style.top = `${center.y}px`;
+                    line.style.transform = `rotate(${angle}deg)`;
+                    line.style.marginLeft = `-${lineLength}px`;
+                    
+                    elements.angleLines.appendChild(line);
+                    
+                    // 添加角度标签
+                    if (elements.showAngleLabels.checked && angle % 10 === 0) {
+                        const label = document.createElement('div');
+                        label.className = 'angle-label';
+                        label.textContent = `${angle}°`;
+                        
+                        const rad = angle * Math.PI / 180;
+                        const labelRadius = maxRadius * 1.05;
+                        const x = center.x + labelRadius * Math.cos(rad);
+                        const y = center.y + labelRadius * Math.sin(rad);
+                        
+                        label.style.left = `${x}px`;
+                        label.style.top = `${y}px`;
+                        elements.angleLines.appendChild(label);
+                    }
+                }
+            }
+            
+            // 获取测量区域中心点
+            function getCenterPoint() {
+                return {
+                    x: elements.measurementArea.offsetWidth / 2,
+                    y: elements.measurementArea.offsetHeight / 2
+                };
+            }
+            
+            // 添加测量点
+            function addMeasurementPoint(x, y) {
+                // 保存历史记录用于撤销
+                saveHistory();
+                
+                // 添加点到数组
+                measurementData.points.push({x, y});
+                
+                // 创建视觉点和编号
+                const point = document.createElement('div');
+                point.className = 'measure-point';
+                point.style.left = `${x}px`;
+                point.style.top = `${y}px`;
+                
+                const pointNumber = document.createElement('div');
+                pointNumber.className = 'measure-point-number';
+                pointNumber.textContent = measurementData.points.length;
+                pointNumber.style.left = `${x}px`;
+                pointNumber.style.top = `${y}px`;
+                
+                elements.measureElements.appendChild(point);
+                elements.measureElements.appendChild(pointNumber);
+                
+                // 根据当前模式和测量类型处理
+                if (currentMode === 'ruler') {
+                    handleRulerMeasurement();
+                } else {
+                    handleProtractorMeasurement();
+                }
+                
+                // 更新撤销按钮状态
+                elements.undoBtn.disabled = measurementData.history.length === 0;
+            }
+            
+            // 处理刻度尺测量
+            function handleRulerMeasurement() {
+                if (measureType === 'distance') {
+                    handleDistanceMeasurement();
+                } else if (measureType === 'polyline') {
+                    handlePolylineMeasurement();
+                } else if (measureType === 'area') {
+                    handleAreaMeasurement();
+                }
+            }
+            
+            // 处理量角器测量
+            function handleProtractorMeasurement() {
+                const center = getCenterPoint();
+                
+                // 绘制从中心到点的线
+                drawLineFromCenter(center, measurementData.points[measurementData.points.length - 1]);
+                
+                if (measureType === 'distance') {
+                    handleProtractorTwoPointMeasurement();
+                } else if (measureType === 'polyline') {
+                    handleProtractorMultiPointMeasurement();
+                } else if (measureType === 'area') {
+                    handleProtractorPolygonMeasurement();
+                }
+            }
+            
+            // 处理两点距离测量
+            function handleDistanceMeasurement() {
+                // 两点距离模式下，超过2个点则重置
+                if (measurementData.points.length > 2) {
+                    clearMeasurements();
+                    addMeasurementPoint(measurementData.points[2].x, measurementData.points[2].y);
+                    return;
+                }
+                
+                // 计算距离
+                if (measurementData.points.length === 2) {
+                    const p1 = measurementData.points[0];
+                    const p2 = measurementData.points[1];
+                    calculateDistance(p1, p2);
+                }
+            }
+            
+            // 处理多段线测量
+            function handlePolylineMeasurement() {
+                // 至少需要2个点才能形成线段
+                if (measurementData.points.length >= 2) {
+                    const lastIndex = measurementData.points.length - 1;
+                    const p1 = measurementData.points[lastIndex - 1];
+                    const p2 = measurementData.points[lastIndex];
+                    
+                    // 计算当前线段距离
+                    const segmentLength = calculateSegmentDistance(p1, p2, lastIndex);
+                    
+                    // 更新总长度
+                    measurementData.totalLength += segmentLength;
+                    
+                    // 显示总长度
+                    elements.totalResultContainer.style.display = 'block';
+                    elements.totalResult.textContent = `${(measurementData.totalLength / 10).toFixed(1)} 厘米`;
+                    
+                    // 添加总长度标签
+                    addTotalLengthLabel();
+                }
+            }
+            
+            // 处理面积测量
+            function handleAreaMeasurement() {
+                // 至少需要2个点才能形成线段
+                if (measurementData.points.length >= 2) {
+                    const lastIndex = measurementData.points.length - 1;
+                    const p1 = measurementData.points[lastIndex - 1];
+                    const p2 = measurementData.points[lastIndex];
+                    
+                    // 绘制线段
+                    calculateSegmentDistance(p1, p2, lastIndex, true);
+                }
+                
+                // 计算面积（至少3个点）
+                if (measurementData.points.length >= 3) {
+                    calculateArea();
+                    
+                    // 绘制多边形填充
+                    drawPolygon();
+                }
+            }
+            
+            // 处理量角器两点测量
+            function handleProtractorTwoPointMeasurement() {
+                // 两点角度模式下，超过2个点则重置
+                if (measurementData.points.length > 2) {
+                    clearMeasurements();
+                    addMeasurementPoint(measurementData.points[2].x, measurementData.points[2].y);
+                    return;
+                }
+                
+                // 计算角度
+                if (measurementData.points.length === 2) {
+                    const p1 = measurementData.points[0];
+                    const p2 = measurementData.points[1];
+                    calculateAngle(p1, p2);
+                }
+            }
+            
+            // 处理量角器多点测量
+            function handleProtractorMultiPointMeasurement() {
+                // 至少需要2个点才能形成角度
+                if (measurementData.points.length >= 2) {
+                    const center = getCenterPoint();
+                    const lastIndex = measurementData.points.length - 1;
+                    const prevPoint = measurementData.points[lastIndex - 1];
+                    const currPoint = measurementData.points[lastIndex];
+                    
+                    // 计算当前两点与中心点形成的角度差
+                    const angle = calculateAngleDifference(prevPoint, currPoint);
+                    
+                    // 保存角度数据
+                    measurementData.segments.push({
+                        angle: angle,
+                        points: [prevPoint, currPoint]
+                    });
+                    
+                    // 更新最大角度
+                    if (angle > measurementData.maxAngle) {
+                        measurementData.maxAngle = angle;
+                    }
+                    
+                    // 显示当前角度
+                    elements.measurementResult.textContent = `${angle.toFixed(1)}°`;
+                    
+                    // 显示最大角度
+                    elements.totalResultContainer.style.display = 'block';
+                    elements.totalResult.textContent = `最大: ${measurementData.maxAngle.toFixed(1)}°`;
+                    
+                    // 显示所有角度（如果设置）
+                    if (elements.showAllAngles.checked) {
+                        showAllAngles();
+                    }
+                }
+            }
+            
+            // 处理量角器多边形角度测量
+            function handleProtractorPolygonMeasurement() {
+                // 绘制线段
+                if (measurementData.points.length >= 2) {
+                    const lastIndex = measurementData.points.length - 1;
+                    const p1 = measurementData.points[lastIndex - 1];
+                    const p2 = measurementData.points[lastIndex];
+                    
+                    drawLineBetweenPoints(p1, p2);
+                }
+                
+                // 计算多边形内角（至少3个点）
+                if (measurementData.points.length >= 3) {
+                    calculatePolygonAngles();
+                    
+                    // 双击闭合多边形
+                    elements.measurementArea.addEventListener('dblclick', function closePolygon() {
+                        if (measurementData.points.length >= 3) {
+                            const firstPoint = measurementData.points[0];
+                            const lastPoint = measurementData.points[measurementData.points.length - 1];
+                            
+                            // 绘制闭合线
+                            drawLineBetweenPoints(lastPoint, firstPoint);
+                            
+                            // 重新计算所有角度
+                            calculatePolygonAngles(true);
+                            
+                            // 移除事件监听器，避免重复触发
+                            elements.measurementArea.removeEventListener('dblclick', closePolygon);
+                        }
+                    }, { once: true });
+                }
+            }
+            
+            // 计算两点之间的距离
+            function calculateDistance(p1, p2) {
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const pxDistance = Math.sqrt(dx * dx + dy * dy);
+                
+                // 转换为厘米
+                const cmDistance = (pxDistance * PX_PER_MM) / 10;
+                
+                // 显示结果
+                elements.measurementResult.textContent = `${cmDistance.toFixed(1)} 厘米`;
+                
+                // 绘制连接线
+                const line = document.createElement('div');
+                line.className = 'measure-line';
+                
+                // 计算角度
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                line.style.width = `${pxDistance}px`;
+                line.style.left = `${p1.x}px`;
+                line.style.top = `${p1.y}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                elements.measureElements.appendChild(line);
+                
+                // 添加标签
+                const label = document.createElement('div');
+                label.className = 'measure-label';
+                label.textContent = `${cmDistance.toFixed(1)} 厘米`;
+                label.style.left = `${(p1.x + p2.x) / 2}px`;
+                label.style.top = `${(p1.y + p2.y) / 2 - 20}px`;
+                label.style.transform = 'translateX(-50%)';
+                
+                elements.measureElements.appendChild(label);
+                
+                // 保存线段数据
+                measurementData.segments.push({
+                    start: p1,
+                    end: p2,
+                    length: cmDistance,
+                    element: line,
+                    label: label
+                });
+            }
+            
+            // 计算线段距离（用于多段线和面积测量）
+            function calculateSegmentDistance(p1, p2, segmentIndex, isAreaMode = false) {
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const pxDistance = Math.sqrt(dx * dx + dy * dy);
+                
+                // 转换为毫米
+                const mmDistance = pxDistance * PX_PER_MM;
+                
+                // 计算角度
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                // 绘制线段
+                const line = document.createElement('div');
+                line.className = isAreaMode ? 'measure-line' : 'measure-line-segment';
+                
+                line.style.width = `${pxDistance}px`;
+                line.style.left = `${p1.x}px`;
+                line.style.top = `${p1.y}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                elements.measureElements.appendChild(line);
+                
+                // 添加线段标签
+                const label = document.createElement('div');
+                label.className = 'measure-label';
+                label.textContent = `${(mmDistance / 10).toFixed(1)} 厘米`;
+                label.style.left = `${(p1.x + p2.x) / 2}px`;
+                label.style.top = `${(p1.y + p2.y) / 2 - 15}px`;
+                label.style.transform = 'translateX(-50%)';
+                
+                elements.measureElements.appendChild(label);
+                
+                // 保存线段数据
+                measurementData.segments.push({
+                    start: p1,
+                    end: p2,
+                    length: mmDistance,
+                    element: line,
+                    label: label
+                });
+                
+                // 显示当前线段结果
+                elements.measurementResult.textContent = `${(mmDistance / 10).toFixed(1)} 厘米`;
+                
+                return mmDistance;
+            }
+            
+            // 计算两点与中心点形成的角度
+            function calculateAngle(p1, p2) {
+                const center = getCenterPoint();
+                
+                // 计算向量
+                const v1x = p1.x - center.x;
+                const v1y = p1.y - center.y;
+                const v2x = p2.x - center.x;
+                const v2y = p2.y - center.y;
+                
+                // 计算向量长度
+                const len1 = Math.sqrt(v1x * v1x + v1y * v1y);
+                const len2 = Math.sqrt(v2x * v2x + v2y * v2y);
+                
+                // 防止除以零
+                if (len1 === 0 || len2 === 0) {
+                    elements.measurementResult.textContent = '0.0°';
+                    return 0;
+                }
+                
+                // 计算点积
+                const dotProduct = v1x * v2x + v1y * v2y;
+                
+                // 计算角度（弧度）
+                const angleRad = Math.acos(Math.max(-1, Math.min(1, dotProduct / (len1 * len2))));
+                
+                // 转换为角度
+                let angleDeg = angleRad * 180 / Math.PI;
+                
+                // 取最小角度
+                angleDeg = Math.min(angleDeg, 360 - angleDeg);
+                
+                // 显示结果
+                elements.measurementResult.textContent = `${angleDeg.toFixed(1)}°`;
+                
+                // 添加标签
+                addAngleLabel(p1, p2, angleDeg);
+                
+                // 保存角度数据
+                measurementData.segments.push({
+                    angle: angleDeg,
+                    points: [p1, p2]
+                });
+                
+                return angleDeg;
+            }
+            
+            // 计算两点与中心点形成的角度差（用于多点模式）
+            function calculateAngleDifference(p1, p2) {
+                const center = getCenterPoint();
+                
+                // 计算各点与中心点连线的角度
+                const angle1 = Math.atan2(p1.y - center.y, p1.x - center.x) * 180 / Math.PI;
+                const angle2 = Math.atan2(p2.y - center.y, p2.x - center.x) * 180 / Math.PI;
+                
+                // 计算角度差
+                let diff = Math.abs(angle1 - angle2);
+                diff = Math.min(diff, 360 - diff); // 取最小角度
+                
+                // 添加角度标签
+                addAngleLabel(p1, p2, diff);
+                
+                return diff;
+            }
+            
+            // 计算多边形内角
+            function calculatePolygonAngles(isClosed = false) {
+                const points = [...measurementData.points];
+                const angles = [];
+                const center = getCenterPoint();
+                
+                // 如果是闭合多边形，添加最后一条边
+                if (isClosed && points.length >= 3) {
+                    points.push(points[0]);
+                }
+                
+                // 计算每个顶点的内角
+                for (let i = 1; i < points.length - 1; i++) {
+                    const prev = points[i - 1];
+                    const curr = points[i];
+                    const next = points[i + 1];
+                    
+                    // 计算向量
+                    const v1x = prev.x - curr.x;
+                    const v1y = prev.y - curr.y;
+                    const v2x = next.x - curr.x;
+                    const v2y = next.y - curr.y;
+                    
+                    // 计算向量长度
+                    const len1 = Math.sqrt(v1x * v1x + v1y * v1y);
+                    const len2 = Math.sqrt(v2x * v2x + v2y * v2y);
+                    
+                    // 防止除以零
+                    if (len1 === 0 || len2 === 0) {
+                        angles.push(0);
+                        continue;
+                    }
+                    
+                    // 计算点积
+                    const dotProduct = v1x * v2x + v1y * v2y;
+                    
+                    // 计算角度（弧度）
+                    const angleRad = Math.acos(Math.max(-1, Math.min(1, dotProduct / (len1 * len2))));
+                    
+                    // 转换为角度
+                    let angleDeg = angleRad * 180 / Math.PI;
+                    
+                    angles.push(angleDeg);
+                    
+                    // 添加内角标签
+                    addInteriorAngleLabel(curr, angleDeg, i);
+                }
+                
+                // 显示最大内角
+                if (angles.length > 0) {
+                    const maxAngle = Math.max(...angles);
+                    elements.totalResultContainer.style.display = 'block';
+                    elements.totalResult.textContent = `最大内角: ${maxAngle.toFixed(1)}°`;
+                    elements.measurementResult.textContent = `${angles[angles.length - 1].toFixed(1)}°`;
+                }
+                
+                // 保存角度数据
+                measurementData.segments = angles.map((angle, index) => ({
+                    angle: angle,
+                    vertex: points[index + 1]
+                }));
+            }
+            
+            // 添加角度标签
+            function addAngleLabel(p1, p2, angle) {
+                const center = getCenterPoint();
+                
+                // 计算标签位置（在两点和中心形成的角的中间）
+                const midPoint = getAngleMidPoint(center, p1, p2);
+                
+                const label = document.createElement('div');
+                label.className = 'angle-diff-label';
+                label.textContent = `${angle.toFixed(1)}°`;
+                label.style.left = `${midPoint.x}px`;
+                label.style.top = `${midPoint.y}px`;
+                label.style.transform = 'translate(-50%, -50%)';
+                
+                elements.measureElements.appendChild(label);
+            }
+            
+            // 添加内角标签
+            function addInteriorAngleLabel(vertex, angle, index) {
+                // 标签稍微偏离顶点
+                const offset = 20;
+                const label = document.createElement('div');
+                label.className = 'angle-diff-label';
+                label.textContent = `${angle.toFixed(1)}°`;
+                label.style.left = `${vertex.x + offset}px`;
+                label.style.top = `${vertex.y + offset}px`;
+                label.id = `interiorAngleLabel-${index}`;
+                
+                // 移除旧标签
+                const oldLabel = document.getElementById(`interiorAngleLabel-${index}`);
+                if (oldLabel) oldLabel.remove();
+                
+                elements.measureElements.appendChild(label);
+            }
+            
+            // 获取角度中点（用于放置角度标签）
+            function getAngleMidPoint(center, p1, p2) {
+                const radius = Math.min(
+                    getDistance(center, p1) * 0.7,
+                    getDistance(center, p2) * 0.7,
+                    50 // 最大距离限制
+                );
+                
+                // 计算两点与中心连线的角度
+                const angle1 = Math.atan2(p1.y - center.y, p1.x - center.x);
+                const angle2 = Math.atan2(p2.y - center.y, p2.x - center.x);
+                
+                // 计算中间角度
+                let midAngle = (angle1 + angle2) / 2;
+                
+                // 检查是否为优角，取劣角中间
+                if (Math.abs(angle1 - angle2) > Math.PI) {
+                    midAngle = (angle1 + angle2 + 2 * Math.PI) / 2 % (2 * Math.PI);
+                }
+                
+                // 计算中点坐标
+                return {
+                    x: center.x + radius * Math.cos(midAngle),
+                    y: center.y + radius * Math.sin(midAngle)
+                };
+            }
+            
+            // 计算两点间距离
+            function getDistance(p1, p2) {
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+            
+            // 绘制两点之间的线（用于量角器多边形模式）
+            function drawLineBetweenPoints(p1, p2) {
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                // 绘制线段
+                const line = document.createElement('div');
+                line.className = 'measure-line-segment';
+                
+                line.style.width = `${length}px`;
+                line.style.left = `${p1.x}px`;
+                line.style.top = `${p1.y}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                elements.measureElements.appendChild(line);
+            }
+            
+            // 从中心点绘制线到指定点
+            function drawLineFromCenter(center, point) {
+                const line = document.createElement('div');
+                line.className = 'measure-line';
+                
+                const dx = point.x - center.x;
+                const dy = point.y - center.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                line.style.width = `${length}px`;
+                line.style.left = `${center.x}px`;
+                line.style.top = `${center.y}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                elements.measureElements.appendChild(line);
+            }
+            
+            // 计算多边形面积（使用 shoelace 公式）
+            function calculateArea() {
+                const points = measurementData.points;
+                let area = 0;
+                const n = points.length;
+                
+                // 应用shoelace公式
+                for (let i = 0; i < n; i++) {
+                    const j = (i + 1) % n;
+                    area += points[i].x * points[j].y;
+                    area -= points[j].x * points[i].y;
+                }
+                
+                // 计算绝对值并除以2
+                area = Math.abs(area) / 2;
+                
+                // 转换为平方厘米 (1px² ≈ 0.000699 cm²)
+                const cmArea = area * 0.000699;
+                
+                // 保存并显示面积
+                measurementData.area = cmArea;
+                elements.measurementResult.textContent = `${cmArea.toFixed(2)} 平方厘米`;
+                
+                // 显示总面积标签
+                const center = getPolygonCenter();
+                const label = document.createElement('div');
+                label.className = 'total-length-label';
+                label.textContent = `${cmArea.toFixed(2)} 平方厘米`;
+                label.style.left = `${center.x}px`;
+                label.style.top = `${center.y}px`;
+                label.style.transform = 'translate(-50%, -50%)';
+                label.id = 'areaLabel';
+                
+                // 移除旧标签
+                const oldLabel = document.getElementById('areaLabel');
+                if (oldLabel) oldLabel.remove();
+                
+                elements.measureElements.appendChild(label);
+            }
+            
+            // 绘制多边形填充
+            function drawPolygon() {
+                // 移除旧多边形
+                const oldPolygon = document.getElementById('measurementPolygon');
+                if (oldPolygon) oldPolygon.remove();
+                
+                const points = measurementData.points;
+                if (points.length < 3) return;
+                
+                // 创建SVG多边形
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.style.position = 'absolute';
+                svg.style.top = '0';
+                svg.style.left = '0';
+                svg.style.width = '100%';
+                svg.style.height = '100%';
+                svg.style.pointerEvents = 'none';
+                svg.style.zIndex = '14';
+                svg.id = 'measurementPolygon';
+                
+                const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                polygon.setAttribute('fill', 'rgba(37, 99, 235, 0.1)');
+                polygon.setAttribute('stroke', 'rgba(37, 99, 235, 0.5)');
+                polygon.setAttribute('stroke-width', '1');
+                
+                // 设置多边形点
+                const pointStr = points.map(p => `${p.x},${p.y}`).join(' ');
+                polygon.setAttribute('points', pointStr);
+                
+                svg.appendChild(polygon);
+                elements.measureElements.appendChild(svg);
+            }
+            
+            // 获取多边形中心点（用于放置面积标签）
+            function getPolygonCenter() {
+                const points = measurementData.points;
+                let x = 0, y = 0;
+                
+                for (const p of points) {
+                    x += p.x;
+                    y += p.y;
+                }
+                
+                return {
+                    x: x / points.length,
+                    y: y / points.length
+                };
+            }
+            
+            // 显示所有角度（用于量角器多点模式）
+            function showAllAngles() {
+                // 清除旧的角度标签
+                document.querySelectorAll('.all-angle-label').forEach(el => el.remove());
+                
+                const center = getCenterPoint();
+                
+                // 为每对点添加角度标签
+                for (let i = 0; i < measurementData.points.length; i++) {
+                    for (let j = i + 1; j < measurementData.points.length; j++) {
+                        const p1 = measurementData.points[i];
+                        const p2 = measurementData.points[j];
+                        
+                        // 计算角度
+                        const angle = calculateAngleDifference(p1, p2);
+                        
+                        // 计算标签位置
+                        const midPoint = getAngleMidPoint(center, p1, p2);
+                        
+                        // 添加标签
+                        const label = document.createElement('div');
+                        label.className = 'angle-diff-label all-angle-label';
+                        label.textContent = `${angle.toFixed(1)}°`;
+                        label.style.left = `${midPoint.x}px`;
+                        label.style.top = `${midPoint.y}px`;
+                        label.style.transform = 'translate(-50%, -50%)';
+                        label.style.opacity = '0.7';
+                        
+                        elements.measureElements.appendChild(label);
+                    }
+                }
+            }
+            
+            // 添加总长度标签
+            function addTotalLengthLabel() {
+                // 移除旧标签
+                const oldLabel = document.getElementById('totalLengthLabel');
+                if (oldLabel) oldLabel.remove();
+                
+                // 最后一个点位置
+                const lastPoint = measurementData.points[measurementData.points.length - 1];
+                
+                const label = document.createElement('div');
+                label.className = 'total-length-label';
+                label.textContent = `总计: ${(measurementData.totalLength / 10).toFixed(1)} 厘米`;
+                label.style.left = `${lastPoint.x + 15}px`;
+                label.style.top = `${lastPoint.y}px`;
+                label.id = 'totalLengthLabel';
+                
+                elements.measureElements.appendChild(label);
+            }
+            
+            // 保存历史记录
+            function saveHistory() {
+                // 保存当前状态的副本
+                const stateCopy = {
+                    points: [...measurementData.points],
+                    segments: JSON.parse(JSON.stringify(measurementData.segments)),
+                    totalLength: measurementData.totalLength,
+                    maxAngle: measurementData.maxAngle,
+                    area: measurementData.area
+                };
+                
+                measurementData.history.push(stateCopy);
+                
+                // 限制历史记录数量
+                if (measurementData.history.length > 20) {
+                    measurementData.history.shift();
+                }
+            }
+            
+            // 撤销操作
+            function undoLastAction() {
+                if (measurementData.history.length === 0) return;
+                
+                // 清除当前测量
+                clearMeasurements(false);
+                
+                // 恢复上一个状态
+                const lastState = measurementData.history.pop();
+                measurementData.points = lastState.points;
+                measurementData.segments = lastState.segments;
+                measurementData.totalLength = lastState.totalLength;
+                measurementData.maxAngle = lastState.maxAngle;
+                measurementData.area = lastState.area;
+                
+                // 重新绘制恢复的状态
+                redrawFromHistory();
+                
+                // 更新按钮状态
+                elements.undoBtn.disabled = measurementData.history.length === 0;
+            }
+            
+            // 从历史记录重新绘制
+            function redrawFromHistory() {
+                const center = getCenterPoint();
+                
+                // 重新绘制点
+                measurementData.points.forEach((point, index) => {
+                    const pointElem = document.createElement('div');
+                    pointElem.className = 'measure-point';
+                    pointElem.style.left = `${point.x}px`;
+                    pointElem.style.top = `${point.y}px`;
+                    
+                    const pointNumber = document.createElement('div');
+                    pointNumber.className = 'measure-point-number';
+                    pointNumber.textContent = index + 1;
+                    pointNumber.style.left = `${point.x}px`;
+                    pointNumber.style.top = `${point.y}px`;
+                    
+                    elements.measureElements.appendChild(pointElem);
+                    elements.measureElements.appendChild(pointNumber);
+                    
+                    // 量角器模式下重新绘制从中心到点的线
+                    if (currentMode === 'protractor') {
+                        drawLineFromCenter(center, point);
+                    }
+                });
+                
+                // 重新绘制线段和角度
+                if (currentMode === 'ruler') {
+                    measurementData.segments.forEach(segment => {
+                        if (segment.element) elements.measureElements.appendChild(segment.element);
+                        if (segment.label) elements.measureElements.appendChild(segment.label);
+                    });
+                    
+                    // 重新绘制多边形（如果有）
+                    if (measureType === 'area' && measurementData.points.length >= 3) {
+                        drawPolygon();
+                    }
+                    
+                    // 重新显示总长度标签
+                    if (measureType === 'polyline' && measurementData.points.length >= 2) {
+                        elements.totalResultContainer.style.display = 'block';
+                        elements.totalResult.textContent = `${(measurementData.totalLength / 10).toFixed(1)} 厘米`;
+                        addTotalLengthLabel();
+                    } else if (measureType === 'area' && measurementData.points.length >= 3) {
+                        elements.totalResultContainer.style.display = 'none';
+                    }
+                } else {
+                    // 量角器模式下重新绘制角度标签
+                    if (measureType === 'distance' && measurementData.segments.length > 0) {
+                        const seg = measurementData.segments[0];
+                        calculateAngle(seg.points[0], seg.points[1]);
+                    } else if (measureType === 'polyline' && measurementData.points.length >= 2) {
+                        elements.totalResultContainer.style.display = 'block';
+                        elements.totalResult.textContent = `最大: ${measurementData.maxAngle.toFixed(1)}°`;
+                        
+                        if (elements.showAllAngles.checked) {
+                            showAllAngles();
+                        }
+                    } else if (measureType === 'area' && measurementData.points.length >= 3) {
+                        calculatePolygonAngles();
+                    }
+                }
+                
+                // 更新当前测量结果
+                if (measurementData.segments.length > 0) {
+                    if (currentMode === 'ruler') {
+                        const lastSegment = measurementData.segments[measurementData.segments.length - 1];
+                        if (measureType === 'area' && measurementData.points.length >= 3) {
+                            elements.measurementResult.textContent = `${measurementData.area.toFixed(2)} 平方厘米`;
+                        } else {
+                            elements.measurementResult.textContent = `${(lastSegment.length / 10).toFixed(1)} 厘米`;
+                        }
+                    } else {
+                        const lastSegment = measurementData.segments[measurementData.segments.length - 1];
+                        elements.measurementResult.textContent = `${lastSegment.angle.toFixed(1)}°`;
+                    }
+                }
+            }
+            
+            // 清除测量结果
+            function clearMeasurements(clearHistory = true) {
+                measurementData.points = [];
+                measurementData.segments = [];
+                measurementData.totalLength = 0;
+                measurementData.maxAngle = 0;
+                measurementData.area = 0;
+                
+                if (clearHistory) {
+                    measurementData.history = [];
+                    elements.undoBtn.disabled = true;
+                }
+                
+                elements.measureElements.innerHTML = '';
+                
+                // 根据当前模式重置结果显示
+                if (currentMode === 'ruler') {
+                    elements.measurementResult.textContent = measureType === 'area' ? '0 平方厘米' : '0 厘米';
+                } else {
+                    elements.measurementResult.textContent = '0°';
+                }
+                
+                elements.totalResultContainer.style.display = 'none';
+            }
+            
+            // 切换测量模式
+            function switchMode(mode) {
+                currentMode = mode;
+                
+                // 更新UI
+                if (mode === 'ruler') {
+                    elements.rulerMode.classList.add('active');
+                    elements.protractorMode.classList.remove('active');
+                    elements.protractor.style.display = 'none';
+                    
+                    // 显示刻度尺
+                    if (elements.showTopRuler.checked) elements.topRuler.style.display = 'block';
+                    if (elements.showLeftRuler.checked) elements.leftRuler.style.display = 'block';
+                } else {
+                    elements.protractorMode.classList.add('active');
+                    elements.rulerMode.classList.remove('active');
+                    elements.protractor.style.display = 'block';
+                    
+                    // 隐藏刻度尺
+                    elements.topRuler.style.display = 'none';
+                    elements.leftRuler.style.display = 'none';
+                    
+                    // 确保量角器正确绘制
+                    drawProtractor();
+                }
+                
+                // 更新提示
+                updateMeasureHint();
+                
+                // 清除现有测量
+                clearMeasurements();
+            }
+            
+            // 切换测量类型
+            function switchMeasureType(type) {
+                measureType = type;
+                
+                // 更新UI
+                elements.distanceMeasure.classList.remove('active');
+                elements.polylineMeasure.classList.remove('active');
+                elements.areaMeasure.classList.remove('active');
+                
+                document.getElementById(`${type}Measure`).classList.add('active');
+                
+                // 更新提示
+                updateMeasureHint();
+                
+                // 清除现有测量
+                clearMeasurements();
+            }
+            
+            // 更新测量提示文本
+            function updateMeasureHint() {
+                if (currentMode === 'ruler') {
+                    switch(measureType) {
+                        case 'distance':
+                            elements.modeHint.textContent = '两点距离模式：点击添加两个点，测量直线距离';
+                            elements.measurementResult.textContent = '0 厘米';
+                            break;
+                        case 'polyline':
+                            elements.modeHint.textContent = '多段线模式：点击添加多个点，测量总长度（双击结束）';
+                            elements.measurementResult.textContent = '0 厘米';
+                            break;
+                        case 'area':
+                            elements.modeHint.textContent = '面积模式：点击添加多个点形成多边形，测量面积（双击闭合）';
+                            elements.measurementResult.textContent = '0 平方厘米';
+                            break;
+                    }
+                } else {
+                    switch(measureType) {
+                        case 'distance':
+                            elements.modeHint.textContent = '两点角度模式：点击添加两个点，测量与中心点形成的角度';
+                            elements.measurementResult.textContent = '0°';
+                            break;
+                        case 'polyline':
+                            elements.modeHint.textContent = '多点角度模式：点击添加多个点，测量各点间角度差（双击结束）';
+                            elements.measurementResult.textContent = '0°';
+                            break;
+                        case 'area':
+                            elements.modeHint.textContent = '多边形角度模式：点击添加多个点，测量多边形内角（双击闭合）';
+                            elements.measurementResult.textContent = '0°';
+                            break;
+                    }
+                }
+            }
+            
+            // 切换全屏
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        alert('无法进入全屏模式: ' + err.message);
+                    });
+                    elements.fullscreenBtn.innerHTML = '<i class="fa fa-compress"></i> 退出全屏';
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                        elements.fullscreenBtn.innerHTML = '<i class="fa fa-expand"></i> 全屏';
+                    }
+                }
+            }
+            
+            // 显示/隐藏设置面板
+            function toggleSettings() {
+                elements.settingsPanel.classList.toggle('open');
+            }
+            
+            // 保存设置
+            function saveSettings() {
+                // 重绘刻度尺
+                drawRulers();
+                
+                // 如果是量角器模式，重绘量角器
+                if (currentMode === 'protractor') {
+                    drawProtractor();
+                }
+                
+                // 关闭设置面板
+                toggleSettings();
+            }
+            
+            // 设置事件监听
+            function setupEventListeners() {
+                // 测量区域点击
+                elements.measurementArea.addEventListener('click', function(e) {
+                    const rect = elements.measurementArea.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    addMeasurementPoint(x, y);
+                });
+                
+                // 双击结束多段线或面积测量
+                elements.measurementArea.addEventListener('dblclick', function() {
+                    if (currentMode === 'ruler' && measureType === 'polyline' && measurementData.points.length >= 2) {
+                        elements.modeHint.textContent = '多段线测量已结束，点击重置开始新测量';
+                    } else if (currentMode === 'protractor' && measureType === 'polyline' && measurementData.points.length >= 2) {
+                        elements.modeHint.textContent = '多点角度测量已结束，点击重置开始新测量';
+                    }
+                });
+                
+                // 模式切换
+                elements.rulerMode.addEventListener('click', () => switchMode('ruler'));
+                elements.protractorMode.addEventListener('click', () => switchMode('protractor'));
+                
+                // 测量类型切换
+                elements.distanceMeasure.addEventListener('click', () => switchMeasureType('distance'));
+                elements.polylineMeasure.addEventListener('click', () => switchMeasureType('polyline'));
+                elements.areaMeasure.addEventListener('click', () => switchMeasureType('area'));
+                
+                // 控制按钮
+                elements.resetBtn.addEventListener('click', clearMeasurements);
+                elements.undoBtn.addEventListener('click', undoLastAction);
+                elements.fullscreenBtn.addEventListener('click', toggleFullscreen);
+                
+                // 设置面板
+                elements.settingsBtn.addEventListener('click', toggleSettings);
+                elements.closeSettings.addEventListener('click', toggleSettings);
+                elements.saveSettings.addEventListener('click', saveSettings);
+                
+                // 窗口大小变化时重绘
+                window.addEventListener('resize', function() {
+                    drawRulers();
+                    if (currentMode === 'protractor') {
+                        initProtractor();
+                    }
+                });
+            }
+            
+            // 启动应用
+            init();
+        });
+    </script>
+</body>
+</html>

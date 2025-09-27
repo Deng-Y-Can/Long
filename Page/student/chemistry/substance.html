@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>化学物质数据库</title>
+    <!-- 外部资源 - 使用更可靠的CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 解决favicon错误 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='90' font-size='90'>⚗️</text></svg>">
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#0d9488',
+                        danger: '#dc2626',
+                        warning: '#f59e0b',
+                        success: '#16a34a',
+                        neutral: '#64748b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        'card-hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+                    }
+                },
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .text-balance {
+                text-wrap: balance;
+            }
+
+            .card-gradient {
+                background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            }
+
+            .transition-all-300 {
+                transition: all 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50 text-gray-800 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="sticky top-0 z-50 bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-flask text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold">化学物质数据库</h1>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <!-- 桌面端搜索框 -->
+                <div class="relative hidden md:block">
+                    <input id="desktop-search" type="text" placeholder="搜索物质名称/CAS号..."
+                           class="pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30 w-64 md:w-80 transition-all-300">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+
+                <!-- 移动端搜索按钮 -->
+                <button id="mobile-search-btn" class="md:hidden text-gray-600 hover:text-primary transition-all-300">
+                    <i class="fa-solid fa-search text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 移动端搜索框（默认隐藏） -->
+        <div id="mobile-search-container" class="hidden px-4 pb-4 md:hidden">
+            <div class="relative">
+                <input id="mobile-search" type="text" placeholder="搜索物质名称/CAS号..."
+                       class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 数据统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-card p-6 transition-all-300 hover:shadow-card-hover">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-neutral text-sm font-medium">总物质数量</p>
+                        <h3 id="total-count" class="text-3xl font-bold mt-2">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <i class="fa-solid fa-database text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-card p-6 transition-all-300 hover:shadow-card-hover">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-neutral text-sm font-medium">物质分类</p>
+                        <h3 id="category-count" class="text-3xl font-bold mt-2">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+                        <i class="fa-solid fa-tags text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-card p-6 transition-all-300 hover:shadow-card-hover">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-neutral text-sm font-medium">危险品数量</p>
+                        <h3 id="hazard-count" class="text-3xl font-bold mt-2">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-danger/10 flex items-center justify-center text-danger">
+                        <i class="fa-solid fa-exclamation-triangle text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 筛选工具栏 -->
+        <div class="bg-white rounded-xl shadow-card p-4 md:p-6 mb-8">
+            <div class="flex flex-wrap items-center gap-4">
+                <!-- 分类筛选 -->
+                <div class="w-full md:w-auto flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">物质分类</label>
+                    <select id="category-filter" class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <option value="all">全部分类</option>
+                        <!-- 分类选项将通过JSON数据动态生成 -->
+                    </select>
+                </div>
+
+                <!-- 毒性等级筛选 -->
+                <div class="w-full md:w-auto flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">毒性等级</label>
+                    <select id="toxicity-filter" class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <option value="all">全部等级</option>
+                        <option value="剧毒">剧毒</option>
+                        <option value="有毒">有毒</option>
+                        <option value="低毒">低毒</option>
+                        <option value="微毒">微毒</option>
+                        <option value="无毒">无毒</option>
+                    </select>
+                </div>
+
+                <!-- 物理状态筛选 -->
+                <div class="w-full md:w-auto flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">物理状态</label>
+                    <select id="state-filter" class="w-full p-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <option value="all">全部状态</option>
+                        <option value="固体">固体</option>
+                        <option value="液体">液体</option>
+                        <option value="气体">气体</option>
+                    </select>
+                </div>
+
+                <!-- 重置按钮 -->
+                <div class="w-full md:w-auto flex items-end">
+                    <button id="reset-filters" class="w-full md:w-auto px-5 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all-300">
+                        <i class="fa-solid fa-refresh mr-1"></i> 重置筛选
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div id="loading-state" class="flex flex-col items-center justify-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+            <p class="text-neutral">正在加载化学物质数据...</p>
+        </div>
+
+        <!-- 错误状态 -->
+        <div id="error-state" class="hidden bg-red-50 border-l-4 border-red-500 text-red-700 p-6 rounded-r-lg mb-8">
+            <div class="flex items-start">
+                <i class="fa-solid fa-exclamation-circle text-xl mt-1 mr-3"></i>
+                <div>
+                    <h3 class="font-medium">数据加载失败</h3>
+                    <p id="error-message" class="mt-1 text-sm">无法读取JSON数据，请检查文件路径或网络连接</p>
+                    <button id="retry-load" class="mt-3 text-primary hover:underline text-sm">
+                        <i class="fa-solid fa-refresh mr-1"></i> 重试加载
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 空数据状态 -->
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-search text-gray-400 text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">未找到匹配的物质</h3>
+            <p class="text-neutral max-w-md mb-6">尝试调整筛选条件或搜索关键词，查看更多结果</p>
+            <button id="clear-all-filters" class="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all-300">
+                清除所有筛选
+            </button>
+        </div>
+
+        <!-- 物质列表容器 -->
+        <div id="substances-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <!-- 物质卡片将通过JSON数据动态生成 -->
+        </div>
+    </main>
+
+    <!-- 物质详情模态框 -->
+    <div id="detail-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4">
+            <!-- 模态框头部 -->
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h2 id="modal-title" class="text-2xl font-bold"></h2>
+                <button id="close-modal" class="text-gray-400 hover:text-gray-600 transition-all-300">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- 模态框内容 -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- 左侧：基础信息与物理性质 -->
+                    <div>
+                        <!-- 基础信息 -->
+                        <div class="mb-6">
+                            <h3 class="text-sm font-medium text-neutral mb-3 flex items-center">
+                                <i class="fa-solid fa-info-circle mr-2 text-primary"></i>基础信息
+                            </h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs text-neutral">英文名称</p>
+                                    <p id="modal-english" class="font-medium mt-1"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">俗称/别名</p>
+                                    <p id="modal-alias" class="font-medium mt-1"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">化学式</p>
+                                    <p id="modal-formula" class="font-medium mt-1 font-mono"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">CAS登录号</p>
+                                    <p id="modal-cas" class="font-medium mt-1 font-mono"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">摩尔质量</p>
+                                    <p id="modal-molar" class="font-medium mt-1"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">物质分类</p>
+                                    <p id="modal-category" class="font-medium mt-1"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 物理性质 -->
+                        <div>
+                            <h3 class="text-sm font-medium text-neutral mb-3 flex items-center">
+                                <i class="fa-solid fa-flask mr-2 text-primary"></i>物理性质
+                            </h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs text-neutral">外观与状态</p>
+                                    <p id="modal-appearance" class="font-medium mt-1"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">气味</p>
+                                    <p id="modal-odor" class="font-medium mt-1"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">熔点</p>
+                                    <p id="modal-melting" class="font-medium mt-1"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">沸点</p>
+                                    <p id="modal-boiling" class="font-medium mt-1"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">密度</p>
+                                    <p id="modal-density" class="font-medium mt-1"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">溶解性</p>
+                                    <p id="modal-solubility" class="font-medium mt-1"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：化学性质、毒性与安全、用途 -->
+                    <div>
+                        <!-- 化学性质 -->
+                        <div class="mb-6">
+                            <h3 class="text-sm font-medium text-neutral mb-3 flex items-center">
+                                <i class="fa-solid fa-bolt mr-2 text-primary"></i>化学性质
+                            </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-xs text-neutral">稳定性</p>
+                                    <p id="modal-stability" class="font-medium mt-1"></p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">主要反应</p>
+                                    <p id="modal-reactions" class="font-medium mt-1"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 毒性与安全 -->
+                        <div class="mb-6">
+                            <h3 class="text-sm font-medium text-neutral mb-3 flex items-center">
+                                <i class="fa-solid fa-shield mr-2 text-primary"></i>毒性与安全
+                            </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <p class="text-xs text-neutral">毒性分类</p>
+                                    <div id="modal-toxicity" class="flex flex-wrap gap-2 mt-1">
+                                        <!-- 毒性标签将动态生成 -->
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-neutral">健康危害</p>
+                                    <p id="modal-health" class="font-medium mt-1"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 主要用途 -->
+                        <div>
+                            <h3 class="text-sm font-medium text-neutral mb-3 flex items-center">
+                                <i class="fa-solid fa-cogs mr-2 text-primary"></i>主要用途
+                            </h3>
+                            <div id="modal-uses" class="flex flex-wrap gap-2 mt-1">
+                                <!-- 用途标签将动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="p-6 border-t border-gray-200 flex justify-end">
+                <button id="close-modal-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all-300">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 全局变量
+        let substancesData = [];
+        let filteredData = [];
+        let currentFilters = {
+            category: 'all',
+            toxicity: 'all',
+            state: 'all',
+            search: ''
+        };
+
+        // DOM元素
+        const substancesGrid = document.getElementById('substances-grid');
+        const loadingState = document.getElementById('loading-state');
+        const errorState = document.getElementById('error-state');
+        const errorMessage = document.getElementById('error-message');
+        const emptyState = document.getElementById('empty-state');
+        const totalCount = document.getElementById('total-count');
+        const categoryCount = document.getElementById('category-count');
+        const hazardCount = document.getElementById('hazard-count');
+        const categoryFilter = document.getElementById('category-filter');
+        const toxicityFilter = document.getElementById('toxicity-filter');
+        const stateFilter = document.getElementById('state-filter');
+        const resetFiltersBtn = document.getElementById('reset-filters');
+        const clearAllFiltersBtn = document.getElementById('clear-all-filters');
+        const retryLoadBtn = document.getElementById('retry-load');
+        const mobileSearchBtn = document.getElementById('mobile-search-btn');
+        const mobileSearchContainer = document.getElementById('mobile-search-container');
+        const desktopSearch = document.getElementById('desktop-search');
+        const mobileSearch = document.getElementById('mobile-search');
+        const detailModal = document.getElementById('detail-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalEnglish = document.getElementById('modal-english');
+        const modalAlias = document.getElementById('modal-alias');
+        const modalFormula = document.getElementById('modal-formula');
+        const modalCas = document.getElementById('modal-cas');
+        const modalMolar = document.getElementById('modal-molar');
+        const modalCategory = document.getElementById('modal-category');
+        const modalAppearance = document.getElementById('modal-appearance');
+        const modalOdor = document.getElementById('modal-odor');
+        const modalMelting = document.getElementById('modal-melting');
+        const modalBoiling = document.getElementById('modal-boiling');
+        const modalDensity = document.getElementById('modal-density');
+        const modalSolubility = document.getElementById('modal-solubility');
+        const modalStability = document.getElementById('modal-stability');
+        const modalReactions = document.getElementById('modal-reactions');
+        const modalToxicity = document.getElementById('modal-toxicity');
+        const modalHealth = document.getElementById('modal-health');
+        const modalUses = document.getElementById('modal-uses');
+        const closeModal = document.getElementById('close-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        // 初始化函数
+        async function init() {
+            try {
+                // 读取JSON数据
+                const response = await fetch('substance.json');
+                if (!response.ok) throw new Error('网络响应错误');
+                substancesData = await response.json();
+
+                // 更新统计信息
+                updateStatistics();
+
+                // 初始化筛选器
+                initFilters();
+
+                // 初始渲染所有物质
+                filteredData = [...substancesData];
+                renderSubstances(filteredData);
+
+            } catch (error) {
+                console.error('加载数据时出错:', error);
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                errorMessage.textContent = '无法读取JSON数据: ' + error.message;
+            }
+        }
+
+        // 更新统计信息
+        function updateStatistics() {
+            // 总物质数量
+            totalCount.textContent = substancesData.length;
+
+            // 分类数量
+            const categories = new Set(substancesData.map(item => item.分类));
+            categoryCount.textContent = categories.size;
+
+            // 危险品数量
+            const hazardousCount = substancesData.filter(item =>
+                item.毒性与安全?.毒性分类 &&
+                (item.毒性与安全.毒性分类.includes('剧毒') ||
+                    item.毒性与安全.毒性分类.includes('有毒') ||
+                    item.毒性与安全.毒性分类.includes('腐蚀性') ||
+                    item.毒性与安全.毒性分类.includes('易燃'))
+            ).length;
+            hazardCount.textContent = hazardousCount;
+        }
+
+        // 初始化筛选器
+        function initFilters() {
+            // 动态添加分类选项
+            const categories = new Set(substancesData.map(item => item.分类));
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+
+            // 添加事件监听器
+            categoryFilter.addEventListener('change', applyFilters);
+            toxicityFilter.addEventListener('change', applyFilters);
+            stateFilter.addEventListener('change', applyFilters);
+            resetFiltersBtn.addEventListener('click', resetFilters);
+            clearAllFiltersBtn.addEventListener('click', resetFilters);
+            retryLoadBtn.addEventListener('click', init);
+            mobileSearchBtn.addEventListener('click', toggleMobileSearch);
+            desktopSearch.addEventListener('input', handleSearch);
+            mobileSearch.addEventListener('input', handleSearch);
+            closeModal.addEventListener('click', closeModalWindow);
+            closeModalBtn.addEventListener('click', closeModalWindow);
+        }
+
+        // 应用筛选
+        function applyFilters() {
+            currentFilters.category = categoryFilter.value;
+            currentFilters.toxicity = toxicityFilter.value;
+            currentFilters.state = stateFilter.value;
+
+            // 执行筛选
+            filteredData = substancesData.filter(substance => {
+                // 分类筛选
+                if (currentFilters.category !== 'all' && substance.分类 !== currentFilters.category) {
+                    return false;
+                }
+
+                // 毒性筛选
+                if (currentFilters.toxicity !== 'all' &&
+                    (!substance.毒性与安全?.毒性分类 ||
+                        !substance.毒性与安全.毒性分类.includes(currentFilters.toxicity))) {
+                    return false;
+                }
+
+                // 状态筛选
+                if (currentFilters.state !== 'all') {
+                    const stateMatch = substance.物理性质?.外观与状态?.includes(currentFilters.state) ||
+                        (currentFilters.state === '气体' && substance.分类 === '气体');
+                    if (!stateMatch) return false;
+                }
+
+                // 搜索筛选
+                if (currentFilters.search && !searchMatch(substance, currentFilters.search)) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // 渲染筛选结果
+            renderSubstances(filteredData);
+        }
+
+        // 搜索匹配
+        function searchMatch(substance, query) {
+            query = query.toLowerCase();
+            const nameMatch = substance.物质基础信息?.中文名称?.toLowerCase().includes(query) ||
+                substance.物质基础信息?.英文名称?.toLowerCase().includes(query) ||
+                (substance.物质基础信息 && substance.物质基础信息['俗称/别名'] &&
+                    substance.物质基础信息['俗称/别名'].toLowerCase().includes(query));
+            const casMatch = substance.物质基础信息?.CAS登录号?.includes(query);
+            return nameMatch || casMatch;
+        }
+
+        // 处理搜索
+        function handleSearch(e) {
+            currentFilters.search = e.target.value.trim().toLowerCase();
+            applyFilters();
+        }
+
+        // 重置筛选
+        function resetFilters() {
+            categoryFilter.value = 'all';
+            toxicityFilter.value = 'all';
+            stateFilter.value = 'all';
+            desktopSearch.value = '';
+            mobileSearch.value = '';
+            currentFilters = {
+                category: 'all',
+                toxicity: 'all',
+                state: 'all',
+                search: ''
+            };
+            filteredData = [...substancesData];
+            renderSubstances(filteredData);
+        }
+
+        // 切换移动端搜索框
+        function toggleMobileSearch() {
+            mobileSearchContainer.classList.toggle('hidden');
+            if (!mobileSearchContainer.classList.contains('hidden')) {
+                mobileSearch.focus();
+            }
+        }
+
+        // 渲染物质列表
+        function renderSubstances(substances) {
+            // 隐藏加载状态，显示内容区域
+            loadingState.classList.add('hidden');
+            substancesGrid.classList.remove('hidden');
+
+            // 清空容器
+            substancesGrid.innerHTML = '';
+
+            // 检查是否有结果
+            if (substances.length === 0) {
+                substancesGrid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            // 隐藏空状态
+            emptyState.classList.add('hidden');
+
+            // 创建物质卡片
+            substances.forEach(substance => {
+                const card = createSubstanceCard(substance);
+                substancesGrid.appendChild(card);
+            });
+        }
+
+        // 创建物质卡片
+        function createSubstanceCard(substance) {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-xl shadow-card overflow-hidden transition-all-300 hover:shadow-card-hover hover:-translate-y-1';
+
+            // 确定卡片颜色
+            let cardColorClass = 'bg-primary/5 border-primary/20';
+            if (substance.分类 === '无机化合物') cardColorClass = 'bg-secondary/5 border-secondary/20';
+            if (substance.分类 === '金属') cardColorClass = 'bg-warning/5 border-warning/20';
+            if (substance.分类 === '气体') cardColorClass = 'bg-success/5 border-success/20';
+
+            // 毒性等级标签
+            let toxicityBadge = '';
+            if (substance.毒性与安全?.毒性分类) {
+                const toxicityClass = getToxicityClass(substance.毒性与安全.毒性分类);
+                toxicityBadge = `
+              <span class="inline-block px-2 py-1 text-xs font-medium rounded-full ${toxicityClass}">
+                ${substance.毒性与安全.毒性分类}
+              </span>
+            `;
+            }
+
+            // 获取别名（使用方括号语法避免JavaScript语法错误）
+            const alias = substance.物质基础信息 && substance.物质基础信息['俗称/别名'] ?
+                substance.物质基础信息['俗称/别名'] : '';
+
+            card.innerHTML = `
+            <div class="p-5">
+              <div class="flex justify-between items-start mb-3">
+                <span class="inline-block px-2 py-1 text-xs font-medium rounded-full ${cardColorClass}">
+                  ${substance.分类}
+                </span>
+                ${toxicityBadge}
+              </div>
+
+              <h3 class="text-lg font-bold mb-1">${substance.物质基础信息?.中文名称 || '未知物质'}</h3>
+              <p class="text-sm text-neutral mb-3">${substance.物质基础信息?.英文名称 || 'No English name'}</p>
+
+              <div class="grid grid-cols-2 gap-2 text-sm mb-4">
+                <div>
+                  <span class="text-neutral text-xs">化学式</span>
+                  <p class="font-mono">${substance.物质基础信息?.化学式 || 'N/A'}</p>
+                </div>
+                <div>
+                  <span class="text-neutral text-xs">CAS号</span>
+                  <p class="font-mono">${substance.物质基础信息?.CAS登录号 || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-neutral">${substance.物理性质?.外观与状态 || 'N/A'}</span>
+                <button class="text-primary hover:text-primary/80 transition-all-300 view-details"
+                        data-id="${substance.物质基础信息?.CAS登录号 || Math.random()}">
+                  查看详情 <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+              </div>
+            </div>
+          `;
+
+            // 添加点击事件
+            card.querySelector('.view-details').addEventListener('click', () => {
+                openDetailModal(substance);
+            });
+
+            return card;
+        }
+
+        // 获取毒性等级样式
+        function getToxicityClass(toxicity) {
+            if (toxicity.includes('剧毒')) return 'bg-red-100 text-red-800';
+            if (toxicity.includes('有毒')) return 'bg-orange-100 text-orange-800';
+            if (toxicity.includes('低毒')) return 'bg-yellow-100 text-yellow-800';
+            if (toxicity.includes('微毒')) return 'bg-green-100 text-green-800';
+            if (toxicity.includes('腐蚀性')) return 'bg-purple-100 text-purple-800';
+            if (toxicity.includes('易燃')) return 'bg-red-100 text-red-800';
+            return 'bg-gray-100 text-gray-800';
+        }
+
+        // 打开详情模态框
+        function openDetailModal(substance) {
+            // 填充模态框数据
+            modalTitle.textContent = substance.物质基础信息?.中文名称 || '未知物质';
+            modalEnglish.textContent = substance.物质基础信息?.英文名称 || 'N/A';
+
+            // 使用方括号语法访问别名属性
+            modalAlias.textContent = (substance.物质基础信息 && substance.物质基础信息['俗称/别名']) ?
+                substance.物质基础信息['俗称/别名'] : 'N/A';
+
+            modalFormula.textContent = substance.物质基础信息?.化学式 || 'N/A';
+            modalCas.textContent = substance.物质基础信息?.CAS登录号 || 'N/A';
+            modalMolar.textContent = substance.物质基础信息?.摩尔质量 || 'N/A';
+            modalCategory.textContent = substance.分类 || 'N/A';
+
+            modalAppearance.textContent = substance.物理性质?.外观与状态 || 'N/A';
+            modalOdor.textContent = substance.物理性质?.气味 || 'N/A';
+            modalMelting.textContent = substance.物理性质?.熔点 || 'N/A';
+            modalBoiling.textContent = substance.物理性质?.沸点 || 'N/A';
+            modalDensity.textContent = substance.物理性质?.密度 || 'N/A';
+            modalSolubility.textContent = substance.物理性质?.溶解性 || 'N/A';
+
+            modalStability.textContent = substance.化学性质?.稳定性 || 'N/A';
+            modalReactions.textContent = substance.化学性质?.主要反应 || 'N/A';
+
+            // 毒性标签
+            modalToxicity.innerHTML = '';
+            if (substance.毒性与安全?.毒性分类) {
+                const toxicityClass = getToxicityClass(substance.毒性与安全.毒性分类);
+                const badge = document.createElement('span');
+                badge.className = `inline-block px-2 py-1 text-xs font-medium rounded-full ${toxicityClass}`;
+                badge.textContent = substance.毒性与安全.毒性分类;
+                modalToxicity.appendChild(badge);
+            } else {
+                modalToxicity.innerHTML = '<p class="text-sm">N/A</p>';
+            }
+
+            modalHealth.textContent = substance.毒性与安全?.健康危害 || 'N/A';
+
+            // 用途标签
+            modalUses.innerHTML = '';
+            if (substance.主要用途) {
+                const uses = Array.isArray(substance.主要用途) ? substance.主要用途 : substance.主要用途.split('、');
+                uses.forEach(use => {
+                    const tag = document.createElement('span');
+                    tag.className = 'inline-block px-2 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full';
+                    tag.textContent = use;
+                    modalUses.appendChild(tag);
+                });
+            } else {
+                modalUses.innerHTML = '<p class="text-sm">N/A</p>';
+            }
+
+            // 显示模态框
+            detailModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭模态框
+        function closeModalWindow() {
+            detailModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

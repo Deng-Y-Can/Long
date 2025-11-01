@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy数学公式库</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#FF7D00',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            .bg-gradient-math {
+                background: linear-gradient(135deg, #165DFF 0%, #0078D7 100%);
+            }
+
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(90deg, #165DFF, #0078D7);
+            }
+
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+
+                .card-hover:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 12px 20px rgba(22, 93, 255, 0.15);
+                }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark">
+    <!-- 导航栏 -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fa fa-calculator text-primary text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-dark">数学公式库</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                        <i class="fa fa-moon-o text-gray-600"></i>
+                    </button>
+                    <button id="search-toggle" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                        <i class="fa fa-search text-gray-600"></i>
+                    </button>
+                </div>
+                <div class="flex items-center md:hidden">
+                    <button id="mobile-menu-button" class="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <button id="mobile-theme-toggle" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">
+                    <i class="fa fa-moon-o mr-2"></i>切换主题
+                </button>
+                <button id="mobile-search-toggle" class="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100">
+                    <i class="fa fa-search mr-2"></i>搜索公式
+                </button>
+            </div>
+        </div>
+
+        <!-- 搜索框 -->
+        <div id="search-container" class="hidden bg-white border-t border-gray-200">
+            <div class="container mx-auto px-4 py-3">
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="搜索公式、定理或类别..."
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all">
+                    <button id="close-search" class="absolute right-3 top-2 text-gray-400 hover:text-gray-600">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <div id="search-results" class="mt-3 max-h-96 overflow-y-auto scrollbar-hide"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <header class="bg-gradient-math text-white py-16 md:py-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">数学公式与定理大全</h1>
+                <p class="text-xl md:text-2xl opacity-90 mb-8">探索数学世界的基础工具与核心原理</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button id="browse-all" class="bg-white text-primary px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                        <i class="fa fa-book mr-2"></i>浏览全部
+                    </button>
+                    <button id="random-formula" class="bg-secondary text-white px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                        <i class="fa fa-random mr-2"></i>随机公式
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 统计卡片 -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-light rounded-xl p-6 text-center card-hover">
+                    <div class="text-4xl font-bold text-primary mb-2" id="total-formulas">0</div>
+                    <div class="text-gray-600">总公式数</div>
+                </div>
+                <div class="bg-light rounded-xl p-6 text-center card-hover">
+                    <div class="text-4xl font-bold text-secondary mb-2" id="total-categories">0</div>
+                    <div class="text-gray-600">分类数量</div>
+                </div>
+                <div class="bg-light rounded-xl p-6 text-center card-hover">
+                    <div class="text-4xl font-bold text-success mb-2" id="popular-category-count">0</div>
+                    <div class="text-gray-600" id="popular-category-name">热门分类</div>
+                </div>
+                <div class="bg-light rounded-xl p-6 text-center card-hover">
+                    <div class="text-4xl font-bold text-warning mb-2" id="avg-formulas-per-category">0</div>
+                    <div class="text-gray-600">平均每类公式</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 主内容区 -->
+    <main class="py-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- 侧边栏 -->
+                <aside class="md:w-1/4 lg:w-1/5">
+                    <div class="bg-white rounded-xl shadow-sm p-6 sticky top-20">
+                        <h2 class="text-xl font-bold mb-4">公式分类</h2>
+                        <ul id="category-list" class="space-y-2">
+                            <!-- 分类将通过 JavaScript 动态生成 -->
+                            <li class="animate-pulse"><div class="h-6 bg-gray-200 rounded"></div></li>
+                            <li class="animate-pulse"><div class="h-6 bg-gray-200 rounded"></div></li>
+                            <li class="animate-pulse"><div class="h-6 bg-gray-200 rounded"></div></li>
+                        </ul>
+                    </div>
+                </aside>
+
+                <!-- 内容区 -->
+                <div class="md:w-3/4 lg:w-4/5">
+                    <!-- 过滤器 -->
+                    <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h2 class="text-xl font-bold mb-2" id="category-title">全部公式</h2>
+                                <p class="text-gray-500" id="formulas-count">共 <span class="font-medium">0</span> 个公式</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <select id="sort-select" class="border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none">
+                                    <option value="name">按名称排序</option>
+                                    <option value="category">按分类排序</option>
+                                </select>
+                                <button id="view-toggle" class="border border-gray-300 rounded-lg px-3 py-2 bg-white hover:bg-gray-50 transition-colors">
+                                    <i class="fa fa-th-large mr-1"></i>
+                                    <span>网格</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 公式列表 -->
+                    <div id="formulas-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- 公式卡片将通过 JavaScript 动态生成 -->
+                        <div class="animate-pulse col-span-1">
+                            <div class="bg-white rounded-xl shadow-sm p-6 h-full">
+                                <div class="h-6 bg-gray-200 rounded mb-4"></div>
+                                <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded mb-4"></div>
+                                <div class="h-24 bg-gray-200 rounded mb-4"></div>
+                                <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="animate-pulse col-span-1">
+                            <div class="bg-white rounded-xl shadow-sm p-6 h-full">
+                                <div class="h-6 bg-gray-200 rounded mb-4"></div>
+                                <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded mb-4"></div>
+                                <div class="h-24 bg-gray-200 rounded mb-4"></div>
+                                <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="animate-pulse col-span-1">
+                            <div class="bg-white rounded-xl shadow-sm p-6 h-full">
+                                <div class="h-6 bg-gray-200 rounded mb-4"></div>
+                                <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded mb-4"></div>
+                                <div class="h-24 bg-gray-200 rounded mb-4"></div>
+                                <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 加载更多按钮 -->
+                    <div class="mt-8 text-center">
+                        <button id="load-more" class="px-6 py-3 bg-primary text-white rounded-lg font-medium shadow hover:shadow-lg transition-all transform hover:-translate-y-1">
+                            <i class="fa fa-refresh mr-2"></i>加载更多
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 图表统计 -->
+    <section class="py-12 bg-light">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-2xl font-bold mb-8 text-center">公式分类统计</h2>
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <canvas id="category-chart" height="300"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- 公式详情模态框 -->
+    <div id="formula-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"></div>
+        <div class="relative bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <h2 id="modal-title" class="text-2xl font-bold"></h2>
+                <button id="close-modal" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <span class="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium" id="modal-category"></span>
+                </div>
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">表达式</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg font-mono text-base overflow-x-auto" id="modal-expression"></div>
+                </div>
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">描述</h3>
+                    <p class="text-gray-700" id="modal-description"></p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">适用范围</h3>
+                    <p class="text-gray-700" id="modal-scope"></p>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-200 flex justify-end">
+                <button id="copy-formula" class="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow hover:shadow-md transition-all mr-2">
+                    <i class="fa fa-copy mr-2"></i>复制公式
+                </button>
+                <button id="close-modal-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fa fa-calculator text-primary text-2xl mr-2"></i>
+                        <span class="text-xl font-bold">数学公式库</span>
+                    </div>
+                    <p class="text-gray-400 mb-4">全面收录各类数学公式与定理，为学习与研究提供便捷参考。</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">所有公式</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">热门公式</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">最新添加</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fa fa-envelope text-primary mr-2"></i>
+                            <a href="mailto:contact@mathformulas.com" class="text-gray-400 hover:text-white transition-colors">contact@mathformulas.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-globe text-primary mr-2"></i>
+                            <a href="https://mathformulas.com" class="text-gray-400 hover:text-white transition-colors">mathformulas.com</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
+                <p>© 2025 数学公式库. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 回到顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-all transform hover:-translate-y-1 opacity-0 invisible">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // 全局变量
+        let formulas = [];
+        let filteredFormulas = [];
+        let currentCategory = '全部';
+        let isGridView = true;
+        let itemsPerPage = 12;
+        let currentPage = 1;
+        let categories = [];
+        let categoryCounts = {};
+
+        // DOM 元素
+        const formulasContainer = document.getElementById('formulas-container');
+        const categoryList = document.getElementById('category-list');
+        const categoryTitle = document.getElementById('category-title');
+        const formulasCount = document.getElementById('formulas-count').querySelector('span');
+        const totalFormulasElement = document.getElementById('total-formulas');
+        const totalCategoriesElement = document.getElementById('total-categories');
+        const popularCategoryCountElement = document.getElementById('popular-category-count');
+        const popularCategoryNameElement = document.getElementById('popular-category-name');
+        const avgFormulasPerCategoryElement = document.getElementById('avg-formulas-per-category');
+        const sortSelect = document.getElementById('sort-select');
+        const viewToggle = document.getElementById('view-toggle');
+        const loadMoreButton = document.getElementById('load-more');
+        const formulaModal = document.getElementById('formula-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalCategory = document.getElementById('modal-category');
+        const modalExpression = document.getElementById('modal-expression');
+        const modalDescription = document.getElementById('modal-description');
+        const modalScope = document.getElementById('modal-scope');
+        const closeModal = document.getElementById('close-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const copyFormula = document.getElementById('copy-formula');
+        const backToTopButton = document.getElementById('back-to-top');
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        const searchToggle = document.getElementById('search-toggle');
+        const closeSearch = document.getElementById('close-search');
+        const searchContainer = document.getElementById('search-container');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+        const mobileSearchToggle = document.getElementById('mobile-search-toggle');
+        const themeToggle = document.getElementById('theme-toggle');
+        const navbar = document.getElementById('navbar');
+        const browseAllButton = document.getElementById('browse-all');
+        const randomFormulaButton = document.getElementById('random-formula');
+
+        // 从 JSON 文件加载数据
+        async function loadFormulas() {
+            try {
+                const response = await fetch('math.json');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                formulas = await response.json();
+
+                // 处理数据
+                processFormulas();
+
+                // 渲染页面
+                renderFormulas();
+                renderCategories();
+                updateStatistics();
+                createCategoryChart();
+
+                // 隐藏加载状态
+                document.querySelectorAll('.animate-pulse').forEach(el => {
+                    el.classList.remove('animate-pulse');
+                });
+            } catch (error) {
+                console.error('Error loading formulas:', error);
+                formulasContainer.innerHTML = `
+              <div class="col-span-full text-center py-12">
+                <i class="fa fa-exclamation-triangle text-4xl text-warning mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">加载公式失败</h3>
+                <p class="text-gray-500">无法加载数学公式数据，请检查 JSON 文件是否存在且格式正确。</p>
+              </div>
+            `;
+            }
+        }
+
+        // 处理公式数据
+        function processFormulas() {
+            // 提取所有类别
+            categories = [...new Set(formulas.map(f => f.类别))].sort();
+
+            // 计算每个类别的公式数量
+            categoryCounts = {};
+            formulas.forEach(f => {
+                categoryCounts[f.类别] = (categoryCounts[f.类别] || 0) + 1;
+            });
+
+            // 初始化筛选后的公式
+            filteredFormulas = [...formulas];
+
+            // 排序公式
+            sortFormulas();
+        }
+
+        // 排序公式
+        function sortFormulas() {
+            const sortBy = sortSelect.value;
+
+            if (sortBy === 'name') {
+                filteredFormulas.sort((a, b) => a.名称.localeCompare(b.名称));
+            } else if (sortBy === 'category') {
+                filteredFormulas.sort((a, b) => a.类别.localeCompare(b.类别) || a.名称.localeCompare(b.名称));
+            }
+        }
+
+        // 渲染公式列表
+        function renderFormulas() {
+            // 分页处理
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const formulasToRender = filteredFormulas.slice(startIndex, endIndex);
+
+            // 清空容器
+            formulasContainer.innerHTML = '';
+
+            // 检查是否有公式要渲染
+            if (formulasToRender.length === 0) {
+                formulasContainer.innerHTML = `
+              <div class="col-span-full text-center py-12">
+                <i class="fa fa-search-minus text-4xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-bold mb-2">没有找到公式</h3>
+                <p class="text-gray-500">尝试调整筛选条件或搜索其他关键词。</p>
+              </div>
+            `;
+
+                // 隐藏加载更多按钮
+                loadMoreButton.style.display = 'none';
+                return;
+            }
+
+            // 渲染公式卡片
+            formulasToRender.forEach(formula => {
+                const formulaCard = document.createElement('div');
+                formulaCard.className = 'bg-white rounded-xl shadow-sm p-6 h-full card-hover';
+                formulaCard.innerHTML = `
+              <span class="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium mb-3">${formula.类别}</span>
+              <h3 class="text-lg font-bold mb-2">${formula.名称}</h3>
+              <div class="bg-gray-50 p-3 rounded-lg font-mono text-sm mb-4 overflow-x-auto">${escapeHTML(formula.表达式)}</div>
+              <p class="text-gray-600 text-sm mb-4 line-clamp-2">${escapeHTML(formula.描述 || '')}</p>
+              <button class="view-formula-btn w-full py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-colors" data-id="${formula.名称}">
+                查看详情
+              </button>
+            `;
+
+                formulasContainer.appendChild(formulaCard);
+
+                // 添加点击事件
+                formulaCard.querySelector('.view-formula-btn').addEventListener('click', () => {
+                    showFormulaDetails(formula);
+                });
+            });
+
+            // 更新计数
+            formulasCount.textContent = filteredFormulas.length;
+
+            // 控制加载更多按钮显示
+            if (endIndex >= filteredFormulas.length) {
+                loadMoreButton.style.display = 'none';
+            } else {
+                loadMoreButton.style.display = 'inline-block';
+            }
+        }
+
+        // 渲染分类列表
+        function renderCategories() {
+            // 清空容器
+            categoryList.innerHTML = '';
+
+            // 添加"全部"类别
+            const allCategoryItem = document.createElement('li');
+            allCategoryItem.innerHTML = `
+            <a href="#" class="block px-3 py-2 rounded-md ${currentCategory === '全部' ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 hover:bg-gray-100'}" data-category="全部">
+              全部公式
+            </a>
+          `;
+            categoryList.appendChild(allCategoryItem);
+
+            // 添加其他类别
+            categories.forEach(category => {
+                const categoryItem = document.createElement('li');
+                categoryItem.innerHTML = `
+              <a href="#" class="block px-3 py-2 rounded-md ${currentCategory === category ? 'bg-primary/10 text-primary font-medium' : 'text-gray-700 hover:bg-gray-100'}" data-category="${category}">
+                ${category} (${categoryCounts[category]})
+              </a>
+            `;
+                categoryList.appendChild(categoryItem);
+            });
+
+            // 添加点击事件
+            document.querySelectorAll('#category-list a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentCategory = link.dataset.category;
+                    currentPage = 1;
+                    filterFormulas();
+                    renderCategories();
+                    renderFormulas();
+                    categoryTitle.textContent = currentCategory === '全部' ? '全部公式' : currentCategory;
+                });
+            });
+        }
+
+        // 筛选公式
+        function filterFormulas() {
+            if (currentCategory === '全部') {
+                filteredFormulas = [...formulas];
+            } else {
+                filteredFormulas = formulas.filter(formula => formula.类别 === currentCategory);
+            }
+
+            // 排序
+            sortFormulas();
+        }
+
+        // 更新统计信息
+        function updateStatistics() {
+            // 总公式数
+            totalFormulasElement.textContent = formulas.length;
+
+            // 总分类数
+            totalCategoriesElement.textContent = categories.length;
+
+            // 热门分类
+            if (categories.length > 0) {
+                let popularCategory = categories[0];
+                let maxCount = categoryCounts[popularCategory];
+
+                categories.forEach(category => {
+                    if (categoryCounts[category] > maxCount) {
+                        maxCount = categoryCounts[category];
+                        popularCategory = category;
+                    }
+                });
+
+                popularCategoryCountElement.textContent = maxCount;
+                popularCategoryNameElement.textContent = popularCategory;
+            }
+
+            // 平均每类公式数
+            if (categories.length > 0) {
+                const avg = (formulas.length / categories.length).toFixed(1);
+                avgFormulasPerCategoryElement.textContent = avg;
+            }
+        }
+
+        // 创建分类统计图表
+        function createCategoryChart() {
+            const ctx = document.getElementById('category-chart').getContext('2d');
+
+            // 准备数据
+            const categoryData = categories.map(category => categoryCounts[category]);
+
+            // 创建图表
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: '公式数量',
+                        data: categoryData,
+                        backgroundColor: categories.map((_, index) => `rgba(22, 93, 255, ${0.5 + (index % 10) * 0.05})`),
+                        borderColor: categories.map((_, index) => `rgba(22, 93, 255, ${0.7 + (index % 10) * 0.03})`),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `公式数量: ${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 显示公式详情
+        function showFormulaDetails(formula) {
+            modalTitle.textContent = formula.名称;
+            modalCategory.textContent = formula.类别;
+            modalExpression.textContent = formula.表达式;
+            modalDescription.textContent = formula.描述 || '无描述';
+            modalScope.textContent = formula.适用范围 || '无适用范围说明';
+
+            formulaModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 复制公式到剪贴板
+        function copyToClipboard() {
+            const textToCopy = `${modalTitle.textContent}\n${modalExpression.textContent}\n\n${modalDescription.textContent}\n\n适用范围: ${modalScope.textContent}`;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = copyFormula.innerHTML;
+                copyFormula.innerHTML = '<i class="fa fa-check mr-2"></i>已复制';
+                copyFormula.classList.remove('bg-primary');
+                copyFormula.classList.add('bg-success');
+
+                setTimeout(() => {
+                    copyFormula.innerHTML = originalText;
+                    copyFormula.classList.remove('bg-success');
+                    copyFormula.classList.add('bg-primary');
+                }, 2000);
+            }).catch(err => {
+                console.error('无法复制内容:', err);
+                alert('复制失败，请手动复制。');
+            });
+        }
+
+        // 搜索公式
+        function searchFormulas(query) {
+            if (!query.trim()) {
+                searchResults.innerHTML = '<p class="text-gray-500 text-center py-4">请输入搜索关键词...</p>';
+                return;
+            }
+
+            const results = formulas.filter(formula => {
+                const searchText = query.toLowerCase();
+                return (
+                    formula.名称.toLowerCase().includes(searchText) ||
+                    formula.类别.toLowerCase().includes(searchText) ||
+                    formula.表达式.toLowerCase().includes(searchText) ||
+                    (formula.描述 && formula.描述.toLowerCase().includes(searchText)) ||
+                    (formula.适用范围 && formula.适用范围.toLowerCase().includes(searchText))
+                );
+            });
+
+            if (results.length === 0) {
+                searchResults.innerHTML = '<p class="text-gray-500 text-center py-4">没有找到匹配的公式</p>';
+                return;
+            }
+
+            searchResults.innerHTML = '';
+
+            results.slice(0, 10).forEach(formula => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer';
+                resultItem.innerHTML = `
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-medium">${formula.名称}</h4>
+                  <p class="text-sm text-gray-500">${formula.类别}</p>
+                </div>
+                <span class="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">查看</span>
+              </div>
+            `;
+
+                resultItem.addEventListener('click', () => {
+                    showFormulaDetails(formula);
+                    searchContainer.classList.add('hidden');
+                });
+
+                searchResults.appendChild(resultItem);
+            });
+
+            if (results.length > 10) {
+                const moreResults = document.createElement('div');
+                moreResults.className = 'p-3 text-center text-gray-500 text-sm';
+                moreResults.textContent = `...还有 ${results.length - 10} 个结果未显示`;
+                searchResults.appendChild(moreResults);
+            }
+        }
+
+        // 视图切换（网格/列表）
+        function toggleView() {
+            isGridView = !isGridView;
+
+            if (isGridView) {
+                formulasContainer.classList.add('grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3');
+                formulasContainer.classList.remove('grid-cols-1');
+                viewToggle.innerHTML = '<i class="fa fa-th-large mr-1"></i><span>网格</span>';
+            } else {
+                formulasContainer.classList.remove('md:grid-cols-2', 'lg:grid-cols-3');
+                formulasContainer.classList.add('grid-cols-1');
+                viewToggle.innerHTML = '<i class="fa fa-list mr-1"></i><span>列表</span>';
+            }
+        }
+
+        // 加载更多公式
+        function loadMoreFormulas() {
+            currentPage++;
+            renderFormulas();
+        }
+
+        // 随机显示一个公式
+        function showRandomFormula() {
+            if (formulas.length === 0) return;
+
+            const randomIndex = Math.floor(Math.random() * formulas.length);
+            showFormulaDetails(formulas[randomIndex]);
+        }
+
+        // 回到顶部
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // 监听滚动事件，控制回到顶部按钮显示
+        function handleScroll() {
+            if (window.scrollY > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+                navbar.classList.add('shadow-md');
+            } else {
+                backToTopButton.classList.add('opacity-0', 'invisible');
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                navbar.classList.remove('shadow-md');
+            }
+        }
+
+        // 转义HTML特殊字符
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // 初始化事件监听
+        function initEventListeners() {
+            // 排序下拉菜单
+            sortSelect.addEventListener('change', () => {
+                currentPage = 1;
+                sortFormulas();
+                renderFormulas();
+            });
+
+            // 视图切换
+            viewToggle.addEventListener('click', toggleView);
+
+            // 加载更多
+            loadMoreButton.addEventListener('click', loadMoreFormulas);
+
+            // 关闭模态框
+            closeModal.addEventListener('click', () => {
+                formulaModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                formulaModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+
+            // 点击模态框背景关闭
+            formulaModal.addEventListener('click', (e) => {
+                if (e.target === formulaModal) {
+                    formulaModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // 复制公式
+            copyFormula.addEventListener('click', copyToClipboard);
+
+            // 回到顶部
+            backToTopButton.addEventListener('click', scrollToTop);
+
+            // 监听滚动事件
+            window.addEventListener('scroll', handleScroll);
+
+            // 搜索功能
+            searchToggle.addEventListener('click', () => {
+                searchContainer.classList.toggle('hidden');
+                if (!searchContainer.classList.contains('hidden')) {
+                    searchInput.focus();
+                }
+            });
+
+            closeSearch.addEventListener('click', () => {
+                searchContainer.classList.add('hidden');
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                searchFormulas(e.target.value);
+            });
+
+            // 移动端菜单
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            mobileSearchToggle.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                searchContainer.classList.remove('hidden');
+                searchInput.focus();
+            });
+
+            // 浏览全部按钮
+            browseAllButton.addEventListener('click', () => {
+                currentCategory = '全部';
+                currentPage = 1;
+                filterFormulas();
+                renderCategories();
+                renderFormulas();
+                categoryTitle.textContent = '全部公式';
+                scrollToTop();
+            });
+
+            // 随机公式按钮
+            randomFormulaButton.addEventListener('click', showRandomFormula);
+        }
+
+        // 初始化应用
+        function initApp() {
+            initEventListeners();
+            loadFormulas();
+        }
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

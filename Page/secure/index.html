@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>应急事件处理指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',    // 主色调：专业蓝
+                        secondary: '#dc2626',  // 强调色：警示红
+                        success: '#059669',    // 成功色：安全绿
+                        warning: '#d97706',    // 警告色：提醒黄
+                        neutral: '#1e293b',    // 文字色：深灰
+                        light: '#f8fafc',      // 背景色：浅灰
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        'card-hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+                    }
+                },
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            }
+
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            }
+
+            .card-transition {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .text-balance {
+                text-wrap: balance;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-neutral font-inter">
+    <!-- 顶部导航栏 -->
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between">
+            <!-- 标题区域 -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-primary text-white p-3 rounded-xl shadow-md">
+                    <i class="fa fa-shield text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-primary">
+                    应急事件处理指南
+                </h1>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="relative w-full md:w-auto mt-4 md:mt-0 flex-1 md:flex-initial max-w-md">
+                <div class="relative w-full">
+                    <input type="text"
+                           id="search-input"
+                           placeholder="搜索事件（如“地震”“火灾”）"
+                           class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all bg-white shadow-sm">
+                    <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                </div>
+                <button id="search-btn" class="ml-2 bg-gradient-primary text-white px-6 py-3 rounded-xl shadow-sm hover:shadow-md transition-all">
+                    搜索
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容区 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 页面说明 -->
+        <div class="mb-8 bg-white rounded-2xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-neutral mb-2">应急指南总览</h2>
+            <p class="text-slate-600">
+                本指南汇总了常见应急事件的处理方法，包含预警信号、应急措施和后续处理流程，
+                帮助您在紧急情况下快速做出正确反应，保障生命财产安全。
+            </p>
+        </div>
+
+        <!-- 灾害类型过滤器 -->
+        <div class="mb-8 overflow-x-auto pb-2 scrollbar-hide">
+            <div class="flex space-x-3 min-w-max">
+                <button class="filter-btn active px-5 py-3 bg-gradient-primary text-white rounded-xl shadow-sm hover:shadow-md transition-all" data-filter="all">
+                    全部类型
+                </button>
+                <!-- 过滤器按钮将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <!-- 应急指南内容容器 -->
+        <div id="emergency-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- 内容将通过JavaScript动态生成 -->
+        </div>
+
+        <!-- 空状态提示 -->
+        <div id="empty-state" class="hidden text-center py-16 bg-white rounded-2xl shadow-sm">
+            <div class="inline-block bg-slate-100 p-5 rounded-full mb-4">
+                <i class="fa fa-search-minus text-4xl text-slate-400"></i>
+            </div>
+            <p class="text-slate-500 text-lg font-medium">没有找到匹配的应急事件</p>
+            <p class="text-slate-400 mt-2">请尝试其他搜索关键词或选择其他分类</p>
+        </div>
+
+        <!-- 加载状态 -->
+        <div id="loading-state" class="text-center py-16 bg-white rounded-2xl shadow-sm">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+            <p class="text-slate-500 text-lg font-medium">正在加载应急指南数据...</p>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-neutral text-white py-10 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fa fa-shield text-primary"></i>
+                        <h3 class="text-xl font-bold">应急事件处理指南</h3>
+                    </div>
+                    <p class="text-slate-400">保障生命安全，科学应对紧急情况</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-slate-400 mb-2">&copy; 2025 应急事件处理指南</p>
+                    <p class="text-slate-500 text-sm">本指南仅供参考，不能替代专业人员的指导</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        let emergencyData = []; // 存储从JSON加载的数据
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', () => {
+            // 显示加载状态
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+
+            // 初始化事件监听
+            loadEmergencyData();
+            document.getElementById('search-btn').addEventListener('click', handleSearch);
+            document.getElementById('search-input').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') handleSearch();
+            });
+        });
+
+        // 从外部JSON文件加载数据
+        async function loadEmergencyData() {
+            try {
+                const response = await fetch('safety.json'); // 假设JSON文件在同级目录
+                if (!response.ok) {
+                    throw new Error(`HTTP错误！状态码：${response.status}`);
+                }
+                emergencyData = await response.json();
+
+                // 数据加载成功后渲染内容
+                renderEmergencyGuide(emergencyData);
+                createFilterButtons(emergencyData);
+
+                // 隐藏加载状态
+                document.getElementById('loading-state').classList.add('hidden');
+            } catch (error) {
+                console.error('加载JSON数据失败:', error);
+
+                // 显示错误状态
+                document.getElementById('loading-state').classList.add('hidden');
+                const container = document.getElementById('emergency-container');
+                container.innerHTML = `
+              <div class="col-span-full bg-white rounded-2xl shadow-sm p-8 text-center">
+                <div class="inline-block bg-red-50 p-5 rounded-full mb-4">
+                  <i class="fa fa-exclamation-triangle text-4xl text-warning"></i>
+                </div>
+                <p class="text-slate-500 text-lg font-medium">无法加载应急事件数据</p>
+                <p class="text-slate-400 mt-2">请检查 emergency.json 文件是否存在或网络连接是否正常</p>
+                <div class="mt-4 text-sm text-slate-500">错误信息: ${error.message}</div>
+              </div>
+            `;
+            }
+        }
+
+        // 渲染应急指南
+        function renderEmergencyGuide(data) {
+            const container = document.getElementById('emergency-container');
+            container.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            }
+
+            // 检查是否有实际事件数据
+            let hasEvents = false;
+            data.forEach(type => {
+                if (type.events && type.events.length > 0) {
+                    hasEvents = true;
+                }
+            });
+
+            if (!hasEvents) {
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+            }
+
+            data.forEach(type => {
+                type.events.forEach(event => {
+                    // 确定事件图标
+                    const eventIcon = getEventIcon(event.eventName);
+
+                    // 创建事件卡片
+                    const eventCard = document.createElement('div');
+                    eventCard.className = 'bg-white rounded-2xl shadow-card hover:shadow-card-hover card-transition overflow-hidden';
+
+                    // 卡片内容
+                    eventCard.innerHTML = `
+                <!-- 卡片头部 -->
+                <div class="p-6 pb-4">
+                  <div class="flex justify-between items-start mb-4">
+                    <div>
+                      <span class="inline-block px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full mb-2">
+                        ${type.typeName}
+                      </span>
+                      <h3 class="text-xl font-bold text-neutral">${event.eventName}</h3>
+                    </div>
+                    <div class="p-3 bg-${getIconColor(event.eventName)}/10 text-${getIconColor(event.eventName)} rounded-xl">
+                      <i class="fa ${eventIcon} text-xl"></i>
+                    </div>
+                  </div>
+
+                  <!-- 核心原则 -->
+                  <div class="bg-slate-50 p-4 rounded-xl mb-4">
+                    <div class="flex items-center space-x-2 text-slate-500 text-sm mb-1">
+                      <i class="fa fa-lightbulb-o"></i>
+                      <span>核心原则</span>
+                    </div>
+                    <p class="text-neutral font-medium">${event.coreRule}</p>
+                  </div>
+                </div>
+
+                <!-- 卡片内容区域 -->
+                <div class="px-6 pb-6 space-y-4">
+                  ${renderEarlyWarning(event.earlyWarning)}
+                  ${renderEmergencyActions(event.emergencyActions)}
+                  ${renderPostHandling(event.postHandling)}
+                </div>
+              `;
+
+                    container.appendChild(eventCard);
+                });
+            });
+        }
+
+        // 渲染预警信息
+        function renderEarlyWarning(warning) {
+            if (!warning) return '';
+
+            let content = `
+            <div class="space-y-2">
+              <div class="flex items-center space-x-2 text-slate-500 text-sm">
+                <i class="fa fa-bell"></i>
+                <span>预警信息</span>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-xl">
+          `;
+
+            // 前兆信号
+            if (warning.precursorSignals && warning.precursorSignals.length > 0) {
+                content += `
+              <div class="mb-3">
+                <h4 class="text-neutral font-medium mb-2">前兆信号</h4>
+                <ul class="space-y-2">
+            `;
+                warning.precursorSignals.forEach(signal => {
+                    content += `
+                <li class="flex items-start space-x-2">
+                  <i class="fa fa-angle-right text-primary mt-1"></i>
+                  <span class="text-slate-700">${signal}</span>
+                </li>
+              `;
+                });
+                content += `
+                </ul>
+              </div>
+            `;
+            }
+
+            // 官方预警或预防建议
+            if (warning.officialAlert) {
+                content += `
+              <div>
+                <h4 class="text-neutral font-medium mb-2">官方预警</h4>
+                <p class="text-slate-700 bg-primary/5 p-3 rounded-lg border border-primary/10">
+                  ${warning.officialAlert}
+                </p>
+              </div>
+            `;
+            } else if (warning.preventionTips && warning.preventionTips.length > 0) {
+                content += `
+              <div>
+                <h4 class="text-neutral font-medium mb-2">预防建议</h4>
+                <ul class="space-y-2">
+            `;
+                warning.preventionTips.forEach(tip => {
+                    content += `
+                <li class="flex items-start space-x-2">
+                  <i class="fa fa-check-circle text-success mt-1"></i>
+                  <span class="text-slate-700">${tip}</span>
+                </li>
+              `;
+                });
+                content += `
+                </ul>
+              </div>
+            `;
+            }
+
+            content += `
+              </div>
+            </div>
+          `;
+            return content;
+        }
+
+        // 渲染应急措施
+        function renderEmergencyActions(actions) {
+            if (!actions) return '';
+
+            let content = `
+            <div class="space-y-2">
+              <div class="flex items-center space-x-2 text-slate-500 text-sm">
+                <i class="fa fa-exclamation-triangle"></i>
+                <span>应急措施</span>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-xl">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          `;
+
+            Object.keys(actions).forEach(key => {
+                const actionGroup = actions[key];
+                if (!actionGroup) return;
+
+                content += `
+              <div>
+                <h4 class="text-neutral font-medium mb-3">${formatActionKey(key)}</h4>
+                <div class="space-y-3">
+            `;
+
+                // 应该做的事情
+                if (actionGroup.do && actionGroup.do.length > 0) {
+                    content += `
+                <div>
+                  <div class="flex items-center space-x-2 text-success text-sm mb-2">
+                    <i class="fa fa-thumbs-up"></i>
+                    <span>应该做</span>
+                  </div>
+                  <ul class="space-y-2">
+              `;
+                    actionGroup.do.forEach(item => {
+                        content += `
+                  <li class="flex items-start space-x-2">
+                    <i class="fa fa-check text-success mt-1"></i>
+                    <span class="text-slate-700">${item}</span>
+                  </li>
+                `;
+                    });
+                    content += `
+                  </ul>
+                </div>
+              `;
+                }
+
+                // 不应该做的事情
+                if (actionGroup.dont && actionGroup.dont.length > 0) {
+                    content += `
+                <div>
+                  <div class="flex items-center space-x-2 text-warning text-sm mb-2">
+                    <i class="fa fa-thumbs-down"></i>
+                    <span>不应该做</span>
+                  </div>
+                  <ul class="space-y-2">
+              `;
+                    actionGroup.dont.forEach(item => {
+                        content += `
+                  <li class="flex items-start space-x-2">
+                    <i class="fa fa-times text-warning mt-1"></i>
+                    <span class="text-slate-700">${item}</span>
+                  </li>
+                `;
+                    });
+                    content += `
+                  </ul>
+                </div>
+              `;
+                }
+
+                content += `
+                  </div>
+                </div>
+              `;
+            });
+
+            content += `
+                </div>
+              </div>
+            </div>
+          `;
+            return content;
+        }
+
+        // 渲染后续处理
+        function renderPostHandling(handling) {
+            if (!handling) return '';
+
+            let content = `
+            <div class="space-y-2">
+              <div class="flex items-center space-x-2 text-slate-500 text-sm">
+                <i class="fa fa-ambulance"></i>
+                <span>后续处理</span>
+              </div>
+              <div class="bg-slate-50 p-4 rounded-xl">
+          `;
+
+            // 检查清单
+            if (handling.checklist && handling.checklist.length > 0) {
+                content += `
+              <div class="mb-3">
+                <h4 class="text-neutral font-medium mb-2">检查清单</h4>
+                <ul class="space-y-2">
+            `;
+                handling.checklist.forEach(item => {
+                    content += `
+                <li class="flex items-start space-x-2">
+                  <i class="fa fa-check-circle text-success mt-1"></i>
+                  <span class="text-slate-700">${item}</span>
+                </li>
+              `;
+                });
+                content += `
+                  </ul>
+                </div>
+              `;
+            }
+
+            // 紧急联系方式
+            if (handling.emergencyContacts && handling.emergencyContacts.length > 0) {
+                content += `
+              <div>
+                <h4 class="text-neutral font-medium mb-2">紧急联系</h4>
+                <ul class="space-y-2">
+            `;
+                handling.emergencyContacts.forEach(contact => {
+                    content += `
+                <li class="flex items-start space-x-2">
+                  <i class="fa fa-phone text-secondary mt-1"></i>
+                  <span class="text-slate-700">${contact}</span>
+                </li>
+              `;
+                });
+                content += `
+                  </ul>
+                </div>
+              `;
+            }
+
+            content += `
+              </div>
+            </div>
+          `;
+            return content;
+        }
+
+        // 格式化应急措施标题
+        function formatActionKey(key) {
+            const map = {
+                'indoor': '室内',
+                'outdoor': '室外',
+                'scene': '现场处理',
+                'injuries': '伤员处理'
+            };
+            return map[key] || key;
+        }
+
+        // 根据事件名称获取图标
+        function getEventIcon(eventName) {
+            const iconMap = {
+                '地震': 'fa-earthquake',
+                '火灾': 'fa-fire',
+                '洪水': 'fa-tint',
+                '台风': 'fa-bolt',
+                '车祸': 'fa-car',
+                '食物中毒': 'fa-cutlery',
+                '触电': 'fa-bolt',
+                '溺水': 'fa-life-ring',
+                '儿童走失': 'fa-child'
+            };
+            return iconMap[eventName] || 'fa-exclamation-circle';
+        }
+
+        // 根据事件名称获取图标颜色
+        function getIconColor(eventName) {
+            const colorMap = {
+                '地震': 'secondary',
+                '火灾': 'secondary',
+                '洪水': 'primary',
+                '台风': 'primary',
+                '车祸': 'warning',
+                '食物中毒': 'warning',
+                '触电': 'warning',
+                '溺水': 'primary',
+                '儿童走失': 'primary'
+            };
+            return colorMap[eventName] || 'primary';
+        }
+
+        // 创建过滤按钮
+        function createFilterButtons(data) {
+            const filterContainer = document.querySelector('.filter-btn').parentElement;
+            const types = [...new Set(data.map(item => item.typeName))];
+
+            types.forEach(type => {
+                const button = document.createElement('button');
+                button.className = 'filter-btn px-5 py-3 bg-slate-100 text-slate-700 rounded-xl shadow-sm hover:bg-primary hover:text-white hover:shadow-md transition-all';
+                button.dataset.filter = type;
+                button.textContent = type;
+
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('active', 'bg-gradient-primary', 'text-white');
+                        btn.classList.add('bg-slate-100', 'text-slate-700');
+                    });
+                    button.classList.add('active', 'bg-gradient-primary', 'text-white');
+                    button.classList.remove('bg-slate-100', 'text-slate-700');
+
+                    const filteredData = type === 'all' ? data : data.filter(item => item.typeName === type);
+                    renderEmergencyGuide(filteredData);
+                });
+
+                filterContainer.appendChild(button);
+            });
+        }
+
+        // 搜索功能
+        function handleSearch() {
+            const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+
+            if (!searchTerm) {
+                renderEmergencyGuide(emergencyData);
+                return;
+            }
+
+            const filteredData = emergencyData.map(type => {
+                const filteredEvents = type.events.filter(event =>
+                    event.eventName.toLowerCase().includes(searchTerm) ||
+                    event.coreRule.toLowerCase().includes(searchTerm)
+                );
+                return { ...type, events: filteredEvents };
+            }).filter(type => type.events.length > 0);
+
+            renderEmergencyGuide(filteredData);
+
+            if (filteredData.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

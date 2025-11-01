@@ -1,0 +1,3065 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy编程助手 - 图层编辑器V2</title>
+    <style>
+        /* 基础样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            color: #1e293b;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+        }
+
+        input, textarea, select {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+        }
+
+            input:focus, textarea:focus, select:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            }
+
+        /* 顶部导航栏 */
+        header {
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .logo h1 {
+                font-size: 1.25rem;
+                font-weight: bold;
+                color: #3b82f6;
+            }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: #e5e7eb;
+            color: #1e293b;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 主内容区 */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* 左侧工具栏 */
+        .sidebar {
+            background-color: white;
+            width: 16rem;
+            box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .panel {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .tool-btn {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+            .tool-btn i {
+                font-size: 1.25rem;
+                margin-bottom: 0.25rem;
+            }
+
+        .layers-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .layer-item {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+            .layer-item:hover {
+                border-color: rgba(59, 130, 246, 0.5);
+            }
+
+            .layer-item.active {
+                background-color: rgba(59, 130, 246, 0.1);
+                border-color: #3b82f6;
+            }
+
+            .layer-item i {
+                margin-right: 0.5rem;
+            }
+
+        .layer-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 中央画布区域 */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: #e5e7eb;
+            position: relative;
+        }
+
+        .canvas-container {
+            position: relative;
+            background-color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform-origin: center;
+            transition: transform 0.3s ease;
+        }
+
+        canvas {
+            display: block;
+            cursor: grab;
+        }
+
+            canvas:active {
+                cursor: grabbing;
+            }
+
+        .selection-indicator {
+            position: absolute;
+            border: 2px dashed #ef4444;
+            pointer-events: none;
+            display: none;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .zoom-btn {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: transparent;
+            color: #1e293b;
+        }
+
+        .zoom-level {
+            padding: 0 0.5rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* 右侧属性面板 - 默认隐藏 */
+        .properties-panel {
+            background-color: white;
+            width: 18rem;
+            box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+        }
+
+            /* 显示状态 */
+            .properties-panel.active {
+                transform: translateX(0);
+            }
+
+        /* 切换按钮 */
+        .panel-toggle {
+            position: absolute;
+            left: -2rem;
+            top: 2rem;
+            background-color: white;
+            border: none;
+            width: 2rem;
+            height: 4rem;
+            border-radius: 0.5rem 0 0 0.5rem;
+            box-shadow: -2px 0 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control {
+            width: 100%;
+        }
+
+        .range-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .range-value {
+            min-width: 40px;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+
+        .color-inputs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .color-picker {
+            width: 2.5rem;
+            height: 2.5rem;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .color-hex {
+            flex: 1;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .editor-tool {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+            .editor-tool:hover {
+                background-color: #d1d5db;
+            }
+
+        /* 底部状态栏 */
+        footer {
+            background-color: #1e293b;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 帮助模态框 */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            display: none;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 42rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+            .modal-close:hover {
+                color: #1e293b;
+            }
+
+        .help-section {
+            margin-bottom: 1rem;
+        }
+
+            .help-section h3 {
+                font-size: 1.125rem;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+            }
+
+            .help-section ul {
+                list-style-type: disc;
+                padding-left: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .help-section li {
+                margin-bottom: 0.25rem;
+            }
+
+        /* 隐藏滚动条 */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 裁剪选择框 */
+        .crop-selection {
+            position: absolute;
+            border: 2px dashed #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
+            pointer-events: none;
+            display: none;
+        }
+
+        .crop-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            border: 1px solid #3b82f6;
+            border-radius: 50%;
+            pointer-events: auto;
+            cursor: nwse-resize;
+        }
+
+        .crop-handle-tl {
+            top: -5px;
+            left: -5px;
+        }
+
+        .crop-handle-tr {
+            top: -5px;
+            right: -5px;
+        }
+
+        .crop-handle-bl {
+            bottom: -5px;
+            left: -5px;
+        }
+
+        .crop-handle-br {
+            bottom: -5px;
+            right: -5px;
+        }
+
+        /* 裁剪按钮组 */
+        .crop-buttons {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+
+        .crop-btn {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: white;
+            color: #1e293b;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+            .crop-btn.confirm {
+                background-color: #10b981;
+                color: white;
+            }
+
+            .crop-btn.cancel {
+                background-color: #ef4444;
+                color: white;
+            }
+
+        /* 编辑工具面板样式 */
+        .tool-section {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+        }
+
+            .tool-section:last-child {
+                border-bottom: none;
+            }
+
+            .tool-section h3 {
+                font-size: 0.9rem;
+                margin-bottom: 0.75rem;
+                color: #4b5563;
+            }
+
+        /* 图像滤镜效果预览 */
+        .filter-preview {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .filter-item {
+            width: 60px;
+            height: 60px;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+            .filter-item:hover {
+                transform: scale(1.05);
+            }
+
+            .filter-item.active {
+                border: 2px solid #3b82f6;
+            }
+
+            .filter-item img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        /* 边框和阴影控制 */
+        .border-options, .shadow-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .border-option, .shadow-option {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #f9fafb;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+            .border-option:hover, .shadow-option:hover {
+                background-color: #f3f4f6;
+            }
+
+            .border-option.active, .shadow-option.active {
+                background-color: #dbeafe;
+                border: 1px solid #bfdbfe;
+            }
+
+        /* 预设尺寸选择 */
+        .preset-sizes {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .preset-size {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #f9fafb;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+            .preset-size:hover {
+                background-color: #f3f4f6;
+            }
+
+        /* 颜色预设 */
+        .color-presets {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .color-preset {
+            width: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+            .color-preset:hover {
+                transform: scale(1.1);
+            }
+
+        /* 切换动画 */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(100%);
+            }
+        }
+
+        .properties-panel.active {
+            animation: slideIn 0.3s forwards;
+        }
+
+        .properties-panel:not(.active) {
+            animation: slideOut 0.3s forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header>
+        <div class="logo">
+            <span>🎨</span>
+            <h1>Candy图层编辑器</h1>
+        </div>
+        <div class="header-actions">
+            <button id="toggleEditorBtn" class="btn btn-outline">
+                🔧 显示编辑工具
+            </button>
+            <button id="exportBtn" class="btn btn-secondary">
+                💾 导出图像
+            </button>
+            <button id="helpBtn" class="btn btn-outline">
+                ❓ 帮助
+            </button>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main>
+        <!-- 左侧工具栏 -->
+        <aside class="sidebar">
+            <div class="panel">
+                <h2 class="panel-title">图层操作</h2>
+                <div class="grid">
+                    <button id="addImageLayer" class="tool-btn btn-primary">
+                        <i>🖼️</i>
+                        <span>添加图片</span>
+                    </button>
+                    <button id="addColorLayer" class="tool-btn" style="background-color: #8b5cf6; color: white;">
+                        <i>⬜</i>
+                        <span>添加纯色</span>
+                    </button>
+                    <button id="moveUpBtn" class="tool-btn" style="background-color: #e5e7eb;">
+                        <i>⬆️</i>
+                        <span>上移</span>
+                    </button>
+                    <button id="moveDownBtn" class="tool-btn" style="background-color: #e5e7eb;">
+                        <i>⬇️</i>
+                        <span>下移</span>
+                    </button>
+                    <button id="deleteLayerBtn" class="tool-btn" style="background-color: #ef4444; color: white;">
+                        <i>🗑️</i>
+                        <span>删除</span>
+                    </button>
+                    <button id="clearAllBtn" class="tool-btn" style="background-color: #4b5563; color: white;">
+                        <i>🧹</i>
+                        <span>清空</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 图层列表 -->
+            <div class="layers-list scrollbar-hide">
+                <h2 class="panel-title">图层列表</h2>
+                <div id="layersList" class="space-y-1">
+                    <!-- 图层项将通过JavaScript动态添加 -->
+                </div>
+            </div>
+
+            <!-- 当前图层属性 -->
+            <div id="layerProperties" class="panel hidden">
+                <h2 class="panel-title">图层属性</h2>
+                <div class="space-y-4">
+                    <div class="form-group">
+                        <label class="form-label">图层名称</label>
+                        <input type="text" id="layerName" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">透明度</label>
+                        <input type="range" id="opacitySlider" min="0" max="100" value="100" class="form-control">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                            <span>0%</span>
+                            <span id="opacityValue">100%</span>
+                        </div>
+                    </div>
+                    <div id="positionControls" class="hidden">
+                        <label class="form-label">位置调整</label>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; color: #6b7280;">X坐标</label>
+                                <input type="number" id="layerX" style="width: 100%; padding: 0.25rem; font-size: 0.75rem;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; color: #6b7280;">Y坐标</label>
+                                <input type="number" id="layerY" style="width: 100%; padding: 0.25rem; font-size: 0.75rem;">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="colorPickerContainer" class="hidden">
+                        <label class="form-label">颜色</label>
+                        <div class="color-inputs">
+                            <input type="color" id="colorPicker" class="color-picker">
+                            <input type="text" id="colorHex" class="color-hex">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中央画布区域 -->
+        <section class="canvas-area">
+            <div id="canvasContainer" class="canvas-container">
+                <canvas id="mainCanvas"></canvas>
+                <!-- 区域选择指示器 -->
+                <div id="selectionIndicator" class="selection-indicator"></div>
+                <!-- 裁剪选择框 -->
+                <div id="cropSelection" class="crop-selection">
+                    <div class="crop-handle crop-handle-tl"></div>
+                    <div class="crop-handle crop-handle-tr"></div>
+                    <div class="crop-handle crop-handle-bl"></div>
+                    <div class="crop-handle crop-handle-br"></div>
+                </div>
+                <!-- 裁剪按钮组 -->
+                <div id="cropButtons" class="crop-buttons">
+                    <button id="confirmCropBtn" class="crop-btn confirm">确认裁剪</button>
+                    <button id="cancelCropBtn" class="crop-btn cancel">取消</button>
+                </div>
+            </div>
+            <!-- 缩放控制 -->
+            <div class="zoom-controls">
+                <button id="zoomOut" class="zoom-btn">➖</button>
+                <span id="zoomLevel" class="zoom-level">100%</span>
+                <button id="zoomIn" class="zoom-btn">➕</button>
+                <button id="resetZoom" class="zoom-btn">🔄</button>
+            </div>
+        </section>
+
+        <!-- 右侧属性面板 - 默认隐藏 -->
+        <aside id="propertiesPanel" class="properties-panel">
+            <button id="panelToggleBtn" class="panel-toggle">
+                <span>⟪</span>
+            </button>
+
+            <div class="panel">
+                <h2 class="panel-title">画布属性</h2>
+                <div class="space-y-4">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                        <div class="form-group">
+                            <label class="form-label">宽度</label>
+                            <input type="number" id="canvasWidth" value="800" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">高度</label>
+                            <input type="number" id="canvasHeight" value="600" class="form-control">
+                        </div>
+                    </div>
+                    <button id="resizeCanvasBtn" class="btn btn-primary" style="width: 100%;">
+                        调整画布大小
+                    </button>
+                    <div class="form-group">
+                        <label class="form-label">背景颜色</label>
+                        <div class="color-inputs">
+                            <input type="color" id="bgColorPicker" value="#ffffff" class="color-picker">
+                            <input type="text" id="bgColorHex" value="#FFFFFF" class="color-hex">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图片编辑工具 -->
+            <div id="imageEditingTools" class="panel hidden">
+                <h2 class="panel-title">图片编辑</h2>
+
+                <!-- 基础编辑工具栏 -->
+                <div class="editor-toolbar">
+                    <button id="brightnessTool" class="editor-tool">亮度</button>
+                    <button id="contrastTool" class="editor-tool">对比度</button>
+                    <button id="saturationTool" class="editor-tool">饱和度</button>
+                    <button id="sharpnessTool" class="editor-tool">锐化</button>
+                    <button id="blurTool" class="editor-tool">模糊</button>
+                    <button id="rotateLeftTool" class="editor-tool">↺ 旋转</button>
+                    <button id="rotateRightTool" class="editor-tool">↻ 旋转</button>
+                    <button id="flipHorizontalTool" class="editor-tool">⟷ 水平翻转</button>
+                    <button id="flipVerticalTool" class="editor-tool">⟸ 垂直翻转</button>
+                    <button id="cropTool" class="editor-tool">✂️ 裁剪</button>
+                    <button id="undoBtn" class="editor-tool">↩️ 撤销</button>
+                    <button id="redoBtn" class="editor-tool">↪️ 重做</button>
+                </div>
+
+                <!-- 亮度调整 -->
+                <div id="brightnessControls" class="form-group hidden">
+                    <label class="form-label">亮度</label>
+                    <div class="range-controls">
+                        <input type="range" id="brightnessSlider" min="-100" max="100" value="0" class="form-control">
+                        <span id="brightnessValue" class="range-value">0</span>
+                    </div>
+                    <button id="applyBrightnessBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用
+                    </button>
+                </div>
+
+                <!-- 对比度调整 -->
+                <div id="contrastControls" class="form-group hidden">
+                    <label class="form-label">对比度</label>
+                    <div class="range-controls">
+                        <input type="range" id="contrastSlider" min="-100" max="100" value="0" class="form-control">
+                        <span id="contrastValue" class="range-value">0</span>
+                    </div>
+                    <button id="applyContrastBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用
+                    </button>
+                </div>
+
+                <!-- 饱和度调整 -->
+                <div id="saturationControls" class="form-group hidden">
+                    <label class="form-label">饱和度</label>
+                    <div class="range-controls">
+                        <input type="range" id="saturationSlider" min="-100" max="100" value="0" class="form-control">
+                        <span id="saturationValue" class="range-value">0</span>
+                    </div>
+                    <button id="applySaturationBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用
+                    </button>
+                </div>
+
+                <!-- 锐化调整 -->
+                <div id="sharpnessControls" class="form-group hidden">
+                    <label class="form-label">锐化</label>
+                    <div class="range-controls">
+                        <input type="range" id="sharpnessSlider" min="0" max="10" value="0" class="form-control">
+                        <span id="sharpnessValue" class="range-value">0</span>
+                    </div>
+                    <button id="applySharpnessBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用
+                    </button>
+                </div>
+
+                <!-- 模糊调整 -->
+                <div id="blurControls" class="form-group hidden">
+                    <label class="form-label">模糊</label>
+                    <div class="range-controls">
+                        <input type="range" id="blurSlider" min="0" max="10" value="0" class="form-control">
+                        <span id="blurValue" class="range-value">0</span>
+                    </div>
+                    <button id="applyBlurBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用
+                    </button>
+                </div>
+
+                <!-- 区域选择 -->
+                <div class="form-group">
+                    <label class="form-label">区域选择</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                        <button id="selectRectangleBtn" class="btn" style="background-color: #e5e7eb;">
+                            矩形
+                        </button>
+                        <button id="selectCircleBtn" class="btn" style="background-color: #e5e7eb;">
+                            圆形
+                        </button>
+                    </div>
+                    <button id="clearSelectionBtn" class="btn" style="width: 100%; margin-top: 0.5rem; background-color: #e5e7eb; font-size: 0.75rem;">
+                        清除选择
+                    </button>
+                </div>
+
+                <div id="selectionInfo" class="hidden">
+                    <div style="font-size: 0.75rem; background-color: #f3f4f6; padding: 0.5rem; border-radius: 0.375rem;">
+                        <p>已选择: <span id="selectionTypeText">矩形</span></p>
+                        <p>位置: <span id="selectionPosition">0, 0</span></p>
+                        <p>大小: <span id="selectionSize">0 x 0</span></p>
+                    </div>
+                </div>
+
+                <!-- 颜色修改 -->
+                <div class="form-group">
+                    <label class="form-label">颜色修改</label>
+                    <div class="space-y-2">
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; color: #6b7280;">目标颜色</label>
+                            <div class="color-inputs">
+                                <input type="color" id="targetColorPicker" value="#000000" class="color-picker">
+                                <input type="text" id="targetColorHex" value="#000000" class="color-hex">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-size: 0.75rem; color: #6b7280;">替换颜色</label>
+                            <div class="color-inputs">
+                                <input type="color" id="replaceColorPicker" value="#ff0000" class="color-picker">
+                                <input type="text" id="replaceColorHex" value="#FF0000" class="color-hex">
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                            <button id="replaceColorBtn" class="btn btn-primary" style="font-size: 0.75rem;">
+                                替换指定颜色
+                            </button>
+                            <button id="replaceAreaColorBtn" class="btn" style="background-color: #8b5cf6; color: white; font-size: 0.75rem;">
+                                替换区域颜色
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 新增：滤镜效果 -->
+                <div class="tool-section">
+                    <h3>滤镜效果</h3>
+                    <div class="filter-preview">
+                        <div class="filter-item active" data-filter="none" title="原图">
+                            <img src="" alt="原图" id="filterPreviewNone">
+                        </div>
+                        <div class="filter-item" data-filter="grayscale" title="灰度">
+                            <img src="" alt="灰度" id="filterPreviewGrayscale">
+                        </div>
+                        <div class="filter-item" data-filter="sepia" title="复古">
+                            <img src="" alt="复古" id="filterPreviewSepia">
+                        </div>
+                        <div class="filter-item" data-filter="invert" title="反色">
+                            <img src="" alt="反色" id="filterPreviewInvert">
+                        </div>
+                        <div class="filter-item" data-filter="vintage" title="怀旧">
+                            <img src="" alt="怀旧" id="filterPreviewVintage">
+                        </div>
+                        <div class="filter-item" data-filter="lomo" title="LOMO">
+                            <img src="" alt="LOMO" id="filterPreviewLomo">
+                        </div>
+                        <div class="filter-item" data-filter="clarity" title="清晰">
+                            <img src="" alt="清晰" id="filterPreviewClarity">
+                        </div>
+                        <div class="filter-item" data-filter="saturate" title="高饱和">
+                            <img src="" alt="高饱和" id="filterPreviewSaturate">
+                        </div>
+                    </div>
+                    <button id="applyFilterBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用滤镜
+                    </button>
+                </div>
+
+                <!-- 新增：边框效果 -->
+                <div class="tool-section">
+                    <h3>边框效果</h3>
+                    <div class="border-options">
+                        <div class="border-option active" data-border="none">无</div>
+                        <div class="border-option" data-border="thin">细边框</div>
+                        <div class="border-option" data-border="thick">粗边框</div>
+                        <div class="border-option" data-border="dashed">虚线边框</div>
+                        <div class="border-option" data-border="rounded">圆角边框</div>
+                        <div class="border-option" data-border="shadow">阴影边框</div>
+                    </div>
+                    <div class="form-group hidden" id="borderColorContainer">
+                        <label class="form-label">边框颜色</label>
+                        <div class="color-inputs">
+                            <input type="color" id="borderColorPicker" value="#000000" class="color-picker">
+                            <input type="text" id="borderColorHex" value="#000000" class="color-hex">
+                        </div>
+                    </div>
+                    <button id="applyBorderBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用边框
+                    </button>
+                </div>
+
+                <!-- 新增：阴影效果 -->
+                <div class="tool-section">
+                    <h3>阴影效果</h3>
+                    <div class="shadow-options">
+                        <div class="shadow-option active" data-shadow="none">无</div>
+                        <div class="shadow-option" data-shadow="soft">柔和阴影</div>
+                        <div class="shadow-option" data-shadow="hard">硬阴影</div>
+                        <div class="shadow-option" data-shadow="glow">发光效果</div>
+                    </div>
+                    <div class="form-group hidden" id="shadowColorContainer">
+                        <label class="form-label">阴影颜色</label>
+                        <div class="color-inputs">
+                            <input type="color" id="shadowColorPicker" value="#000000" class="color-picker">
+                            <input type="text" id="shadowColorHex" value="#000000" class="color-hex">
+                        </div>
+                    </div>
+                    <button id="applyShadowBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用阴影
+                    </button>
+                </div>
+
+                <!-- 新增：预设尺寸 -->
+                <div class="tool-section">
+                    <h3>预设尺寸</h3>
+                    <div class="preset-sizes">
+                        <div class="preset-size" data-size="square">正方形 (1:1)</div>
+                        <div class="preset-size" data-size="portrait">竖屏 (4:5)</div>
+                        <div class="preset-size" data-size="landscape">横屏 (16:9)</div>
+                        <div class="preset-size" data-size="social">社交 (1:1.91)</div>
+                    </div>
+                    <button id="applySizeBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用尺寸
+                    </button>
+                </div>
+
+                <!-- 新增：颜色预设 -->
+                <div class="tool-section">
+                    <h3>颜色预设</h3>
+                    <div class="color-presets">
+                        <div class="color-preset" style="background-color: #FF5252;" data-color="#FF5252"></div>
+                        <div class="color-preset" style="background-color: #FF4081;" data-color="#FF4081"></div>
+                        <div class="color-preset" style="background-color: #E040FB;" data-color="#E040FB"></div>
+                        <div class="color-preset" style="background-color: #7C4DFF;" data-color="#7C4DFF"></div>
+                        <div class="color-preset" style="background-color: #536DFE;" data-color="#536DFE"></div>
+                        <div class="color-preset" style="background-color: #448AFF;" data-color="#448AFF"></div>
+                        <div class="color-preset" style="background-color: #40C4FF;" data-color="#40C4FF"></div>
+                        <div class="color-preset" style="background-color: #18FFFF;" data-color="#18FFFF"></div>
+                        <div class="color-preset" style="background-color: #64FFDA;" data-color="#64FFDA"></div>
+                        <div class="color-preset" style="background-color: #66BB6A;" data-color="#66BB6A"></div>
+                    </div>
+                    <button id="applyColorBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        应用颜色
+                    </button>
+                </div>
+            </div>
+
+            <div style="flex: 1; overflow-y: auto; padding: 1rem;">
+                <h2 class="panel-title">操作指南</h2>
+                <div style="font-size: 0.75rem; line-height: 1.5;">
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>点击"添加图片"按钮导入图片作为新图层</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>点击"添加纯色"按钮创建纯色图层</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>选中图层后可调整其透明度和其他属性</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>拖拽图层可以调整图层顺序，影响最终渲染效果</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>点击图层旁的眼睛图标可以隐藏/显示图层</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>完成编辑后点击"导出图像"保存作品</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>选中图片图层后，可在右侧面板进行颜色修改操作</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- 底部状态栏 -->
+    <footer>
+        <div>Candy编程助手 © 2025</div>
+        <div id="statusBar">就绪</div>
+    </footer>
+
+    <!-- 帮助模态框 -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">使用帮助</h2>
+                <button id="closeHelpBtn" class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>基本操作</h3>
+                    <ul>
+                        <li>点击"添加图片"按钮可以选择并导入图片作为新图层</li>
+                        <li>点击"添加纯色"按钮可以创建一个指定颜色的纯色图层</li>
+                        <li>在图层列表中点击图层可以选中该图层进行编辑</li>
+                        <li>选中图层后，可以调整其透明度或修改纯色图层的颜色</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>图层管理</h3>
+                    <ul>
+                        <li>拖拽图层可以调整图层顺序，影响最终渲染效果</li>
+                        <li>点击图层旁的眼睛图标可以切换图层的显示/隐藏状态</li>
+                        <li>使用"上移"和"下移"按钮可以微调图层位置</li>
+                        <li>点击"删除"按钮可以删除当前选中的图层</li>
+                        <li>点击"清空"按钮可以清除所有图层（此操作不可撤销）</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>画布操作</h3>
+                    <ul>
+                        <li>在右侧面板可以调整画布的宽度和高度</li>
+                        <li>可以修改画布的背景颜色</li>
+                        <li>使用右下角的缩放控制可以放大或缩小画布视图</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>图片编辑</h3>
+                    <ul>
+                        <li>选中图片图层后，可以在右侧面板使用颜色编辑工具</li>
+                        <li>可以选择矩形或圆形区域，然后修改该区域的颜色</li>
+                        <li>可以指定目标颜色，然后将图片中所有该颜色替换为新颜色</li>
+                        <li>可以调整图片的亮度、对比度和饱和度</li>
+                        <li>可以对图片进行锐化或模糊处理</li>
+                        <li>可以旋转、翻转和裁剪图片</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>导出作品</h3>
+                    <ul>
+                        <li>点击顶部导航栏的"导出图像"按钮可以将当前画布保存为PNG图片</li>
+                        <li>导出的图片将包含所有可见的图层内容</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取DOM元素
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            const layersList = document.getElementById('layersList');
+            const addImageLayerBtn = document.getElementById('addImageLayer');
+            const addColorLayerBtn = document.getElementById('addColorLayer');
+            const deleteLayerBtn = document.getElementById('deleteLayerBtn');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            const moveUpBtn = document.getElementById('moveUpBtn');
+            const moveDownBtn = document.getElementById('moveDownBtn');
+            const layerProperties = document.getElementById('layerProperties');
+            const layerNameInput = document.getElementById('layerName');
+            const opacitySlider = document.getElementById('opacitySlider');
+            const opacityValue = document.getElementById('opacityValue');
+            const colorPickerContainer = document.getElementById('colorPickerContainer');
+            const colorPicker = document.getElementById('colorPicker');
+            const colorHex = document.getElementById('colorHex');
+            const positionControls = document.getElementById('positionControls');
+            const layerXInput = document.getElementById('layerX');
+            const layerYInput = document.getElementById('layerY');
+            const canvasWidthInput = document.getElementById('canvasWidth');
+            const canvasHeightInput = document.getElementById('canvasHeight');
+            const resizeCanvasBtn = document.getElementById('resizeCanvasBtn');
+            const bgColorPicker = document.getElementById('bgColorPicker');
+            const bgColorHex = document.getElementById('bgColorHex');
+            const exportBtn = document.getElementById('exportBtn');
+            const helpBtn = document.getElementById('helpBtn');
+            const helpModal = document.getElementById('helpModal');
+            const closeHelpBtn = document.getElementById('closeHelpBtn');
+            const statusBar = document.getElementById('statusBar');
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const resetZoomBtn = document.getElementById('resetZoom');
+            const zoomLevel = document.getElementById('zoomLevel');
+            const canvasContainer = document.getElementById('canvasContainer');
+            const imageEditingTools = document.getElementById('imageEditingTools');
+            const selectRectangleBtn = document.getElementById('selectRectangleBtn');
+            const selectCircleBtn = document.getElementById('selectCircleBtn');
+            const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+            const selectionIndicator = document.getElementById('selectionIndicator');
+            const selectionInfo = document.getElementById('selectionInfo');
+            const selectionTypeText = document.getElementById('selectionTypeText');
+            const selectionPosition = document.getElementById('selectionPosition');
+            const selectionSize = document.getElementById('selectionSize');
+            const targetColorPicker = document.getElementById('targetColorPicker');
+            const targetColorHex = document.getElementById('targetColorHex');
+            const replaceColorPicker = document.getElementById('replaceColorPicker');
+            const replaceColorHex = document.getElementById('replaceColorHex');
+            const replaceColorBtn = document.getElementById('replaceColorBtn');
+            const replaceAreaColorBtn = document.getElementById('replaceAreaColorBtn');
+            const propertiesPanel = document.getElementById('propertiesPanel');
+            const panelToggleBtn = document.getElementById('panelToggleBtn');
+            const toggleEditorBtn = document.getElementById('toggleEditorBtn');
+
+            // 新增编辑工具元素
+            const brightnessTool = document.getElementById('brightnessTool');
+            const contrastTool = document.getElementById('contrastTool');
+            const saturationTool = document.getElementById('saturationTool');
+            const sharpnessTool = document.getElementById('sharpnessTool');
+            const blurTool = document.getElementById('blurTool');
+            const rotateLeftTool = document.getElementById('rotateLeftTool');
+            const rotateRightTool = document.getElementById('rotateRightTool');
+            const flipHorizontalTool = document.getElementById('flipHorizontalTool');
+            const flipVerticalTool = document.getElementById('flipVerticalTool');
+            const cropTool = document.getElementById('cropTool');
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+
+            // 编辑控制面板
+            const brightnessControls = document.getElementById('brightnessControls');
+            const brightnessSlider = document.getElementById('brightnessSlider');
+            const brightnessValue = document.getElementById('brightnessValue');
+            const applyBrightnessBtn = document.getElementById('applyBrightnessBtn');
+
+            const contrastControls = document.getElementById('contrastControls');
+            const contrastSlider = document.getElementById('contrastSlider');
+            const contrastValue = document.getElementById('contrastValue');
+            const applyContrastBtn = document.getElementById('applyContrastBtn');
+
+            const saturationControls = document.getElementById('saturationControls');
+            const saturationSlider = document.getElementById('saturationSlider');
+            const saturationValue = document.getElementById('saturationValue');
+            const applySaturationBtn = document.getElementById('applySaturationBtn');
+
+            const sharpnessControls = document.getElementById('sharpnessControls');
+            const sharpnessSlider = document.getElementById('sharpnessSlider');
+            const sharpnessValue = document.getElementById('sharpnessValue');
+            const applySharpnessBtn = document.getElementById('applySharpnessBtn');
+
+            const blurControls = document.getElementById('blurControls');
+            const blurSlider = document.getElementById('blurSlider');
+            const blurValue = document.getElementById('blurValue');
+            const applyBlurBtn = document.getElementById('applyBlurBtn');
+
+            // 裁剪相关元素
+            const cropSelection = document.getElementById('cropSelection');
+            const cropButtons = document.getElementById('cropButtons');
+            const confirmCropBtn = document.getElementById('confirmCropBtn');
+            const cancelCropBtn = document.getElementById('cancelCropBtn');
+            const cropHandles = document.querySelectorAll('.crop-handle');
+
+            // 新增功能元素
+            const filterItems = document.querySelectorAll('.filter-item');
+            const applyFilterBtn = document.getElementById('applyFilterBtn');
+            const borderOptions = document.querySelectorAll('.border-option');
+            const borderColorContainer = document.getElementById('borderColorContainer');
+            const borderColorPicker = document.getElementById('borderColorPicker');
+            const borderColorHex = document.getElementById('borderColorHex');
+            const applyBorderBtn = document.getElementById('applyBorderBtn');
+            const shadowOptions = document.querySelectorAll('.shadow-option');
+            const shadowColorContainer = document.getElementById('shadowColorContainer');
+            const shadowColorPicker = document.getElementById('shadowColorPicker');
+            const shadowColorHex = document.getElementById('shadowColorHex');
+            const applyShadowBtn = document.getElementById('applyShadowBtn');
+            const presetSizes = document.querySelectorAll('.preset-size');
+            const applySizeBtn = document.getElementById('applySizeBtn');
+            const colorPresets = document.querySelectorAll('.color-preset');
+            const applyColorBtn = document.getElementById('applyColorBtn');
+
+            // 滤镜预览元素
+            const filterPreviewNone = document.getElementById('filterPreviewNone');
+            const filterPreviewGrayscale = document.getElementById('filterPreviewGrayscale');
+            const filterPreviewSepia = document.getElementById('filterPreviewSepia');
+            const filterPreviewInvert = document.getElementById('filterPreviewInvert');
+            const filterPreviewVintage = document.getElementById('filterPreviewVintage');
+            const filterPreviewLomo = document.getElementById('filterPreviewLomo');
+            const filterPreviewClarity = document.getElementById('filterPreviewClarity');
+            const filterPreviewSaturate = document.getElementById('filterPreviewSaturate');
+
+            // 图层数据
+            let layers = [];
+            let selectedLayerIndex = -1;
+            let zoomScale = 1.0;
+
+            // 历史记录
+            let historyStates = [];
+            let historyIndex = -1;
+
+            // 选择区域相关变量
+            let isSelecting = false;
+            let selectionStart = { x: 0, y: 0 };
+            let selectionEnd = { x: 0, y: 0 };
+            let selectionMode = 'none'; // 修复：初始值设为none
+            let isDraggingLayer = false;
+            let dragStartPos = { x: 0, y: 0 };
+
+            // 裁剪相关变量
+            let isCropping = false;
+            let cropStartPos = { x: 0, y: 0 };
+            let cropEndPos = { x: 0, y: 0 };
+            let activeCropHandle = null;
+
+            // 当前显示的编辑控制
+            let activeEditorControl = null;
+
+            // 当前应用的特效
+            let activeFilter = 'none';
+            let activeBorder = 'none';
+            let activeShadow = 'none';
+            let activePresetSize = 'square'; // 修复：添加预设尺寸变量
+            let selectedPresetColor = '#000000';
+
+            // 初始化画布
+            function initCanvas() {
+                canvas.width = 800;
+                canvas.height = 600;
+                canvasWidthInput.value = canvas.width;
+                canvasHeightInput.value = canvas.height;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                updateStatus(`画布已初始化 (${canvas.width}x${canvas.height})`);
+            }
+
+            // 更新状态栏消息
+            function updateStatus(message) {
+                statusBar.textContent = message;
+            }
+
+            // 添加图片图层
+            function addImageLayer() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+
+                input.onchange = function (e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const img = new Image();
+                        img.onload = function () {
+                            const offscreenCanvas = document.createElement('canvas');
+                            const offscreenCtx = offscreenCanvas.getContext('2d');
+                            offscreenCanvas.width = img.width;
+                            offscreenCanvas.height = img.height;
+                            offscreenCtx.drawImage(img, 0, 0);
+
+                            const layer = {
+                                id: Date.now(),
+                                name: `图层 ${layers.length + 1}`,
+                                type: 'image',
+                                image: offscreenCanvas,
+                                originalImage: offscreenCanvas,
+                                opacity: 100,
+                                visible: true,
+                                x: 0,
+                                y: 0,
+                                brightness: 0,
+                                contrast: 0,
+                                saturation: 0,
+                                sharpness: 0,
+                                blur: 0,
+                                rotation: 0,
+                                flipped: { horizontal: false, vertical: false },
+                                filter: 'none',
+                                border: { type: 'none', color: '#000000' },
+                                shadow: { type: 'none', color: '#000000' }
+                            };
+
+                            layers.push(layer);
+                            selectedLayerIndex = layers.length - 1;
+                            saveHistoryState();
+                            renderLayers();
+                            updateLayerProperties();
+                            updateStatus(`已添加图片图层: ${layer.name}`);
+                            generateFilterPreviews(layer);
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                };
+                input.click();
+            }
+
+            // 生成滤镜预览
+            function generateFilterPreviews(layer) {
+                if (!layer || layer.type !== 'image') return;
+                filterPreviewNone.src = layer.image.toDataURL();
+
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = 60;
+                tempCanvas.height = 60;
+
+                function drawThumbnail() {
+                    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    tempCtx.drawImage(layer.image, 0, 0, tempCanvas.width, tempCanvas.height);
+                }
+
+                drawThumbnail();
+                applyFilterToCanvas(tempCanvas, 'grayscale');
+                filterPreviewGrayscale.src = tempCanvas.toDataURL();
+
+                drawThumbnail();
+                applyFilterToCanvas(tempCanvas, 'sepia');
+                filterPreviewSepia.src = tempCanvas.toDataURL();
+
+                drawThumbnail();
+                applyFilterToCanvas(tempCanvas, 'invert');
+                filterPreviewInvert.src = tempCanvas.toDataURL();
+
+                drawThumbnail();
+                applyFilterToCanvas(tempCanvas, 'vintage');
+                filterPreviewVintage.src = tempCanvas.toDataURL();
+
+                drawThumbnail();
+                applyFilterToCanvas(tempCanvas, 'lomo');
+                filterPreviewLomo.src = tempCanvas.toDataURL();
+
+                drawThumbnail();
+                applyFilterToCanvas(tempCanvas, 'clarity');
+                filterPreviewClarity.src = tempCanvas.toDataURL();
+
+                drawThumbnail();
+                applyFilterToCanvas(tempCanvas, 'saturate');
+                filterPreviewSaturate.src = tempCanvas.toDataURL();
+            }
+
+            // 应用滤镜到canvas
+            function applyFilterToCanvas(canvas, filterType) {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+
+                switch (filterType) {
+                    case 'grayscale':
+                        for (let i = 0; i < data.length; i += 4) {
+                            const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                            data[i] = gray;
+                            data[i + 1] = gray;
+                            data[i + 2] = gray;
+                        }
+                        break;
+
+                    case 'sepia':
+                        for (let i = 0; i < data.length; i += 4) {
+                            const r = data[i];
+                            const g = data[i + 1];
+                            const b = data[i + 2];
+                            data[i] = Math.min(255, 0.393 * r + 0.769 * g + 0.189 * b);
+                            data[i + 1] = Math.min(255, 0.349 * r + 0.686 * g + 0.168 * b);
+                            data[i + 2] = Math.min(255, 0.272 * r + 0.534 * g + 0.131 * b);
+                        }
+                        break;
+
+                    case 'invert':
+                        for (let i = 0; i < data.length; i += 4) {
+                            data[i] = 255 - data[i];
+                            data[i + 1] = 255 - data[i + 1];
+                            data[i + 2] = 255 - data[i + 2];
+                        }
+                        break;
+
+                    case 'vintage':
+                        for (let i = 0; i < data.length; i += 4) {
+                            const r = data[i];
+                            const g = data[i + 1];
+                            const b = data[i + 2];
+                            data[i] = Math.min(255, 0.627 * r + 0.320 * g + 0.053 * b);
+                            data[i + 1] = Math.min(255, 0.272 * r + 0.647 * g + 0.081 * b);
+                            data[i + 2] = Math.min(255, 0.085 * r + 0.130 * g + 0.785 * b);
+                        }
+                        break;
+
+                    case 'lomo':
+                        for (let i = 0; i < data.length; i += 4) {
+                            const r = data[i];
+                            const g = data[i + 1];
+                            const b = data[i + 2];
+                            const contrastFactor = 1.5;
+                            const rContrast = Math.min(255, Math.max(0, (r - 128) * contrastFactor + 128));
+                            const gContrast = Math.min(255, Math.max(0, (g - 128) * contrastFactor + 128));
+                            const bContrast = Math.min(255, Math.max(0, (b - 128) * contrastFactor + 128));
+                            data[i] = Math.min(255, rContrast + 30);
+                            data[i + 1] = Math.min(255, gContrast + 10);
+                            data[i + 2] = Math.max(0, bContrast - 30);
+                        }
+                        break;
+
+                    case 'clarity':
+                        const sharpnessKernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+                        applyConvolution(ctx, canvas.width, canvas.height, sharpnessKernel, 3);
+                        return;
+
+                    case 'saturate':
+                        for (let i = 0; i < data.length; i += 4) {
+                            const r = data[i];
+                            const g = data[i + 1];
+                            const b = data[i + 2];
+                            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                            data[i] = Math.min(255, Math.max(0, gray + (r - gray) * 1.5));
+                            data[i + 1] = Math.min(255, Math.max(0, gray + (g - gray) * 1.5));
+                            data[i + 2] = Math.min(255, Math.max(0, gray + (b - gray) * 1.5));
+                        }
+                        break;
+                }
+                ctx.putImageData(imageData, 0, 0);
+            }
+
+            // 添加纯色图层
+            function addColorLayer() {
+                const layer = {
+                    id: Date.now(),
+                    name: `纯色图层 ${layers.length + 1}`,
+                    type: 'color',
+                    color: '#cccccc',
+                    opacity: 100,
+                    visible: true
+                };
+                layers.push(layer);
+                selectedLayerIndex = layers.length - 1;
+                saveHistoryState();
+                renderLayers();
+                updateLayerProperties();
+                updateStatus(`已添加纯色图层: ${layer.name}`);
+            }
+
+            // 渲染所有图层到画布
+            function renderLayers() {
+                // 清除画布
+                ctx.fillStyle = bgColorPicker.value;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 按顺序渲染每个图层（最上层的图层最先渲染，显示在最前面）
+                for (let i = layers.length - 1; i >= 0; i--) {
+                    const layer = layers[i];
+                    if (!layer.visible) continue;
+
+                    ctx.save();
+                    ctx.globalAlpha = layer.opacity / 100;
+
+                    if (layer.type === 'image') {
+                        // 应用变换
+                        const centerX = layer.x + layer.image.width / 2;
+                        const centerY = layer.y + layer.image.height / 2;
+
+                        ctx.translate(centerX, centerY);
+                        ctx.rotate(layer.rotation * Math.PI / 180);
+
+                        if (layer.flipped.horizontal) ctx.scale(-1, 1);
+                        if (layer.flipped.vertical) ctx.scale(1, -1);
+
+                        ctx.translate(-centerX, -centerY);
+
+                        // 绘制阴影（如果有）
+                        if (layer.shadow && layer.shadow.type !== 'none') {
+                            ctx.save();
+
+                            if (layer.shadow.type === 'soft') {
+                                ctx.shadowColor = layer.shadow.color;
+                                ctx.shadowBlur = 10;
+                                ctx.shadowOffsetX = 5;
+                                ctx.shadowOffsetY = 5;
+                            } else if (layer.shadow.type === 'hard') {
+                                ctx.shadowColor = layer.shadow.color;
+                                ctx.shadowBlur = 0;
+                                ctx.shadowOffsetX = 3;
+                                ctx.shadowOffsetY = 3;
+                            } else if (layer.shadow.type === 'glow') {
+                                ctx.shadowColor = layer.shadow.color;
+                                ctx.shadowBlur = 15;
+                                ctx.shadowOffsetX = 0;
+                                ctx.shadowOffsetY = 0;
+                            }
+
+                            ctx.drawImage(layer.image, layer.x, layer.y);
+                            ctx.restore();
+                        }
+
+                        // 绘制图片
+                        ctx.drawImage(layer.image, layer.x, layer.y);
+
+                        // 绘制边框（如果有）
+                        if (layer.border && layer.border.type !== 'none') {
+                            ctx.save();
+                            ctx.strokeStyle = layer.border.color;
+
+                            if (layer.border.type === 'thin') {
+                                ctx.lineWidth = 2;
+                                ctx.strokeRect(layer.x, layer.y, layer.image.width, layer.image.height);
+                            } else if (layer.border.type === 'thick') {
+                                ctx.lineWidth = 5;
+                                ctx.strokeRect(layer.x, layer.y, layer.image.width, layer.image.height);
+                            } else if (layer.border.type === 'dashed') {
+                                ctx.lineWidth = 2;
+                                ctx.setLineDash([5, 3]);
+                                ctx.strokeRect(layer.x, layer.y, layer.image.width, layer.image.height);
+                                ctx.setLineDash([]);
+                            } else if (layer.border.type === 'rounded') {
+                                ctx.lineWidth = 3;
+                                const radius = 10;
+                                ctx.beginPath();
+                                ctx.moveTo(layer.x + radius, layer.y);
+                                ctx.arcTo(layer.x + layer.image.width, layer.y, layer.x + layer.image.width, layer.y + layer.image.height, radius);
+                                ctx.arcTo(layer.x + layer.image.width, layer.y + layer.image.height, layer.x, layer.y + layer.image.height, radius);
+                                ctx.arcTo(layer.x, layer.y + layer.image.height, layer.x, layer.y, radius);
+                                ctx.arcTo(layer.x, layer.y, layer.x + layer.image.width, layer.y, radius);
+                                ctx.closePath();
+                                ctx.stroke();
+                            } else if (layer.border.type === 'shadow') {
+                                ctx.shadowColor = layer.border.color;
+                                ctx.shadowBlur = 5;
+                                ctx.shadowOffsetX = 2;
+                                ctx.shadowOffsetY = 2;
+                                ctx.lineWidth = 1;
+                                ctx.strokeRect(layer.x, layer.y, layer.image.width, layer.image.height);
+                            }
+
+                            ctx.restore();
+                        }
+                    } else if (layer.type === 'color') {
+                        ctx.fillStyle = layer.color;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+
+                    ctx.restore();
+                }
+
+                // 如果有选择区域，绘制选择指示器
+                if (isSelecting && !isCropping) {
+                    drawSelectionIndicator();
+                }
+
+                // 如果正在裁剪，绘制裁剪选择框
+                if (isCropping) {
+                    drawCropSelection();
+                }
+
+                // 更新图层列表UI
+                updateLayersList();
+            }
+
+            // 绘制选择指示器
+            function drawSelectionIndicator() {
+                const x = Math.min(selectionStart.x, selectionEnd.x);
+                const y = Math.min(selectionStart.y, selectionEnd.y);
+                const width = Math.abs(selectionEnd.x - selectionStart.x);
+                const height = Math.abs(selectionEnd.y - selectionStart.y);
+
+                selectionIndicator.style.left = `${x}px`;
+                selectionIndicator.style.top = `${y}px`;
+                selectionIndicator.style.width = `${width}px`;
+                selectionIndicator.style.height = `${height}px`;
+                selectionIndicator.style.display = 'block';
+
+                // 更新选择信息
+                selectionInfo.style.display = 'block';
+                selectionTypeText.textContent = selectionMode === 'rectangle' ? '矩形' : '圆形';
+                selectionPosition.textContent = `${Math.round(x)}, ${Math.round(y)}`;
+                selectionSize.textContent = `${Math.round(width)} x ${Math.round(height)}`;
+            }
+
+            // 绘制裁剪选择框
+            function drawCropSelection() {
+                const x = Math.min(cropStartPos.x, cropEndPos.x);
+                const y = Math.min(cropStartPos.y, cropEndPos.y);
+                const width = Math.abs(cropEndPos.x - cropStartPos.x);
+                const height = Math.abs(cropEndPos.y - cropStartPos.y);
+
+                cropSelection.style.left = `${x}px`;
+                cropSelection.style.top = `${y}px`;
+                cropSelection.style.width = `${width}px`;
+                cropSelection.style.height = `${height}px`;
+                cropSelection.style.display = 'block';
+                cropButtons.style.display = 'flex';
+            }
+
+            // 更新图层列表UI
+            function updateLayersList() {
+                layersList.innerHTML = '';
+
+                // 反向显示图层列表，让最上层的图层显示在列表顶部
+                for (let i = layers.length - 1; i >= 0; i--) {
+                    const layer = layers[i];
+                    const layerItem = document.createElement('div');
+                    layerItem.className = `layer-item ${selectedLayerIndex === i ? 'active' : ''}`;
+                    layerItem.dataset.index = i;
+
+                    const visibilityIcon = document.createElement('span');
+                    visibilityIcon.textContent = layer.visible ? '👁️' : '🙈';
+                    visibilityIcon.style.marginRight = '0.5rem';
+                    visibilityIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleLayerVisibility(i);
+                    });
+
+                    const layerName = document.createElement('span');
+                    layerName.className = 'layer-name';
+                    layerName.textContent = layer.name;
+
+                    layerItem.appendChild(visibilityIcon);
+                    layerItem.appendChild(layerName);
+
+                    layerItem.addEventListener('click', () => selectLayer(i));
+
+                    // 使图层可拖动排序
+                    layerItem.draggable = true;
+                    layerItem.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', i);
+                        layerItem.style.opacity = '0.5';
+                    });
+
+                    layerItem.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                    });
+
+                    layerItem.addEventListener('dragenter', (e) => {
+                        e.preventDefault();
+                        layerItem.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+                    });
+
+                    layerItem.addEventListener('dragleave', () => {
+                        layerItem.style.backgroundColor = '';
+                    });
+
+                    layerItem.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                        const toIndex = parseInt(layerItem.dataset.index);
+
+                        if (fromIndex !== toIndex) {
+                            const movedLayer = layers.splice(fromIndex, 1)[0];
+                            layers.splice(toIndex, 0, movedLayer);
+                            selectedLayerIndex = toIndex;
+                            saveHistoryState();
+                            renderLayers();
+                            updateStatus(`图层已移动: ${movedLayer.name}`);
+                        }
+
+                        document.querySelectorAll('#layersList > div').forEach(item => {
+                            item.style.opacity = '';
+                            item.style.backgroundColor = '';
+                        });
+                    });
+
+                    layerItem.addEventListener('dragend', () => {
+                        document.querySelectorAll('#layersList > div').forEach(item => {
+                            item.style.opacity = '';
+                            item.style.backgroundColor = '';
+                        });
+                    });
+
+                    layersList.appendChild(layerItem);
+                }
+            }
+
+            // 选择图层
+            function selectLayer(index) {
+                if (index >= 0 && index < layers.length) {
+                    selectedLayerIndex = index;
+                    updateLayerProperties();
+                    updateLayersList();
+
+                    // 显示或隐藏图片编辑工具
+                    if (layers[index].type === 'image') {
+                        imageEditingTools.style.display = 'block';
+                        // 生成滤镜预览
+                        generateFilterPreviews(layers[index]);
+                        // 更新特效状态
+                        updateEffectStates(layers[index]);
+                    } else {
+                        imageEditingTools.style.display = 'none';
+                    }
+
+                    updateStatus(`已选中图层: ${layers[index].name}`);
+                }
+            }
+
+            // 更新特效状态
+            function updateEffectStates(layer) {
+                if (!layer || layer.type !== 'image') return;
+
+                // 滤镜状态
+                filterItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.dataset.filter === layer.filter) {
+                        item.classList.add('active');
+                        activeFilter = layer.filter;
+                    }
+                });
+
+                // 边框状态
+                borderOptions.forEach(option => {
+                    option.classList.remove('active');
+                    if (option.dataset.border === layer.border.type) {
+                        option.classList.add('active');
+                        activeBorder = layer.border.type;
+                        borderColorPicker.value = layer.border.color;
+                        borderColorHex.value = layer.border.color.toUpperCase();
+
+                        // 显示/隐藏颜色选择器
+                        borderColorContainer.style.display = (layer.border.type !== 'none') ? 'block' : 'none';
+                    }
+                });
+
+                // 阴影状态
+                shadowOptions.forEach(option => {
+                    option.classList.remove('active');
+                    if (option.dataset.shadow === layer.shadow.type) {
+                        option.classList.add('active');
+                        activeShadow = layer.shadow.type;
+                        shadowColorPicker.value = layer.shadow.color;
+                        shadowColorHex.value = layer.shadow.color.toUpperCase();
+
+                        // 显示/隐藏颜色选择器
+                        shadowColorContainer.style.display = (layer.shadow.type !== 'none') ? 'block' : 'none';
+                    }
+                });
+            }
+
+            // 更新图层属性面板
+            function updateLayerProperties() {
+                if (selectedLayerIndex === -1) {
+                    layerProperties.style.display = 'none';
+                    return;
+                }
+
+                const layer = layers[selectedLayerIndex];
+                layerProperties.style.display = 'block';
+                layerNameInput.value = layer.name;
+                opacitySlider.value = layer.opacity;
+                opacityValue.textContent = `${layer.opacity}%`;
+
+                // 显示位置控制（仅对图片图层）
+                if (layer.type === 'image') {
+                    positionControls.style.display = 'block';
+                    layerXInput.value = layer.x;
+                    layerYInput.value = layer.y;
+                } else {
+                    positionControls.style.display = 'none';
+                }
+
+                if (layer.type === 'color') {
+                    colorPickerContainer.style.display = 'block';
+                    colorPicker.value = layer.color;
+                    colorHex.value = layer.color.toUpperCase();
+                } else {
+                    colorPickerContainer.style.display = 'none';
+                }
+            }
+
+            // 切换图层可见性
+            function toggleLayerVisibility(index) {
+                if (index >= 0 && index < layers.length) {
+                    layers[index].visible = !layers[index].visible;
+                    saveHistoryState();
+                    renderLayers();
+                    updateStatus(`${layers[index].name} 已${layers[index].visible ? '显示' : '隐藏'}`);
+                }
+            }
+
+            // 删除选中图层
+            function deleteSelectedLayer() {
+                if (selectedLayerIndex === -1) return;
+
+                const deletedLayer = layers.splice(selectedLayerIndex, 1)[0];
+                selectedLayerIndex = -1;
+                saveHistoryState();
+                renderLayers();
+                layerProperties.style.display = 'none';
+                imageEditingTools.style.display = 'none';
+                updateStatus(`已删除图层: ${deletedLayer.name}`);
+            }
+
+            // 清空所有图层
+            function clearAllLayers() {
+                if (layers.length === 0) return;
+
+                if (confirm('确定要清空所有图层吗？此操作不可撤销。')) {
+                    layers = [];
+                    selectedLayerIndex = -1;
+                    saveHistoryState();
+                    renderLayers();
+                    layerProperties.style.display = 'none';
+                    imageEditingTools.style.display = 'none';
+                    updateStatus('所有图层已清空');
+                }
+            }
+
+            // 移动图层
+            function moveLayer(direction) {
+                if (selectedLayerIndex === -1) return;
+
+                const newIndex = selectedLayerIndex + direction;
+                if (newIndex >= 0 && newIndex < layers.length) {
+                    [layers[selectedLayerIndex], layers[newIndex]] = [layers[newIndex], layers[selectedLayerIndex]];
+                    selectedLayerIndex = newIndex;
+                    saveHistoryState();
+                    renderLayers();
+                    updateStatus(`图层已${direction > 0 ? '下移' : '上移'}`);
+                }
+            }
+
+            // 调整画布大小
+            function resizeCanvas() {
+                const width = parseInt(canvasWidthInput.value);
+                const height = parseInt(canvasHeightInput.value);
+
+                if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+                    alert('请输入有效的画布尺寸');
+                    return;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`画布已调整为 ${width}x${height}`);
+            }
+
+            // 导出画布为图片
+            function exportCanvas() {
+                if (layers.length === 0) {
+                    alert('画布为空，无法导出');
+                    return;
+                }
+
+                const dataURL = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = '图层编辑器作品.png';
+                link.href = dataURL;
+                link.click();
+                updateStatus('图像已导出');
+            }
+
+            // 调整缩放
+            function adjustZoom(direction) {
+                zoomScale = Math.max(0.1, Math.min(5, zoomScale + direction * 0.1));
+                updateZoom();
+            }
+
+            function resetZoom() {
+                zoomScale = 1.0;
+                updateZoom();
+            }
+
+            function updateZoom() {
+                const percentage = Math.round(zoomScale * 100);
+                zoomLevel.textContent = `${percentage}%`;
+                canvasContainer.style.transform = `scale(${zoomScale})`;
+                updateStatus(`缩放: ${percentage}%`);
+            }
+
+            // 开始选择区域
+            function startSelection(e) {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image' || isCropping) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / zoomScale;
+                const y = (e.clientY - rect.top) / zoomScale;
+
+                isSelecting = true;
+                selectionStart = { x, y };
+                selectionEnd = { x, y };
+                drawSelectionIndicator();
+                updateStatus(`开始${selectionMode === 'rectangle' ? '矩形' : '圆形'}选择`);
+            }
+
+            // 更新选择区域
+            function updateSelection(e) {
+                if (!isSelecting || isCropping) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / zoomScale;
+                const y = (e.clientY - rect.top) / zoomScale;
+
+                selectionEnd = { x, y };
+                drawSelectionIndicator();
+            }
+
+            // 结束选择区域
+            function endSelection() {
+                if (!isSelecting) return;
+
+                isSelecting = false;
+                updateStatus(`完成${selectionMode === 'rectangle' ? '矩形' : '圆形'}选择`);
+            }
+
+            // 清除选择区域
+            function clearSelection() {
+                selectionIndicator.style.display = 'none';
+                selectionInfo.style.display = 'none';
+                isSelecting = false;
+                updateStatus('已清除选择区域');
+            }
+
+            // 替换指定颜色
+            function replaceColor() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const targetColor = hexToRgb(targetColorPicker.value);
+                const replaceColor = hexToRgb(replaceColorPicker.value);
+
+                const layer = layers[selectedLayerIndex];
+                const imageCtx = layer.image.getContext('2d');
+                const imageData = imageCtx.getImageData(0, 0, layer.image.width, layer.image.height);
+                const data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+
+                    if (r === targetColor.r && g === targetColor.g && b === targetColor.b) {
+                        data[i] = replaceColor.r;
+                        data[i + 1] = replaceColor.g;
+                        data[i + 2] = replaceColor.b;
+                    }
+                }
+
+                imageCtx.putImageData(imageData, 0, 0);
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`已替换所有 ${targetColorPicker.value} 颜色为 ${replaceColorPicker.value}`);
+            }
+
+            // 替换区域颜色
+            function replaceAreaColor() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+                if (selectionStart.x === selectionEnd.x && selectionStart.y === selectionEnd.y) {
+                    alert('请先选择一个区域');
+                    return;
+                }
+
+                const replaceColor = hexToRgb(replaceColorPicker.value);
+                const layer = layers[selectedLayerIndex];
+                const imageCtx = layer.image.getContext('2d');
+                const imageData = imageCtx.getImageData(0, 0, layer.image.width, layer.image.height);
+                const data = imageData.data;
+
+                // 计算选择区域（相对于图层）
+                const x1 = Math.max(0, Math.min(selectionStart.x - layer.x, selectionEnd.x - layer.x));
+                const y1 = Math.max(0, Math.min(selectionStart.y - layer.y, selectionEnd.y - layer.y));
+                const x2 = Math.min(layer.image.width, Math.max(selectionStart.x - layer.x, selectionEnd.x - layer.x));
+                const y2 = Math.min(layer.image.height, Math.max(selectionStart.y - layer.y, selectionEnd.y - layer.y));
+
+                const width = x2 - x1;
+                const height = y2 - y1;
+
+                if (selectionMode === 'rectangle') {
+                    // 矩形区域
+                    for (let y = y1; y < y2; y++) {
+                        for (let x = x1; x < x2; x++) {
+                            const index = (y * layer.image.width + x) * 4;
+                            data[index] = replaceColor.r;
+                            data[index + 1] = replaceColor.g;
+                            data[index + 2] = replaceColor.b;
+                        }
+                    }
+                } else {
+                    // 圆形区域
+                    const centerX = (x1 + x2) / 2;
+                    const centerY = (y1 + y2) / 2;
+                    const radius = Math.min(width, height) / 2;
+
+                    for (let y = y1; y < y2; y++) {
+                        for (let x = x1; x < x2; x++) {
+                            const dx = x - centerX;
+                            const dy = y - centerY;
+                            if (dx * dx + dy * dy <= radius * radius) {
+                                const index = (y * layer.image.width + x) * 4;
+                                data[index] = replaceColor.r;
+                                data[index + 1] = replaceColor.g;
+                                data[index + 2] = replaceColor.b;
+                            }
+                        }
+                    }
+                }
+
+                imageCtx.putImageData(imageData, 0, 0);
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`已替换${selectionMode === 'rectangle' ? '矩形' : '圆形'}区域颜色为 ${replaceColorPicker.value}`);
+            }
+
+            // 开始拖动图层
+            function startDraggingLayer(e) {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image' || isSelecting || isCropping) return;
+
+                isDraggingLayer = true;
+                const rect = canvas.getBoundingClientRect();
+                dragStartPos = {
+                    x: (e.clientX - rect.left) / zoomScale,
+                    y: (e.clientY - rect.top) / zoomScale
+                };
+                canvas.style.cursor = 'grabbing';
+                updateStatus('开始拖动图层');
+            }
+
+            // 拖动图层
+            function dragLayer(e) {
+                if (!isDraggingLayer) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const currentPos = {
+                    x: (e.clientX - rect.left) / zoomScale,
+                    y: (e.clientY - rect.top) / zoomScale
+                };
+
+                const dx = currentPos.x - dragStartPos.x;
+                const dy = currentPos.y - dragStartPos.y;
+
+                layers[selectedLayerIndex].x += dx;
+                layers[selectedLayerIndex].y += dy;
+
+                dragStartPos = currentPos;
+                layerXInput.value = Math.round(layers[selectedLayerIndex].x);
+                layerYInput.value = Math.round(layers[selectedLayerIndex].y);
+
+                renderLayers();
+                updateStatus(`图层位置: (${Math.round(layers[selectedLayerIndex].x)}, ${Math.round(layers[selectedLayerIndex].y)})`);
+            }
+
+            // 结束拖动图层
+            function endDraggingLayer() {
+                if (isDraggingLayer) {
+                    isDraggingLayer = false;
+                    canvas.style.cursor = 'grab';
+                    saveHistoryState();
+                    updateStatus(`图层已移动到: (${Math.round(layers[selectedLayerIndex].x)}, ${Math.round(layers[selectedLayerIndex].y)})`);
+                }
+            }
+
+            // 辅助函数：将十六进制颜色转换为RGB
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            }
+
+            // 切换右侧面板显示/隐藏
+            function togglePropertiesPanel() {
+                propertiesPanel.classList.toggle('active');
+                const isActive = propertiesPanel.classList.contains('active');
+                panelToggleBtn.innerHTML = isActive ? '<span>⟫</span>' : '<span>⟪</span>';
+                toggleEditorBtn.textContent = isActive ? '隐藏编辑工具' : '显示编辑工具';
+                updateStatus(isActive ? '编辑工具已显示' : '编辑工具已隐藏');
+            }
+
+            // 显示特定的编辑控制面板
+            function showEditorControl(controlId) {
+                // 隐藏所有控制面板
+                document.querySelectorAll('#imageEditingTools > div[id$="Controls"]').forEach(control => {
+                    control.style.display = 'none';
+                });
+
+                // 显示选中的控制面板
+                const control = document.getElementById(controlId);
+                if (control) {
+                    control.style.display = 'block';
+                    activeEditorControl = controlId;
+                } else {
+                    activeEditorControl = null;
+                }
+            }
+
+            // 调整亮度
+            function adjustBrightness() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const brightness = parseInt(brightnessSlider.value);
+                const layer = layers[selectedLayerIndex];
+                layer.brightness = brightness;
+
+                applyImageFilters(layer);
+                renderLayers();
+                updateStatus(`亮度已调整为 ${brightness}`);
+            }
+
+            // 调整对比度
+            function adjustContrast() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const contrast = parseInt(contrastSlider.value);
+                const layer = layers[selectedLayerIndex];
+                layer.contrast = contrast;
+
+                applyImageFilters(layer);
+                renderLayers();
+                updateStatus(`对比度已调整为 ${contrast}`);
+            }
+
+            // 调整饱和度
+            function adjustSaturation() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const saturation = parseInt(saturationSlider.value);
+                const layer = layers[selectedLayerIndex];
+                layer.saturation = saturation;
+
+                applyImageFilters(layer);
+                renderLayers();
+                updateStatus(`饱和度已调整为 ${saturation}`);
+            }
+
+            // 调整锐化
+            function adjustSharpness() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const sharpness = parseInt(sharpnessSlider.value);
+                const layer = layers[selectedLayerIndex];
+                layer.sharpness = sharpness;
+
+                applyImageFilters(layer);
+                renderLayers();
+                updateStatus(`锐化已调整为 ${sharpness}`);
+            }
+
+            // 调整模糊
+            function adjustBlur() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const blur = parseInt(blurSlider.value);
+                const layer = layers[selectedLayerIndex];
+                layer.blur = blur;
+
+                applyImageFilters(layer);
+                renderLayers();
+                updateStatus(`模糊已调整为 ${blur}`);
+            }
+
+            // 应用图像滤镜
+            function applyImageFilters(layer) {
+                if (!layer || layer.type !== 'image') return;
+
+                // 性能优化：如果没有需要应用的滤镜，直接使用原图
+                if (layer.brightness === 0 && layer.contrast === 0 &&
+                    layer.saturation === 0 && layer.sharpness === 0 &&
+                    layer.blur === 0) {
+                    layer.image = layer.originalImage;
+                    return;
+                }
+
+                // 复制原始图像
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = layer.originalImage.width;
+                tempCanvas.height = layer.originalImage.height;
+                tempCtx.drawImage(layer.originalImage, 0, 0);
+
+                // 应用亮度
+                if (layer.brightness !== 0) {
+                    applyBrightness(tempCanvas, layer.brightness);
+                }
+
+                // 应用对比度
+                if (layer.contrast !== 0) {
+                    applyContrast(tempCanvas, layer.contrast);
+                }
+
+                // 应用饱和度
+                if (layer.saturation !== 0) {
+                    applySaturation(tempCanvas, layer.saturation);
+                }
+
+                // 应用锐化
+                if (layer.sharpness > 0) {
+                    applySharpness(tempCanvas, layer.sharpness);
+                }
+
+                // 应用模糊
+                if (layer.blur > 0) {
+                    applyBlur(tempCanvas, layer.blur);
+                }
+
+                // 更新图层图像
+                layer.image = tempCanvas;
+            }
+
+            // 应用亮度
+            function applyBrightness(canvas, value) {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const factor = value / 100;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.min(255, Math.max(0, data[i] + 255 * factor));
+                    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + 255 * factor));
+                    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + 255 * factor));
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+            }
+
+            // 应用对比度
+            function applyContrast(canvas, value) {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const factor = (259 * (value + 100)) / (255 * (259 - value));
+
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.min(255, Math.max(0, factor * (data[i] - 128) + 128));
+                    data[i + 1] = Math.min(255, Math.max(0, factor * (data[i + 1] - 128) + 128));
+                    data[i + 2] = Math.min(255, Math.max(0, factor * (data[i + 2] - 128) + 128));
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+            }
+
+            // 应用饱和度
+            function applySaturation(canvas, value) {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const factor = 1 + value / 100;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+
+                    // 计算灰度
+                    const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                    // 调整饱和度
+                    data[i] = Math.min(255, Math.max(0, gray + (r - gray) * factor));
+                    data[i + 1] = Math.min(255, Math.max(0, gray + (g - gray) * factor));
+                    data[i + 2] = Math.min(255, Math.max(0, gray + (b - gray) * factor));
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+            }
+
+            // 应用锐化
+            function applySharpness(canvas, value) {
+                const ctx = canvas.getContext('2d');
+                const strength = value;
+
+                // 创建锐化卷积核
+                const kernel = [
+                    0, -1, 0,
+                    -1, 5 + strength, -1,
+                    0, -1, 0
+                ];
+
+                applyConvolution(ctx, canvas.width, canvas.height, kernel, 3);
+            }
+
+            // 应用模糊
+            function applyBlur(canvas, value) {
+                const ctx = canvas.getContext('2d');
+                const radius = value;
+
+                // 创建模糊卷积核
+                const kernelSize = radius * 2 + 1;
+                const kernel = Array(kernelSize * kernelSize).fill(1 / (kernelSize * kernelSize));
+
+                applyConvolution(ctx, canvas.width, canvas.height, kernel, kernelSize);
+            }
+
+            // 应用卷积
+            function applyConvolution(ctx, width, height, kernel, kernelSize) {
+                const imageData = ctx.getImageData(0, 0, width, height);
+                const data = imageData.data;
+                const output = new Uint8ClampedArray(data);
+                const kernelHalf = Math.floor(kernelSize / 2);
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        let r = 0, g = 0, b = 0;
+
+                        for (let ky = 0; ky < kernelSize; ky++) {
+                            for (let kx = 0; kx < kernelSize; kx++) {
+                                const pixelX = Math.min(width - 1, Math.max(0, x + kx - kernelHalf));
+                                const pixelY = Math.min(height - 1, Math.max(0, y + ky - kernelHalf));
+                                const pixelIndex = (pixelY * width + pixelX) * 4;
+                                const weight = kernel[ky * kernelSize + kx];
+
+                                r += data[pixelIndex] * weight;
+                                g += data[pixelIndex + 1] * weight;
+                                b += data[pixelIndex + 2] * weight;
+                            }
+                        }
+
+                        const outputIndex = (y * width + x) * 4;
+                        output[outputIndex] = Math.min(255, Math.max(0, r));
+                        output[outputIndex + 1] = Math.min(255, Math.max(0, g));
+                        output[outputIndex + 2] = Math.min(255, Math.max(0, b));
+                        output[outputIndex + 3] = data[outputIndex + 3]; // 保持alpha不变
+                    }
+                }
+
+                ctx.putImageData(new ImageData(output, width, height), 0, 0);
+            }
+
+            // 旋转图层
+            function rotateLayer(direction) {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const layer = layers[selectedLayerIndex];
+                layer.rotation += direction * 90;
+
+                // 确保角度在0-360范围内
+                layer.rotation = (layer.rotation + 360) % 360;
+
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`图层已${direction > 0 ? '顺时针' : '逆时针'}旋转90度`);
+            }
+
+            // 翻转图层
+            function flipLayer(direction) {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const layer = layers[selectedLayerIndex];
+
+                if (direction === 'horizontal') {
+                    layer.flipped.horizontal = !layer.flipped.horizontal;
+                } else {
+                    layer.flipped.vertical = !layer.flipped.vertical;
+                }
+
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`图层已${direction === 'horizontal' ? '水平' : '垂直'}翻转`);
+            }
+
+            // 开始裁剪
+            function startCrop() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                isCropping = true;
+                const layer = layers[selectedLayerIndex];
+
+                // 设置初始裁剪区域为整个图层
+                cropStartPos = { x: layer.x, y: layer.y };
+                cropEndPos = { x: layer.x + layer.image.width, y: layer.y + layer.image.height };
+
+                drawCropSelection();
+                updateStatus('开始裁剪模式');
+            }
+
+            // 处理裁剪区域拖动
+            function handleCropDrag(e) {
+                if (!isCropping) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / zoomScale;
+                const y = (e.clientY - rect.top) / zoomScale;
+
+                // 更新裁剪区域
+                cropEndPos = { x, y };
+                drawCropSelection();
+            }
+
+            // 处理裁剪手柄拖动
+            function handleCropHandleDrag(e, handleType) {
+                if (!isCropping) return;
+
+                e.preventDefault();
+                activeCropHandle = handleType;
+
+                const moveHandler = (e) => {
+                    if (!activeCropHandle) return;
+
+                    const rect = canvas.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / zoomScale;
+                    const y = (e.clientY - rect.top) / zoomScale;
+
+                    const layer = layers[selectedLayerIndex];
+                    const minX = layer.x;
+                    const minY = layer.y;
+                    const maxX = layer.x + layer.image.width;
+                    const maxY = layer.y + layer.image.height;
+
+                    // 根据手柄类型更新裁剪区域
+                    switch (activeCropHandle) {
+                        case 'tl':
+                            cropStartPos = { x: Math.max(minX, x), y: Math.max(minY, y) };
+                            break;
+                        case 'tr':
+                            cropEndPos.x = Math.min(maxX, x);
+                            cropStartPos.y = Math.max(minY, y);
+                            break;
+                        case 'bl':
+                            cropStartPos.x = Math.max(minX, x);
+                            cropEndPos.y = Math.min(maxY, y);
+                            break;
+                        case 'br':
+                            cropEndPos = { x: Math.min(maxX, x), y: Math.min(maxY, y) };
+                            break;
+                    }
+
+                    drawCropSelection();
+                };
+
+                const upHandler = () => {
+                    activeCropHandle = null;
+                    document.removeEventListener('mousemove', moveHandler);
+                    document.removeEventListener('mouseup', upHandler);
+                };
+
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('mouseup', upHandler);
+            }
+
+            // 确认裁剪
+            function confirmCrop() {
+                if (!isCropping || selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const layer = layers[selectedLayerIndex];
+                const x = Math.min(cropStartPos.x, cropEndPos.x) - layer.x;
+                const y = Math.min(cropStartPos.y, cropEndPos.y) - layer.y;
+                const width = Math.abs(cropEndPos.x - cropStartPos.x);
+                const height = Math.abs(cropEndPos.y - cropStartPos.y);
+
+                // 创建新的裁剪后的canvas
+                const croppedCanvas = document.createElement('canvas');
+                const croppedCtx = croppedCanvas.getContext('2d');
+                croppedCanvas.width = width;
+                croppedCanvas.height = height;
+                croppedCtx.drawImage(layer.image, x, y, width, height, 0, 0, width, height);
+
+                // 更新图层
+                layer.image = croppedCanvas;
+                layer.originalImage = croppedCanvas;
+                layer.x = Math.min(cropStartPos.x, cropEndPos.x);
+                layer.y = Math.min(cropStartPos.y, cropEndPos.y);
+
+                // 重置裁剪状态
+                isCropping = false;
+                cropSelection.style.display = 'none';
+                cropButtons.style.display = 'none';
+
+                // 保存历史记录并重新渲染
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`已裁剪图层: ${layer.name}`);
+            }
+
+            // 取消裁剪
+            function cancelCrop() {
+                isCropping = false;
+                cropSelection.style.display = 'none';
+                cropButtons.style.display = 'none';
+                updateStatus('裁剪已取消');
+            }
+
+            // 应用滤镜
+            function applyFilter() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const layer = layers[selectedLayerIndex];
+                layer.filter = activeFilter;
+
+                // 重新应用所有滤镜
+                applyImageFilters(layer);
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`已应用滤镜: ${activeFilter}`);
+            }
+
+            // 应用边框
+            function applyBorder() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const layer = layers[selectedLayerIndex];
+                layer.border.type = activeBorder;
+                layer.border.color = borderColorPicker.value;
+
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`已应用边框: ${activeBorder}`);
+            }
+
+            // 应用阴影
+            function applyShadow() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const layer = layers[selectedLayerIndex];
+                layer.shadow.type = activeShadow;
+                layer.shadow.color = shadowColorPicker.value;
+
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`已应用阴影: ${activeShadow}`);
+            }
+
+            // 应用预设尺寸
+            function applyPresetSize() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const layer = layers[selectedLayerIndex];
+                let newWidth, newHeight;
+
+                switch (activePresetSize) {
+                    case 'square':
+                        newWidth = 500;
+                        newHeight = 500;
+                        break;
+                    case 'portrait':
+                        newWidth = 400;
+                        newHeight = 500;
+                        break;
+                    case 'landscape':
+                        newWidth = 800;
+                        newHeight = 450;
+                        break;
+                    case 'social':
+                        newWidth = 1080;
+                        newHeight = 566;
+                        break;
+                    default:
+                        return;
+                }
+
+                // 创建缩放后的图像
+                const scaledCanvas = document.createElement('canvas');
+                const scaledCtx = scaledCanvas.getContext('2d');
+                scaledCanvas.width = newWidth;
+                scaledCanvas.height = newHeight;
+                scaledCtx.drawImage(layer.originalImage, 0, 0, newWidth, newHeight);
+
+                layer.image = scaledCanvas;
+                layer.originalImage = scaledCanvas;
+
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`已应用预设尺寸: ${activePresetSize}`);
+            }
+
+            // 应用预设颜色
+            function applyPresetColor() {
+                if (selectedLayerIndex === -1) return;
+
+                const layer = layers[selectedLayerIndex];
+
+                if (layer.type === 'color') {
+                    layer.color = selectedPresetColor;
+                    colorPicker.value = selectedPresetColor;
+                    colorHex.value = selectedPresetColor.toUpperCase();
+                } else if (layer.type === 'image') {
+                    // 替换整个图像为单一颜色
+                    const colorCanvas = document.createElement('canvas');
+                    const colorCtx = colorCanvas.getContext('2d');
+                    colorCanvas.width = layer.image.width;
+                    colorCanvas.height = layer.image.height;
+                    colorCtx.fillStyle = selectedPresetColor;
+                    colorCtx.fillRect(0, 0, colorCanvas.width, colorCanvas.height);
+
+                    layer.image = colorCanvas;
+                    layer.originalImage = colorCanvas;
+                }
+
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`已应用预设颜色: ${selectedPresetColor}`);
+            }
+
+            // 保存历史状态（修复：正确序列化Canvas元素）
+            function saveHistoryState() {
+                const state = layers.map(layer => {
+                    const serializableLayer = { ...layer };
+
+                    // 处理图像数据
+                    if (layer.type === 'image') {
+                        serializableLayer.image = layer.image.toDataURL();
+                        serializableLayer.originalImage = layer.originalImage.toDataURL();
+                    }
+
+                    return serializableLayer;
+                });
+
+                historyStates.splice(historyIndex + 1);
+                historyStates.push(state);
+                historyIndex = historyStates.length - 1;
+                updateStatus(`历史记录已保存 (${historyIndex + 1})`);
+            }
+
+            // 恢复历史状态
+            function restoreHistoryState(index) {
+                const state = historyStates[index];
+                layers = state.map(layer => {
+                    const deserializedLayer = { ...layer };
+
+                    // 恢复图像数据
+                    if (layer.type === 'image') {
+                        const imageCanvas = document.createElement('canvas');
+                        const imageCtx = imageCanvas.getContext('2d');
+
+                        const originalCanvas = document.createElement('canvas');
+                        const originalCtx = originalCanvas.getContext('2d');
+
+                        // 恢复原图
+                        const originalImg = new Image();
+                        originalImg.onload = function () {
+                            originalCanvas.width = originalImg.width;
+                            originalCanvas.height = originalImg.height;
+                            originalCtx.drawImage(originalImg, 0, 0);
+                            deserializedLayer.originalImage = originalCanvas;
+                        };
+                        originalImg.src = layer.originalImage;
+
+                        // 恢复当前图
+                        const img = new Image();
+                        img.onload = function () {
+                            imageCanvas.width = img.width;
+                            imageCanvas.height = img.height;
+                            imageCtx.drawImage(img, 0, 0);
+                            deserializedLayer.image = imageCanvas;
+                            renderLayers();
+                        };
+                        img.src = layer.image;
+                    }
+
+                    return deserializedLayer;
+                });
+            }
+
+            // 撤销操作
+            function undo() {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    restoreHistoryState(historyIndex);
+                    updateStatus(`已撤销 (${historyIndex + 1}/${historyStates.length})`);
+                } else {
+                    updateStatus('已到达最早状态，无法继续撤销');
+                }
+            }
+
+            // 重做操作
+            function redo() {
+                if (historyIndex < historyStates.length - 1) {
+                    historyIndex++;
+                    restoreHistoryState(historyIndex);
+                    updateStatus(`已重做 (${historyIndex + 1}/${historyStates.length})`);
+                } else {
+                    updateStatus('已到达最新状态，无法继续重做');
+                }
+            }
+
+            // 事件监听
+            addImageLayerBtn.addEventListener('click', addImageLayer);
+            addColorLayerBtn.addEventListener('click', addColorLayer);
+            deleteLayerBtn.addEventListener('click', deleteSelectedLayer);
+            clearAllBtn.addEventListener('click', clearAllLayers);
+            moveUpBtn.addEventListener('click', () => moveLayer(-1));
+            moveDownBtn.addEventListener('click', () => moveLayer(1));
+            resizeCanvasBtn.addEventListener('click', resizeCanvas);
+            exportBtn.addEventListener('click', exportCanvas);
+            helpBtn.addEventListener('click', () => helpModal.style.display = 'flex');
+            closeHelpBtn.addEventListener('click', () => helpModal.style.display = 'none');
+            zoomInBtn.addEventListener('click', () => adjustZoom(1));
+            zoomOutBtn.addEventListener('click', () => adjustZoom(-1));
+            resetZoomBtn.addEventListener('click', resetZoom);
+            panelToggleBtn.addEventListener('click', togglePropertiesPanel);
+            toggleEditorBtn.addEventListener('click', togglePropertiesPanel);
+
+            // 图层属性修改
+            layerNameInput.addEventListener('change', () => {
+                if (selectedLayerIndex !== -1) {
+                    layers[selectedLayerIndex].name = layerNameInput.value;
+                    saveHistoryState();
+                    renderLayers();
+                }
+            });
+
+            opacitySlider.addEventListener('input', () => {
+                if (selectedLayerIndex !== -1) {
+                    layers[selectedLayerIndex].opacity = parseInt(opacitySlider.value);
+                    opacityValue.textContent = `${layers[selectedLayerIndex].opacity}%`;
+                    renderLayers();
+                }
+            });
+
+            opacitySlider.addEventListener('change', () => {
+                saveHistoryState();
+                updateStatus(`透明度已调整为 ${layers[selectedLayerIndex].opacity}%`);
+            });
+
+            colorPicker.addEventListener('input', () => {
+                colorHex.value = colorPicker.value.toUpperCase();
+            });
+
+            colorPicker.addEventListener('change', () => {
+                if (selectedLayerIndex !== -1 && layers[selectedLayerIndex].type === 'color') {
+                    layers[selectedLayerIndex].color = colorPicker.value;
+                    saveHistoryState();
+                    renderLayers();
+                    updateStatus(`颜色已更改为 ${colorPicker.value}`);
+                }
+            });
+
+            colorHex.addEventListener('change', () => {
+                if (/^#[0-9A-F]{6}$/i.test(colorHex.value)) {
+                    colorPicker.value = colorHex.value;
+                    if (selectedLayerIndex !== -1 && layers[selectedLayerIndex].type === 'color') {
+                        layers[selectedLayerIndex].color = colorPicker.value;
+                        saveHistoryState();
+                        renderLayers();
+                        updateStatus(`颜色已更改为 ${colorPicker.value}`);
+                    }
+                } else {
+                    alert('请输入有效的十六进制颜色代码');
+                }
+            });
+
+            // 背景颜色修改
+            bgColorPicker.addEventListener('input', () => {
+                bgColorHex.value = bgColorPicker.value.toUpperCase();
+            });
+
+            bgColorPicker.addEventListener('change', () => {
+                saveHistoryState();
+                renderLayers();
+                updateStatus(`背景颜色已更改为 ${bgColorPicker.value}`);
+            });
+
+            bgColorHex.addEventListener('change', () => {
+                if (/^#[0-9A-F]{6}$/i.test(bgColorHex.value)) {
+                    bgColorPicker.value = bgColorHex.value;
+                    saveHistoryState();
+                    renderLayers();
+                    updateStatus(`背景颜色已更改为 ${bgColorPicker.value}`);
+                } else {
+                    alert('请输入有效的十六进制颜色代码');
+                }
+            });
+
+            // 区域选择
+            selectRectangleBtn.addEventListener('click', () => {
+                selectionMode = 'rectangle';
+                updateStatus('矩形选择模式');
+            });
+
+            selectCircleBtn.addEventListener('click', () => {
+                selectionMode = 'circle';
+                updateStatus('圆形选择模式');
+            });
+
+            clearSelectionBtn.addEventListener('click', clearSelection);
+
+            // 颜色替换
+            targetColorPicker.addEventListener('input', () => {
+                targetColorHex.value = targetColorPicker.value.toUpperCase();
+            });
+
+            replaceColorPicker.addEventListener('input', () => {
+                replaceColorHex.value = replaceColorPicker.value.toUpperCase();
+            });
+
+            replaceColorBtn.addEventListener('click', replaceColor);
+            replaceAreaColorBtn.addEventListener('click', replaceAreaColor);
+
+            // 画布事件（修复：裁剪手柄坐标处理）
+            canvas.addEventListener('mousedown', (e) => {
+                if (isCropping) {
+                    // 检查是否点击了裁剪手柄
+                    const rect = canvas.getBoundingClientRect();
+                    const clickX = (e.clientX - rect.left) / zoomScale;
+                    const clickY = (e.clientY - rect.top) / zoomScale;
+
+                    cropHandles.forEach((handle, index) => {
+                        const handleRect = handle.getBoundingClientRect();
+                        if (
+                            clickX >= (handleRect.left - rect.left) / zoomScale &&
+                            clickX <= (handleRect.right - rect.left) / zoomScale &&
+                            clickY >= (handleRect.top - rect.top) / zoomScale &&
+                            clickY <= (handleRect.bottom - rect.top) / zoomScale
+                        ) {
+                            const handleTypes = ['tl', 'tr', 'bl', 'br'];
+                            handleCropHandleDrag(e, handleTypes[index]);
+                        }
+                    });
+                } else if (selectionMode !== 'none') {
+                    startSelection(e);
+                } else {
+                    startDraggingLayer(e);
+                }
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (isSelecting) {
+                    updateSelection(e);
+                } else if (isDraggingLayer) {
+                    dragLayer(e);
+                } else if (isCropping) {
+                    handleCropDrag(e);
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                endSelection();
+                endDraggingLayer();
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                endSelection();
+                endDraggingLayer();
+            });
+
+            // 编辑工具事件
+            brightnessTool.addEventListener('click', () => showEditorControl('brightnessControls'));
+            contrastTool.addEventListener('click', () => showEditorControl('contrastControls'));
+            saturationTool.addEventListener('click', () => showEditorControl('saturationControls'));
+            sharpnessTool.addEventListener('click', () => showEditorControl('sharpnessControls'));
+            blurTool.addEventListener('click', () => showEditorControl('blurControls'));
+
+            brightnessSlider.addEventListener('input', () => {
+                brightnessValue.textContent = brightnessSlider.value;
+            });
+
+            brightnessSlider.addEventListener('change', adjustBrightness);
+            applyBrightnessBtn.addEventListener('click', adjustBrightness);
+
+            contrastSlider.addEventListener('input', () => {
+                contrastValue.textContent = contrastSlider.value;
+            });
+
+            contrastSlider.addEventListener('change', adjustContrast);
+            applyContrastBtn.addEventListener('click', adjustContrast);
+
+            saturationSlider.addEventListener('input', () => {
+                saturationValue.textContent = saturationSlider.value;
+            });
+
+            saturationSlider.addEventListener('change', adjustSaturation);
+            applySaturationBtn.addEventListener('click', adjustSaturation);
+
+            sharpnessSlider.addEventListener('input', () => {
+                sharpnessValue.textContent = sharpnessSlider.value;
+            });
+
+            sharpnessSlider.addEventListener('change', adjustSharpness);
+            applySharpnessBtn.addEventListener('click', adjustSharpness);
+
+            blurSlider.addEventListener('input', () => {
+                blurValue.textContent = blurSlider.value;
+            });
+
+            blurSlider.addEventListener('change', adjustBlur);
+            applyBlurBtn.addEventListener('click', adjustBlur);
+
+            rotateLeftTool.addEventListener('click', () => rotateLayer(-1));
+            rotateRightTool.addEventListener('click', () => rotateLayer(1));
+            flipHorizontalTool.addEventListener('click', () => flipLayer('horizontal'));
+            flipVerticalTool.addEventListener('click', () => flipLayer('vertical'));
+            cropTool.addEventListener('click', startCrop);
+            confirmCropBtn.addEventListener('click', confirmCrop);
+            cancelCropBtn.addEventListener('click', cancelCrop);
+            undoBtn.addEventListener('click', undo);
+            redoBtn.addEventListener('click', redo);
+
+            // 滤镜选择
+            filterItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    filterItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    activeFilter = item.dataset.filter;
+                    updateStatus(`已选择滤镜: ${activeFilter}`);
+                });
+            });
+
+            applyFilterBtn.addEventListener('click', applyFilter);
+
+            // 边框选择
+            borderOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    borderOptions.forEach(o => o.classList.remove('active'));
+                    option.classList.add('active');
+                    activeBorder = option.dataset.border;
+
+                    // 显示/隐藏颜色选择器
+                    borderColorContainer.style.display = (activeBorder !== 'none') ? 'block' : 'none';
+                    updateStatus(`已选择边框: ${activeBorder}`);
+                });
+            });
+
+            borderColorPicker.addEventListener('input', () => {
+                borderColorHex.value = borderColorPicker.value.toUpperCase();
+            });
+
+            applyBorderBtn.addEventListener('click', applyBorder);
+
+            // 阴影选择
+            shadowOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    shadowOptions.forEach(o => o.classList.remove('active'));
+                    option.classList.add('active');
+                    activeShadow = option.dataset.shadow;
+
+                    // 显示/隐藏颜色选择器
+                    shadowColorContainer.style.display = (activeShadow !== 'none') ? 'block' : 'none';
+                    updateStatus(`已选择阴影: ${activeShadow}`);
+                });
+            });
+
+            shadowColorPicker.addEventListener('input', () => {
+                shadowColorHex.value = shadowColorPicker.value.toUpperCase();
+            });
+
+            applyShadowBtn.addEventListener('click', applyShadow);
+
+            // 预设尺寸选择
+            presetSizes.forEach(size => {
+                size.addEventListener('click', () => {
+                    presetSizes.forEach(s => s.classList.remove('active'));
+                    size.classList.add('active');
+                    activePresetSize = size.dataset.size;
+                    updateStatus(`已选择预设尺寸: ${activePresetSize}`);
+                });
+            });
+
+            applySizeBtn.addEventListener('click', applyPresetSize);
+
+            // 颜色预设选择
+            colorPresets.forEach(preset => {
+                preset.addEventListener('click', () => {
+                    colorPresets.forEach(p => p.classList.remove('active'));
+                    preset.classList.add('active');
+                    selectedPresetColor = preset.dataset.color;
+                    updateStatus(`已选择预设颜色: ${selectedPresetColor}`);
+                });
+            });
+
+            applyColorBtn.addEventListener('click', applyPresetColor);
+
+            // 位置控制
+            layerXInput.addEventListener('change', () => {
+                if (selectedLayerIndex !== -1 && layers[selectedLayerIndex].type === 'image') {
+                    layers[selectedLayerIndex].x = parseInt(layerXInput.value);
+                    saveHistoryState();
+                    renderLayers();
+                }
+            });
+
+            layerYInput.addEventListener('change', () => {
+                if (selectedLayerIndex !== -1 && layers[selectedLayerIndex].type === 'image') {
+                    layers[selectedLayerIndex].y = parseInt(layerYInput.value);
+                    saveHistoryState();
+                    renderLayers();
+                }
+            });
+
+            // 初始化
+            initCanvas();
+        });
+    </script>
+</body>
+</html>

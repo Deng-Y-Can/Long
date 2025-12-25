@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习大纲 | 数据可视化</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #60a5fa;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #475569;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --glass: rgba(255, 255, 255, 0.05);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.2);
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* 网格背景 */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 顶部导航 */
+        .navbar {
+            padding: 1.5rem 2rem;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .brand-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .nav-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .stat:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-light);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 3rem 2rem;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 大纲卡片区 */
+        .outline-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .outline-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .outline-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.03) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .outline-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .outline-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .outline-card.active {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(30, 41, 59, 1));
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary), var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .card-title h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-title p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .card-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .card-stat-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary-light);
+        }
+
+        .card-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* 数据表格区 */
+        .data-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+
+        .data-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .data-header {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.1), rgba(30, 41, 59, 1));
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .data-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .data-stats {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .data-badge {
+            padding: 0.5rem 1rem;
+            background: var(--glass);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-header {
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.1), rgba(30, 41, 59, 1));
+        }
+
+        .table-header th {
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-header th:not(:last-child) {
+            border-right: 1px solid var(--border);
+        }
+
+        .table-body tr {
+            transition: var(--transition);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-body tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .table-body td {
+            padding: 1.25rem 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        /* 单元格内容支持换行 */
+        .cell-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.5;
+            max-height: 150px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .cell-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .cell-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .cell-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-text {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+
+        /* 加载状态 */
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            gap: 2rem;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* 状态指示器 */
+        .status-indicator {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.success {
+            background: var(--success);
+            animation: none;
+        }
+
+        .status-dot.error {
+            background: var(--error);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .cards-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .nav-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .hero-section {
+                padding: 2rem 1rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .data-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .data-stats {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-title {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* 底部 */
+        .app-footer {
+            padding: 1.5rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-info {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 网格背景 -->
+    <div class="grid-bg"></div>
+
+    <!-- 状态指示器 -->
+    <div class="status-indicator" id="status-indicator">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">初始化中...</span>
+    </div>
+
+    <!-- 应用容器 -->
+    <div class="app-container">
+        <!-- 顶部导航 -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <div class="brand-logo">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>学习大纲系统</h1>
+                    <p>智能数据可视化平台</p>
+                </div>
+            </div>
+            <div class="nav-stats">
+                <div class="stat">
+                    <div class="stat-value" id="total-sheets">0</div>
+                    <div class="stat-label">大纲模块</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="total-rows">0</div>
+                    <div class="stat-label">数据总量</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="total-cols">0</div>
+                    <div class="stat-label">字段总数</div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 英雄区域 -->
+            <section class="hero-section">
+                <h1 class="hero-title">学习大纲数据总览</h1>
+                <p class="hero-subtitle">
+                    智能解析Excel学习大纲数据，可视化展示课程内容与进度安排
+                </p>
+            </section>
+
+            <!-- 大纲卡片区 -->
+            <section class="outline-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-layer-group"></i>
+                        大纲模块选择
+                    </h2>
+                </div>
+                <div class="cards-grid" id="cards-grid">
+                    <!-- 大纲卡片将通过JS动态生成 -->
+                </div>
+            </section>
+
+            <!-- 数据表格区 -->
+            <section class="data-section" id="data-section">
+                <div class="data-header">
+                    <h3 class="data-title">
+                        <i class="fas fa-table"></i>
+                        <span id="current-outline">请选择大纲模块</span>
+                    </h3>
+                    <div class="data-stats">
+                        <div class="data-badge">
+                            <i class="fas fa-list-ol"></i>
+                            <span id="table-rows">0 行</span>
+                        </div>
+                        <div class="data-badge">
+                            <i class="fas fa-columns"></i>
+                            <span id="table-cols">0 列</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="empty-state" id="table-empty">
+                        <div class="empty-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="empty-text">
+                            <p>选择上方的大纲模块以查看详细数据</p>
+                            <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.875rem;">
+                                每个模块包含完整的学习内容和课程安排
+                            </p>
+                        </div>
+                    </div>
+                    <table class="data-table" id="data-table" style="display: none;">
+                        <!-- 表格内容将通过JS动态生成 -->
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部信息 -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="copyright">
+                    <p>© 2025 学习大纲数据系统 | 教育科技数据平台</p>
+                </div>
+                <div class="footer-info">
+                    <div class="info-item">
+                        <i class="fas fa-file-excel"></i>
+                        <span>数据源: main.xlsx</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-bolt"></i>
+                        <span>实时解析</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 引入SheetJS库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        // ==============================
+        // 配置文件
+        // ==============================
+       const excelFileName = "main.xlsx";
+       const sheetsToLoad = [ "人工智能", "计算机视觉", "自然语言处理（NLP）", "语音技术", "生成式AI", "机器人学", "开源数据源", "接单网站", "机器学习&深度学习", "规划与调度", "人机交互", "计算机图形学", "网络安全", "嵌入式", "电气", "机械制图", "PLC", "数据结构与算法", "游戏开发", "英语口语", "初中知识", "高中知识", "会计", "excel", "摄影"];
+        
+
+        // 大纲模块配置
+        const outlineConfig = {
+            "Sheet1": {
+                icon: "fas fa-book",
+                title: "基础课程大纲",
+                description: "核心概念与基础知识模块",
+                color: "linear-gradient(135deg, #2563eb, #3b82f6)"
+            },
+            "Sheet3": {
+                icon: "fas fa-chart-line",
+                title: "进阶技能大纲",
+                description: "高级技能与实践项目安排",
+                color: "linear-gradient(135deg, #10b981, #34d399)"
+            },
+            "Sheet4": {
+                icon: "fas fa-trophy",
+                title: "评估成果大纲",
+                description: "学习成果与评估体系",
+                color: "linear-gradient(135deg, #8b5cf6, #a78bfa)"
+            }
+        };
+
+        // ==============================
+        // 全局变量
+        // ==============================
+        let workbook = null;
+        let loadedSheets = new Map();
+        let currentOutline = '';
+        let totalDataRows = 0;
+        let maxColumns = 0;
+
+        // ==============================
+        // DOM元素
+        // ==============================
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const totalSheetsElement = document.getElementById('total-sheets');
+        const totalRowsElement = document.getElementById('total-rows');
+        const totalColsElement = document.getElementById('total-cols');
+        const cardsGrid = document.getElementById('cards-grid');
+        const dataSection = document.getElementById('data-section');
+        const currentOutlineElement = document.getElementById('current-outline');
+        const tableRowsElement = document.getElementById('table-rows');
+        const tableColsElement = document.getElementById('table-cols');
+        const tableEmpty = document.getElementById('table-empty');
+        const dataTable = document.getElementById('data-table');
+
+        // ==============================
+        // 页面初始化
+        // ==============================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 更新状态
+            updateStatus('正在初始化系统...', 'loading');
+            
+            try {
+                // 加载Excel数据
+                await loadExcelData();
+                
+                // 创建大纲卡片
+                createOutlineCards();
+                
+                // 自动显示第一个大纲
+                if (loadedSheets.size > 0) {
+                    const firstOutline = Array.from(loadedSheets.keys())[0];
+                    displayOutline(firstOutline);
+                }
+                
+                updateStatus('系统就绪', 'success');
+                
+            } catch (error) {
+                console.error('初始化失败:', error);
+                updateStatus('加载失败', 'error');
+                showErrorMessage(error.message);
+            }
+        });
+
+        // ==============================
+        // 核心功能函数
+        // ==============================
+
+        // 更新状态指示器
+        function updateStatus(message, type = 'loading') {
+            statusText.textContent = message;
+            
+            switch(type) {
+                case 'loading':
+                    statusDot.className = 'status-dot';
+                    break;
+                case 'success':
+                    statusDot.className = 'status-dot success';
+                    break;
+                case 'error':
+                    statusDot.className = 'status-dot error';
+                    break;
+            }
+        }
+
+        // 加载Excel数据
+        async function loadExcelData() {
+            try {
+                updateStatus('正在读取Excel文件...', 'loading');
+                
+                // 加载Excel文件
+                const filePath = excelFileName;
+                const response = await fetch(filePath);
+                
+                if (!response.ok) {
+                    throw new Error(`无法加载文件: ${response.status}`);
+                }
+                
+                const data = await response.arrayBuffer();
+                
+                // 解析Excel文件
+                await parseExcelSheets(data);
+                
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        // 解析Excel工作表
+        async function parseExcelSheets(data) {
+            updateStatus('正在解析数据...', 'loading');
+            
+            // 使用SheetJS解析Excel
+            workbook = XLSX.read(data, { type: 'array' });
+            
+            // 检查配置的工作表是否存在
+            const availableSheets = workbook.SheetNames;
+            const sheetsToProcess = sheetsToLoad.filter(sheetName => 
+                availableSheets.includes(sheetName)
+            );
+            
+            if (sheetsToProcess.length === 0) {
+                throw new Error(`配置的工作表不存在。文件中的工作表: ${availableSheets.join(', ')}`);
+            }
+            
+            updateStatus(`正在处理 ${sheetsToProcess.length} 个工作表...`, 'loading');
+            
+            // 处理每个配置的工作表
+            for (const sheetName of sheetsToProcess) {
+                await processSheetData(sheetName);
+            }
+        }
+
+        // 处理单个工作表数据
+        async function processSheetData(sheetName) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    try {
+                        // 获取工作表
+                        const worksheet = workbook.Sheets[sheetName];
+                        
+                        // 将工作表转换为JSON数据
+                        const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+                        
+                        // 计算统计信息
+                        const rowCount = data.length;
+                        const colCount = rowCount > 0 ? Math.max(...data.map(row => row.length)) : 0;
+                        const dataRows = Math.max(0, rowCount - 1);
+                        
+                        // 存储工作表数据
+                        loadedSheets.set(sheetName, {
+                            data: data,
+                            rowCount: rowCount,
+                            colCount: colCount,
+                            dataRows: dataRows
+                        });
+                        
+                        // 更新总统计数据
+                        totalDataRows += dataRows;
+                        maxColumns = Math.max(maxColumns, colCount);
+                        
+                        // 更新UI统计
+                        totalSheetsElement.textContent = loadedSheets.size;
+                        totalRowsElement.textContent = totalDataRows;
+                        totalColsElement.textContent = maxColumns;
+                        
+                        resolve();
+                        
+                    } catch (error) {
+                        console.error(`处理工作表 ${sheetName} 时出错:`, error);
+                        resolve();
+                    }
+                }, 100);
+            });
+        }
+
+        // 创建大纲卡片
+        function createOutlineCards() {
+            cardsGrid.innerHTML = '';
+            
+            // 为每个已加载的工作表创建卡片
+            for (const [sheetName, sheetData] of loadedSheets) {
+                const config = outlineConfig[sheetName] || {
+                    icon: "fas fa-file-alt",
+                    title: sheetName,
+                    description: `${sheetData.rowCount}行数据，${sheetData.colCount}个字段`,
+                    color: "linear-gradient(135deg, #64748b, #94a3b8)"
+                };
+                
+                const outlineCard = document.createElement('div');
+                outlineCard.className = `outline-card ${currentOutline === sheetName ? 'active' : ''}`;
+                outlineCard.dataset.sheetName = sheetName;
+                
+                outlineCard.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-icon" style="background: ${config.color}">
+                            <i class="${config.icon}"></i>
+                        </div>
+                        <div class="card-title">
+                            <h3>${config.title}</h3>
+                            <p>${config.description}</p>
+                        </div>
+                    </div>
+                    <div class="card-stats">
+                        <div class="card-stat">
+                            <div class="card-stat-value">${sheetData.rowCount}</div>
+                            <div class="card-stat-label">数据行数</div>
+                        </div>
+                        <div class="card-stat">
+                            <div class="card-stat-value">${sheetData.colCount}</div>
+                            <div class="card-stat-label">字段数量</div>
+                        </div>
+                        <div class="card-stat">
+                            <div class="card-stat-value">${sheetData.dataRows}</div>
+                            <div class="card-stat-label">有效数据</div>
+                        </div>
+                    </div>
+                `;
+                
+                outlineCard.addEventListener('click', () => {
+                    displayOutline(sheetName);
+                });
+                
+                cardsGrid.appendChild(outlineCard);
+            }
+        }
+
+        // 显示大纲数据
+        function displayOutline(sheetName) {
+            if (!loadedSheets.has(sheetName)) {
+                return;
+            }
+            
+            currentOutline = sheetName;
+            
+            // 更新当前大纲显示
+            const config = outlineConfig[sheetName] || { title: sheetName };
+            currentOutlineElement.textContent = config.title;
+            
+            // 更新大纲卡片选中状态
+            updateOutlineSelection(sheetName);
+            
+            // 显示数据区域
+            dataSection.classList.add('visible');
+            
+            // 显示表格数据
+            displayTableData(sheetName);
+        }
+
+        // 更新大纲卡片选中状态
+        function updateOutlineSelection(sheetName) {
+            // 移除所有active类
+            document.querySelectorAll('.outline-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // 添加active类到当前大纲
+            const currentCard = document.querySelector(`.outline-card[data-sheet-name="${sheetName}"]`);
+            if (currentCard) {
+                currentCard.classList.add('active');
+            }
+        }
+
+        // 显示表格数据
+        function displayTableData(sheetName) {
+            const sheetData = loadedSheets.get(sheetName);
+            const data = sheetData.data;
+            
+            // 更新表格统计
+            tableRowsElement.textContent = `${sheetData.dataRows} 行`;
+            tableColsElement.textContent = `${sheetData.colCount} 列`;
+            
+            // 清空表格
+            dataTable.innerHTML = '';
+            dataTable.style.display = 'none';
+            tableEmpty.style.display = 'none';
+            
+            if (data.length === 0) {
+                tableEmpty.innerHTML = `
+                    <div class="empty-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="empty-text">
+                        <p>大纲模块 "${sheetName}" 没有数据内容</p>
+                        <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.875rem;">
+                            该模块可能为空或格式不正确
+                        </p>
+                    </div>
+                `;
+                tableEmpty.style.display = 'block';
+                return;
+            }
+            
+            // 创建表格
+            createDataTable(data);
+            
+            // 显示表格
+            dataTable.style.display = 'table';
+        }
+
+        // 创建数据表格（支持换行）
+        function createDataTable(data) {
+            // 创建表头
+            const thead = document.createElement('thead');
+            thead.className = 'table-header';
+            const headerRow = document.createElement('tr');
+            
+            // 获取列数
+            const colCount = data[0] ? data[0].length : 0;
+            
+            // 创建表头单元格
+            for (let col = 0; col < colCount; col++) {
+                const th = document.createElement('th');
+                const headerText = data[0] && data[0][col] !== undefined ? data[0][col] : `字段 ${col + 1}`;
+                th.textContent = headerText;
+                th.title = headerText;
+                headerRow.appendChild(th);
+            }
+            
+            thead.appendChild(headerRow);
+            dataTable.appendChild(thead);
+            
+            // 创建表格主体
+            const tbody = document.createElement('tbody');
+            tbody.className = 'table-body';
+            
+            // 从第二行开始（跳过表头）
+            for (let row = 1; row < data.length; row++) {
+                const tableRow = document.createElement('tr');
+                
+                for (let col = 0; col < colCount; col++) {
+                    const td = document.createElement('td');
+                    
+                    // 获取单元格数据
+                    const cellData = data[row] && data[row][col] !== undefined ? data[row][col] : '';
+                    const cellText = String(cellData).trim();
+                    
+                    // 创建单元格内容容器
+                    const cellContent = document.createElement('div');
+                    cellContent.className = 'cell-content';
+                    cellContent.textContent = cellText;
+                    
+                    // 添加工具提示
+                    if (cellText.length > 50) {
+                        td.title = cellText;
+                    }
+                    
+                    td.appendChild(cellContent);
+                    tableRow.appendChild(td);
+                }
+                
+                tbody.appendChild(tableRow);
+            }
+            
+            dataTable.appendChild(tbody);
+        }
+
+        // 显示错误信息
+        function showErrorMessage(message) {
+            cardsGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem;">
+                    <div style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3 style="color: var(--error); margin-bottom: 1rem; font-size: 1.5rem;">
+                        数据加载失败
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; max-width: 600px; margin: 0 auto;">
+                        ${message}
+                    </p>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 2rem;">
+                        请确保文件 <strong>"${excelFileName}"</strong> 与此HTML文件在同一目录下
+                    </p>
+                    <button onclick="location.reload()" style="
+                        padding: 0.75rem 2rem;
+                        background: var(--primary);
+                        border: none;
+                        border-radius: 8px;
+                        color: white;
+                        font-size: 0.9375rem;
+                        cursor: pointer;
+                        transition: var(--transition);
+                    ">
+                        <i class="fas fa-redo"></i> 重新加载
+                    </button>
+                </div>
+            `;
+            
+            dataSection.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

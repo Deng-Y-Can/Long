@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel表格阅读器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+        
+        /* 左侧导航栏样式 */
+        .sidebar {
+            width: 280px;
+            background: rgba(30, 30, 46, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .logo p {
+            font-size: 0.9rem;
+            color: #8a8a9e;
+        }
+        
+        .config-info {
+            background: rgba(106, 17, 203, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #6a11cb;
+        }
+        
+        .config-info h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #a78bfa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .config-info p {
+            font-size: 0.85rem;
+            color: #c4c4d4;
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        
+        .sheet-list h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #8a8a9e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sheet-list h3 i {
+            color: #6a11cb;
+        }
+        
+        .sheet-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .sheet-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid transparent;
+        }
+        
+        .sheet-item:hover {
+            background: rgba(106, 17, 203, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .sheet-item.active {
+            background: rgba(106, 17, 203, 0.25);
+            border-left: 4px solid #6a11cb;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.2);
+        }
+        
+        .sheet-item.hidden {
+            opacity: 0.6;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        .sheet-item.hidden .sheet-icon {
+            background: rgba(100, 100, 120, 0.2);
+            color: #8a8a9e;
+        }
+        
+        .sheet-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(106, 17, 203, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a78bfa;
+            font-size: 1.2rem;
+        }
+        
+        .sheet-info h4 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .sheet-info p {
+            font-size: 0.8rem;
+            color: #8a8a9e;
+        }
+        
+        /* 右侧主内容区样式 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .header {
+            background: rgba(30, 30, 46, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h2 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .sheet-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(106, 17, 203, 0.15);
+            border-radius: 10px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #a78bfa;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #8a8a9e;
+        }
+        
+        .table-container {
+            flex: 1;
+            background: rgba(30, 30, 46, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: auto;
+        }
+        
+        .no-data {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #8a8a9e;
+            text-align: center;
+        }
+        
+        .no-data i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #6a11cb;
+            opacity: 0.5;
+        }
+        
+        /* 表格样式 */
+        .excel-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .excel-table thead {
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
+        .excel-table th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: white;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .excel-table th:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .excel-table tbody tr {
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        .excel-table tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .excel-table tbody tr:hover {
+            background: rgba(106, 17, 203, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .excel-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e6e6e6;
+        }
+        
+        .excel-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .sheet-items {
+                max-height: 200px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .sheet-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .table-container {
+                padding: 15px;
+            }
+            
+            .excel-table {
+                font-size: 0.9rem;
+            }
+            
+            .excel-table th, .excel-table td {
+                padding: 10px;
+            }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(106, 17, 203, 0.5);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(106, 17, 203, 0.7);
+        }
+        
+        /* 加载动画 */
+        .loader {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(106, 17, 203, 0.2);
+            border-top: 5px solid #6a11cb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading .loader {
+            display: block;
+        }
+        
+        .loading .table-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(106, 17, 203, 0.2);
+            color: #a78bfa;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: rgba(106, 17, 203, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #5a0db5 0%, #1c68e8 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧导航栏 -->
+        <div class="sidebar">
+            <div class="logo">
+                <h1><i class="fas fa-file-excel"></i> Excel阅读器</h1>
+                <p>读取并显示Excel工作表</p>
+            </div>
+            
+            <div class="config-info">
+                <h3><i class="fas fa-cog"></i> 当前配置</h3>
+                <p><strong>Excel文件:</strong> <span id="config-filename">未设置</span></p>
+                <p><strong>显示的工作表:</strong> <span id="config-sheets">未设置</span></p>
+            </div>
+            
+            <div class="sheet-list">
+                <h3><i class="fas fa-list"></i> 工作表列表</h3>
+                <div class="sheet-items" id="sheet-list">
+                    <!-- 工作表列表将通过JS动态生成 -->
+                    <div class="no-data">
+                        <i class="fas fa-table"></i>
+                        <p>等待加载Excel文件</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="load-excel-btn">
+                    <i class="fas fa-file-import"></i> 加载Excel文件
+                </button>
+                <button class="btn" id="show-all-btn">
+                    <i class="fas fa-eye"></i> 显示所有工作表
+                </button>
+                <button class="btn" id="show-config-btn">
+                    <i class="fas fa-filter"></i> 只显示配置的工作表
+                </button>
+            </div>
+        </div>
+        
+        <!-- 右侧主内容区 -->
+        <div class="main-content">
+            <div class="header">
+                <h2 id="current-sheet">请加载Excel文件</h2>
+                <div class="sheet-stats">
+                    <div class="stat">
+                        <span class="stat-value" id="total-sheets">0</span>
+                        <span class="stat-label">工作表</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="visible-sheets">0</span>
+                        <span class="stat-label">显示中</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="total-rows">0</span>
+                        <span class="stat-label">总行数</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-container" id="table-container">
+                <div class="no-data">
+                    <i class="fas fa-file-excel"></i>
+                    <h3>未加载数据</h3>
+                    <p>请点击左侧"加载Excel文件"按钮开始</p>
+                </div>
+                
+                <div class="loader"></div>
+                
+                <table class="excel-table" id="excel-table" style="display: none;">
+                    <!-- 表格内容将通过JS动态生成 -->
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 引入SheetJS库用于解析Excel文件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script>
+        // ==============================
+        // 在这里配置Excel文件名和要显示的工作表
+        // ==============================
+        
+        // 要读取的Excel文件名（需要与HTML文件在同一目录下）
+        const excelFileName = "main.xlsx"; // 请修改为你的Excel文件名
+        
+        // 要显示的工作表名称数组（如果为空数组，则显示所有工作表）
+        const sheetsToDisplay = []; // 请修改为你要显示的工作表名
+        
+        // ==============================
+        // 以下代码无需修改
+        // ==============================
+        
+        // 全局变量
+        let workbook = null;
+        let currentSheetName = '';
+        let allSheets = [];
+        let visibleSheets = [];
+        let isUsingConfigSheets = true; // 是否使用配置的工作表
+        
+        // DOM元素
+        const loadExcelBtn = document.getElementById('load-excel-btn');
+        const showAllBtn = document.getElementById('show-all-btn');
+        const showConfigBtn = document.getElementById('show-config-btn');
+        const configFilenameElement = document.getElementById('config-filename');
+        const configSheetsElement = document.getElementById('config-sheets');
+        const sheetListContainer = document.getElementById('sheet-list');
+        const currentSheetDisplay = document.getElementById('current-sheet');
+        const totalSheetsElement = document.getElementById('total-sheets');
+        const visibleSheetsElement = document.getElementById('visible-sheets');
+        const totalRowsElement = document.getElementById('total-rows');
+        const tableContainer = document.getElementById('table-container');
+        const excelTable = document.getElementById('excel-table');
+        const loader = document.querySelector('.loader');
+        
+        // 初始化显示配置信息
+        function initConfigDisplay() {
+            configFilenameElement.textContent = excelFileName;
+            configSheetsElement.textContent = sheetsToDisplay.length > 0 
+                ? sheetsToDisplay.join(', ') 
+                : '所有工作表';
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initConfigDisplay();
+            
+            // 绑定按钮事件
+            loadExcelBtn.addEventListener('click', loadExcelFile);
+            showAllBtn.addEventListener('click', showAllSheets);
+            showConfigBtn.addEventListener('click', showConfigSheets);
+            
+            // 自动加载Excel文件
+            setTimeout(() => {
+                loadExcelFile();
+            }, 100);
+        });
+        
+        // 加载Excel文件
+        function loadExcelFile() {
+            // 显示加载状态
+            tableContainer.classList.add('loading');
+            tableContainer.innerHTML = '<div class="loader"></div>';
+            
+            // 构建文件路径
+            const filePath = excelFileName;
+            
+            // 使用fetch API加载Excel文件
+            fetch(filePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`无法加载文件: ${response.status} ${response.statusText}`);
+                    }
+                    return response.arrayBuffer();
+                })
+                .then(data => {
+                    processExcelData(data);
+                })
+                .catch(error => {
+                    console.error('加载Excel文件时出错:', error);
+                    tableContainer.classList.remove('loading');
+                    tableContainer.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>加载失败</h3>
+                            <p>${error.message}</p>
+                            <p style="margin-top: 10px;">请确保文件 "${excelFileName}" 与此HTML文件在同一目录下</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        // 处理Excel数据
+        function processExcelData(data) {
+            try {
+                // 使用SheetJS解析Excel文件
+                workbook = XLSX.read(data, { type: 'array' });
+                
+                // 获取所有工作表名称
+                allSheets = workbook.SheetNames;
+                
+                // 更新可见工作表列表
+                updateVisibleSheets();
+                
+                // 更新统计信息
+                updateStats();
+                
+                // 生成工作表列表
+                generateSheetList();
+                
+                // 默认显示第一个可见的工作表
+                if (visibleSheets.length > 0) {
+                    displaySheet(visibleSheets[0]);
+                } else if (allSheets.length > 0) {
+                    // 如果没有可见的工作表，但工作簿中有工作表，显示第一个
+                    displaySheet(allSheets[0]);
+                }
+                
+                tableContainer.classList.remove('loading');
+            } catch (error) {
+                console.error('处理Excel文件时出错:', error);
+                tableContainer.classList.remove('loading');
+                tableContainer.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>解析失败</h3>
+                        <p>读取Excel文件时出错，请确保文件格式正确</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 更新可见工作表列表
+        function updateVisibleSheets() {
+            if (!isUsingConfigSheets || sheetsToDisplay.length === 0) {
+                // 显示所有工作表
+                visibleSheets = [...allSheets];
+            } else {
+                // 只显示配置的工作表
+                visibleSheets = allSheets.filter(sheetName => 
+                    sheetsToDisplay.includes(sheetName)
+                );
+            }
+        }
+        
+        // 显示所有工作表
+        function showAllSheets() {
+            isUsingConfigSheets = false;
+            showAllBtn.classList.add('btn-primary');
+            showConfigBtn.classList.remove('btn-primary');
+            updateVisibleSheets();
+            generateSheetList();
+            updateStats();
+            
+            // 如果当前工作表不在可见列表中，显示第一个可见的工作表
+            if (visibleSheets.length > 0 && !visibleSheets.includes(currentSheetName)) {
+                displaySheet(visibleSheets[0]);
+            }
+        }
+        
+        // 只显示配置的工作表
+        function showConfigSheets() {
+            isUsingConfigSheets = true;
+            showConfigBtn.classList.add('btn-primary');
+            showAllBtn.classList.remove('btn-primary');
+            updateVisibleSheets();
+            generateSheetList();
+            updateStats();
+            
+            // 如果当前工作表不在可见列表中，显示第一个可见的工作表
+            if (visibleSheets.length > 0 && !visibleSheets.includes(currentSheetName)) {
+                displaySheet(visibleSheets[0]);
+            } else if (visibleSheets.length === 0 && allSheets.length > 0) {
+                // 如果没有可见的工作表，显示提示
+                tableContainer.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-filter"></i>
+                        <h3>没有匹配的工作表</h3>
+                        <p>配置的工作表名称与Excel文件中的工作表不匹配</p>
+                        <p>Excel文件中的工作表: ${allSheets.join(', ')}</p>
+                        <p>配置的工作表: ${sheetsToDisplay.join(', ')}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            totalSheetsElement.textContent = allSheets.length;
+            visibleSheetsElement.textContent = visibleSheets.length;
+            
+            // 计算总行数（所有可见工作表的行数总和）
+            let totalRows = 0;
+            visibleSheets.forEach(sheetName => {
+                const worksheet = workbook.Sheets[sheetName];
+                const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                totalRows += Math.max(0, data.length - 1); // 减去标题行
+            });
+            
+            totalRowsElement.textContent = totalRows > 0 ? totalRows : 0;
+        }
+        
+        // 生成工作表列表
+        function generateSheetList() {
+            sheetListContainer.innerHTML = '';
+            
+            if (allSheets.length === 0) {
+                sheetListContainer.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Excel文件中没有工作表</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            allSheets.forEach((sheetName, index) => {
+                const worksheet = workbook.Sheets[sheetName];
+                const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                const rowCount = data.length > 0 ? data.length - 1 : 0;
+                const colCount = data.length > 0 ? (data[0] ? data[0].length : 0) : 0;
+                
+                const isVisible = visibleSheets.includes(sheetName);
+                const isActive = currentSheetName === sheetName;
+                
+                const sheetItem = document.createElement('div');
+                sheetItem.className = `sheet-item ${isActive ? 'active' : ''} ${!isVisible ? 'hidden' : ''}`;
+                sheetItem.dataset.sheetName = sheetName;
+                
+                sheetItem.innerHTML = `
+                    <div class="sheet-icon">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <div class="sheet-info">
+                        <h4>${sheetName} ${!isVisible ? '<span style="color:#888;font-size:0.8em;">(隐藏)</span>' : ''}</h4>
+                        <p>${rowCount} 行 × ${colCount} 列</p>
+                    </div>
+                `;
+                
+                sheetItem.addEventListener('click', () => {
+                    // 如果工作表是隐藏的，先显示它
+                    if (!isVisible) {
+                        if (isUsingConfigSheets && sheetsToDisplay.length > 0) {
+                            // 如果使用配置模式，将工作表添加到配置中
+                            if (!sheetsToDisplay.includes(sheetName)) {
+                                sheetsToDisplay.push(sheetName);
+                                initConfigDisplay();
+                            }
+                        }
+                        // 更新可见工作表
+                        if (!visibleSheets.includes(sheetName)) {
+                            visibleSheets.push(sheetName);
+                        }
+                        generateSheetList();
+                        updateStats();
+                    }
+                    
+                    // 移除所有active类
+                    document.querySelectorAll('.sheet-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // 添加active类到当前点击的工作表
+                    sheetItem.classList.add('active');
+                    
+                    // 显示选中的工作表
+                    displaySheet(sheetName);
+                });
+                
+                sheetListContainer.appendChild(sheetItem);
+            });
+        }
+        
+        // 显示指定工作表
+        function displaySheet(sheetName) {
+            currentSheetName = sheetName;
+            currentSheetDisplay.textContent = sheetName;
+            
+            const worksheet = workbook.Sheets[sheetName];
+            const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            // 清空表格
+            excelTable.innerHTML = '';
+            
+            if (data.length === 0) {
+                excelTable.style.display = 'none';
+                tableContainer.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>工作表为空</h3>
+                        <p>选中的工作表 "${sheetName}" 没有数据</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 创建表头
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            
+            // 获取列数（以第一行的列数为准）
+            const colCount = data[0] ? data[0].length : 0;
+            
+            // 创建表头单元格
+            for (let i = 0; i < colCount; i++) {
+                const th = document.createElement('th');
+                th.textContent = data[0][i] !== undefined ? data[0][i] : `列 ${i + 1}`;
+                headerRow.appendChild(th);
+            }
+            
+            thead.appendChild(headerRow);
+            excelTable.appendChild(thead);
+            
+            // 创建表格主体
+            const tbody = document.createElement('tbody');
+            
+            // 从第二行开始（跳过表头）
+            for (let i = 1; i < data.length; i++) {
+                const row = document.createElement('tr');
+                
+                for (let j = 0; j < colCount; j++) {
+                    const td = document.createElement('td');
+                    td.textContent = data[i] && data[i][j] !== undefined ? data[i][j] : '';
+                    row.appendChild(td);
+                }
+                
+                tbody.appendChild(row);
+            }
+            
+            excelTable.appendChild(tbody);
+            excelTable.style.display = 'table';
+            
+            // 如果表格容器中有.no-data，则移除
+            const noData = tableContainer.querySelector('.no-data');
+            if (noData) {
+                noData.remove();
+            }
+            
+            // 确保表格容器中只有表格
+            tableContainer.innerHTML = '';
+            tableContainer.appendChild(excelTable);
+        }
+    </script>
+</body>
+</html>

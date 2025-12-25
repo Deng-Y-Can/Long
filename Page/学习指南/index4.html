@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel数据查看器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2196f3;
+            --primary-light: #64b5f6;
+            --primary-dark: #1976d2;
+            --secondary-color: #00bcd4;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --sidebar-bg: #2c3e50;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-light: #888888;
+            --border-color: #e0e0e0;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --hover-bg: #f8f9fa;
+            --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-dark: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-medium);
+            z-index: 100;
+        }
+        
+        .app-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .app-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .app-header p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .file-info {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .file-info h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-light);
+        }
+        
+        .info-item {
+            margin-bottom: 8px;
+        }
+        
+        .info-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .info-value {
+            font-size: 0.9rem;
+            color: white;
+            font-weight: 500;
+            word-break: break-all;
+        }
+        
+        .sheets-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .sheets-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .sheets-header h3 {
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sheets-count {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+        
+        .sheets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .sheet-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sheet-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-color);
+            transform: scaleX(0);
+            transition: transform 0.2s ease;
+        }
+        
+        .sheet-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sheet-item.active {
+            background: rgba(33, 150, 243, 0.2);
+            border-color: var(--primary-color);
+        }
+        
+        .sheet-item.active::before {
+            transform: scaleX(1);
+        }
+        
+        .sheet-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(33, 150, 243, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-light);
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        
+        .sheet-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sheet-stats {
+            display: flex;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* 主内容区样式 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .content-header {
+            background: var(--card-bg);
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .current-sheet-info h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+        
+        .current-sheet-info p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        
+        .table-container {
+            flex: 1;
+            padding: 30px;
+            overflow: auto;
+            background: var(--bg-color);
+        }
+        
+        /* 表格样式 - 支持换行 */
+        .data-table {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow-medium);
+            border-collapse: collapse;
+        }
+        
+        .data-table thead {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        }
+        
+        .data-table th {
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: white;
+            font-size: 0.95rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .data-table th:not(:last-child) {
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-table tbody tr {
+            transition: background-color 0.15s ease;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: var(--hover-bg);
+        }
+        
+        .data-table tbody tr:last-child {
+            border-bottom: none;
+        }
+        
+        .data-table td {
+            padding: 14px 12px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            vertical-align: top;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .data-table td:last-child {
+            border-right: none;
+        }
+        
+        /* 单元格内容支持换行 */
+        .cell-content {
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 2px 0;
+        }
+        
+        .cell-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .cell-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .cell-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+        }
+        
+        /* 空状态和加载状态 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: var(--shadow-light);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--primary-light);
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        .empty-state p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            line-height: 1.6;
+        }
+        
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 20px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(33, 150, 243, 0.2);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-state p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        /* 错误状态 */
+        .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: var(--shadow-light);
+        }
+        
+        .error-state i {
+            font-size: 4rem;
+            color: var(--error-color);
+            margin-bottom: 20px;
+        }
+        
+        .error-state h3 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        
+        .error-state p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-height: 40vh;
+            }
+            
+            .sheets-list {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            
+            .sheet-item {
+                min-width: 200px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .content-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+            
+            .table-container {
+                padding: 15px;
+            }
+            
+            .data-table {
+                font-size: 0.85rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 10px 8px;
+            }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 工具提示 */
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: var(--text-primary);
+            color: white;
+            text-align: center;
+            padding: 6px 10px;
+            border-radius: 4px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* 页脚 */
+        .app-footer {
+            padding: 15px 30px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+        
+        /* 单元格操作 */
+        .cell-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .data-table td:hover .cell-actions {
+            opacity: 1;
+        }
+        
+        .cell-action-btn {
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        
+        .cell-action-btn:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 单元格展开/收起 */
+        .cell-expand-btn {
+            display: inline-block;
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-top: 5px;
+            padding: 2px 8px;
+            background: rgba(33, 150, 243, 0.1);
+            border-radius: 4px;
+        }
+        
+        .cell-expand-btn:hover {
+            background: rgba(33, 150, 243, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 左侧侧边栏 -->
+        <div class="sidebar">
+            <div class="app-header">
+                <h1><i class="fas fa-file-excel"></i> Excel数据查看器</h1>
+                <p>专业的数据表格查看工具</p>
+            </div>
+            
+            <div class="file-info">
+                <h3><i class="fas fa-cog"></i> 配置文件</h3>
+                <div class="info-item">
+                    <div class="info-label">文件名称</div>
+                    <div class="info-value" id="file-name">1.xls</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">显示工作表</div>
+                    <div class="info-value" id="sheets-config">Sheet1, Sheet3, Sheet4</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">状态</div>
+                    <div class="info-value" id="load-status">正在加载...</div>
+                </div>
+            </div>
+            
+            <div class="sheets-container">
+                <div class="sheets-header">
+                    <h3><i class="fas fa-table"></i> 工作表列表</h3>
+                    <div class="sheets-count" id="sheets-count">0/3</div>
+                </div>
+                <div class="sheets-list" id="sheets-list">
+                    <!-- 工作表列表将通过JS动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧主内容区 -->
+        <div class="main-content">
+            <div class="content-header">
+                <div class="current-sheet-info">
+                    <h2 id="current-sheet-name">正在加载数据...</h2>
+                    <p id="current-sheet-desc">请稍候，正在读取Excel文件</p>
+                </div>
+                
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="loaded-sheets">0</div>
+                        <div class="stat-label">已加载</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-rows">0</div>
+                        <div class="stat-label">总行数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-cols">0</div>
+                        <div class="stat-label">总列数</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-container" id="table-container">
+                <!-- 初始加载状态 -->
+                <div class="loading-state" id="loading-state">
+                    <div class="spinner"></div>
+                    <p>正在自动加载Excel文件...</p>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 10px;">
+                        正在读取: <strong>1.xls</strong> 中的 <strong>Sheet1, Sheet3, Sheet4</strong>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="app-footer">
+                <p>Excel数据查看器 v1.0 &copy; 2025 | 自动加载模式 | 支持单元格换行</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 引入SheetJS库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script>
+        // ==============================
+        // 配置文件
+        // ==============================
+        const excelFileName = "main.xlsx";
+        const sheetsToLoad = [ "人工智能", "计算机视觉", "自然语言处理（NLP）", "语音技术", "生成式AI", "机器人学", "开源数据源", "接单网站", "机器学习&深度学习", "规划与调度", "人机交互", "计算机图形学", "网络安全", "嵌入式", "电气", "机械制图", "PLC", "数据结构与算法", "游戏开发", "英语口语", "初中知识", "高中知识", "会计", "excel", "摄影"];
+        
+        
+        // ==============================
+        // 全局变量
+        // ==============================
+        let workbook = null;
+        let loadedSheets = new Map();
+        let currentSheetName = '';
+        let totalDataRows = 0;
+        let totalDataCols = 0;
+        
+        // ==============================
+        // DOM元素
+        // ==============================
+        const loadStatusElement = document.getElementById('load-status');
+        const sheetsListElement = document.getElementById('sheets-list');
+        const sheetsCountElement = document.getElementById('sheets-count');
+        const loadedSheetsElement = document.getElementById('loaded-sheets');
+        const totalRowsElement = document.getElementById('total-rows');
+        const totalColsElement = document.getElementById('total-cols');
+        const currentSheetNameElement = document.getElementById('current-sheet-name');
+        const currentSheetDescElement = document.getElementById('current-sheet-desc');
+        const tableContainer = document.getElementById('table-container');
+        const loadingStateElement = document.getElementById('loading-state');
+        
+        // ==============================
+        // 页面加载完成后自动执行
+        // ==============================
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 显示加载状态
+            updateStatus('正在加载Excel文件...');
+            
+            try {
+                // 自动加载Excel文件
+                await loadExcelFile();
+                
+                // 自动显示第一个工作表
+                if (loadedSheets.size > 0) {
+                    const firstSheet = Array.from(loadedSheets.keys())[0];
+                    displaySheet(firstSheet);
+                }
+                
+            } catch (error) {
+                console.error('加载失败:', error);
+                showErrorState(error.message);
+            }
+        });
+        
+        // ==============================
+        // 主功能函数
+        // ==============================
+        
+        // 加载Excel文件
+        async function loadExcelFile() {
+            try {
+                // 构建文件路径
+                const filePath = excelFileName;
+                
+                // 使用fetch API加载文件
+                const response = await fetch(filePath);
+                
+                if (!response.ok) {
+                    throw new Error(`无法加载文件: ${response.status}`);
+                }
+                
+                // 获取文件数据
+                const data = await response.arrayBuffer();
+                
+                // 解析Excel文件（只读取配置的工作表）
+                await parseExcelSheets(data);
+                
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        // 解析Excel文件，只处理配置的工作表
+        async function parseExcelSheets(data) {
+            try {
+                updateStatus('正在解析Excel数据...');
+                
+                // 使用SheetJS解析Excel
+                workbook = XLSX.read(data, { type: 'array' });
+                
+                // 检查配置的工作表是否存在
+                const availableSheets = workbook.SheetNames;
+                const sheetsToProcess = sheetsToLoad.filter(sheetName => 
+                    availableSheets.includes(sheetName)
+                );
+                
+                if (sheetsToProcess.length === 0) {
+                    throw new Error(`配置的工作表不存在。文件中的工作表: ${availableSheets.join(', ')}`);
+                }
+                
+                updateStatus(`正在加载 ${sheetsToProcess.length} 个工作表...`);
+                
+                // 处理每个配置的工作表
+                for (const sheetName of sheetsToProcess) {
+                    await processSheetData(sheetName);
+                }
+                
+                // 更新UI统计
+                updateSheetsList();
+                updateStats();
+                
+                updateStatus(`已加载 ${sheetsToProcess.length} 个工作表`, 'success');
+                
+                // 隐藏加载状态
+                loadingStateElement.style.display = 'none';
+                
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        // 处理单个工作表数据
+        async function processSheetData(sheetName) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    try {
+                        // 获取工作表
+                        const worksheet = workbook.Sheets[sheetName];
+                        
+                        // 将工作表转换为JSON数据（保留原始格式）
+                        const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+                        
+                        // 计算统计信息
+                        const rowCount = data.length;
+                        const colCount = rowCount > 0 ? Math.max(...data.map(row => row.length)) : 0;
+                        const dataRows = Math.max(0, rowCount - 1);
+                        
+                        // 存储工作表数据
+                        loadedSheets.set(sheetName, {
+                            data: data,
+                            rowCount: rowCount,
+                            colCount: colCount,
+                            dataRows: dataRows
+                        });
+                        
+                        // 更新总统计数据
+                        totalDataRows += dataRows;
+                        totalDataCols = Math.max(totalDataCols, colCount);
+                        
+                        resolve();
+                        
+                    } catch (error) {
+                        console.error(`处理工作表 ${sheetName} 时出错:`, error);
+                        resolve(); // 继续处理其他工作表
+                    }
+                }, 0);
+            });
+        }
+        
+        // 显示指定工作表
+        function displaySheet(sheetName) {
+            if (!loadedSheets.has(sheetName)) {
+                console.error(`工作表 ${sheetName} 未加载`);
+                return;
+            }
+            
+            currentSheetName = sheetName;
+            
+            // 更新工作表信息
+            updateSheetInfo(sheetName);
+            
+            // 更新侧边栏选中状态
+            updateSheetSelection(sheetName);
+            
+            // 创建并显示表格
+            createDataTable(sheetName);
+        }
+        
+        // 创建数据表格（支持单元格换行）
+        function createDataTable(sheetName) {
+            const sheetData = loadedSheets.get(sheetName);
+            const data = sheetData.data;
+            
+            // 清空表格容器
+            tableContainer.innerHTML = '';
+            
+            if (data.length === 0) {
+                tableContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>工作表为空</h3>
+                        <p>选中的工作表没有数据内容</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 创建表格元素
+            const table = document.createElement('table');
+            table.className = 'data-table';
+            
+            // 创建表头
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            
+            // 获取列数（使用最大列数）
+            const colCount = sheetData.colCount;
+            
+            // 创建表头单元格
+            for (let col = 0; col < colCount; col++) {
+                const th = document.createElement('th');
+                const headerText = data[0] && data[0][col] !== undefined ? data[0][col] : `列 ${col + 1}`;
+                th.textContent = headerText;
+                th.title = headerText;
+                headerRow.appendChild(th);
+            }
+            
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            // 创建表格主体
+            const tbody = document.createElement('tbody');
+            
+            // 从第二行开始（跳过表头）
+            for (let row = 1; row < data.length; row++) {
+                const tableRow = document.createElement('tr');
+                
+                for (let col = 0; col < colCount; col++) {
+                    const td = document.createElement('td');
+                    
+                    // 获取单元格数据
+                    const cellData = data[row] && data[row][col] !== undefined ? data[row][col] : '';
+                    const cellText = String(cellData).trim();
+                    
+                    // 创建单元格内容容器
+                    const cellContent = document.createElement('div');
+                    cellContent.className = 'cell-content';
+                    
+                    // 处理长文本，支持换行
+                    if (cellText.length > 100) {
+                        // 显示前100个字符，并提供展开/收起功能
+                        const shortText = cellText.substring(0, 100) + '...';
+                        const fullText = cellText;
+                        
+                        cellContent.textContent = shortText;
+                        cellContent.dataset.fullText = fullText;
+                        cellContent.dataset.isShort = 'true';
+                        
+                        // 添加展开按钮
+                        const expandBtn = document.createElement('span');
+                        expandBtn.className = 'cell-expand-btn';
+                        expandBtn.textContent = '展开';
+                        expandBtn.onclick = function() {
+                            if (cellContent.dataset.isShort === 'true') {
+                                cellContent.textContent = fullText;
+                                cellContent.dataset.isShort = 'false';
+                                expandBtn.textContent = '收起';
+                            } else {
+                                cellContent.textContent = shortText;
+                                cellContent.dataset.isShort = 'true';
+                                expandBtn.textContent = '展开';
+                            }
+                        };
+                        
+                        td.appendChild(cellContent);
+                        td.appendChild(expandBtn);
+                        
+                    } else {
+                        // 短文本直接显示
+                        cellContent.textContent = cellText;
+                        td.appendChild(cellContent);
+                    }
+                    
+                    // 添加工具提示
+                    td.title = cellText;
+                    
+                    tableRow.appendChild(td);
+                }
+                
+                tbody.appendChild(tableRow);
+            }
+            
+            table.appendChild(tbody);
+            
+            // 添加到容器
+            tableContainer.appendChild(table);
+            
+            // 如果数据量很大，添加滚动提示
+            if (sheetData.dataRows > 100) {
+                const scrollHint = document.createElement('div');
+                scrollHint.style.cssText = `
+                    text-align: center;
+                    color: var(--text-light);
+                    font-size: 0.9rem;
+                    margin-top: 10px;
+                    padding: 10px;
+                    background: rgba(0,0,0,0.02);
+                    border-radius: 6px;
+                `;
+                scrollHint.textContent = `表格包含 ${sheetData.dataRows} 行数据，可以滚动查看`;
+                tableContainer.appendChild(scrollHint);
+            }
+        }
+        
+        // ==============================
+        // UI更新函数
+        // ==============================
+        
+        // 更新加载状态
+        function updateStatus(message, type = 'loading') {
+            loadStatusElement.textContent = message;
+            
+            if (type === 'success') {
+                loadStatusElement.style.color = 'var(--success-color)';
+            } else if (type === 'error') {
+                loadStatusElement.style.color = 'var(--error-color)';
+            } else {
+                loadStatusElement.style.color = 'white';
+            }
+        }
+        
+        // 更新侧边栏工作表列表
+        function updateSheetsList() {
+            sheetsListElement.innerHTML = '';
+            
+            for (const [sheetName, sheetData] of loadedSheets) {
+                const sheetItem = document.createElement('div');
+                sheetItem.className = `sheet-item ${currentSheetName === sheetName ? 'active' : ''}`;
+                sheetItem.dataset.sheetName = sheetName;
+                
+                sheetItem.innerHTML = `
+                    <div class="sheet-icon">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <div class="sheet-name" title="${sheetName}">${sheetName}</div>
+                    <div class="sheet-stats">
+                        <span>${sheetData.rowCount} 行</span>
+                        <span>•</span>
+                        <span>${sheetData.colCount} 列</span>
+                    </div>
+                `;
+                
+                sheetItem.addEventListener('click', () => {
+                    displaySheet(sheetName);
+                });
+                
+                sheetsListElement.appendChild(sheetItem);
+            }
+            
+            // 更新计数
+            sheetsCountElement.textContent = `${loadedSheets.size}/${sheetsToLoad.length}`;
+        }
+        
+        // 更新工作表选择状态
+        function updateSheetSelection(sheetName) {
+            // 移除所有active类
+            document.querySelectorAll('.sheet-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 添加active类到当前工作表
+            const currentItem = document.querySelector(`.sheet-item[data-sheet-name="${sheetName}"]`);
+            if (currentItem) {
+                currentItem.classList.add('active');
+            }
+        }
+        
+        // 更新工作表信息
+        function updateSheetInfo(sheetName) {
+            const sheetData = loadedSheets.get(sheetName);
+            
+            currentSheetNameElement.textContent = sheetName;
+            currentSheetDescElement.textContent = `共 ${sheetData.rowCount} 行 ${sheetData.colCount} 列数据`;
+            
+            // 更新统计信息
+            loadedSheetsElement.textContent = loadedSheets.size;
+            totalRowsElement.textContent = totalDataRows;
+            totalColsElement.textContent = totalDataCols;
+        }
+        
+        // 更新总体统计
+        function updateStats() {
+            loadedSheetsElement.textContent = loadedSheets.size;
+            totalRowsElement.textContent = totalDataRows;
+            totalColsElement.textContent = totalDataCols;
+        }
+        
+        // 显示错误状态
+        function showErrorState(errorMessage) {
+            loadingStateElement.style.display = 'none';
+            
+            tableContainer.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>加载Excel文件失败</h3>
+                    <p>${errorMessage}</p>
+                    <p style="margin-top: 15px; font-size: 0.95rem;">
+                        请确保文件 <strong>"${excelFileName}"</strong> 与此HTML文件在同一目录下
+                    </p>
+                    <p style="font-size: 0.95rem;">
+                        配置的工作表: <strong>${sheetsToLoad.join(', ')}</strong>
+                    </p>
+                    <button class="btn" style="margin-top: 20px; padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer;" onclick="location.reload()">
+                        <i class="fas fa-redo"></i> 重新加载
+                    </button>
+                </div>
+            `;
+            
+            updateStatus('加载失败', 'error');
+        }
+        
+        // 工具函数：格式化数字
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+    </script>
+</body>
+</html>

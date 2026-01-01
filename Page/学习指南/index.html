@@ -14,10 +14,11 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
             color: #e6e6e6;
             min-height: 100vh;
             overflow-x: hidden;
+            padding-bottom: 20px;
         }
         
         .container {
@@ -25,19 +26,29 @@
             min-height: 100vh;
             padding: 20px;
             gap: 20px;
+            perspective: 1500px; /* 增加透视深度 */
+            transform-style: preserve-3d; /* 保留子元素3D空间 */
         }
         
         /* 左侧导航栏样式 */
         .sidebar {
             width: 280px;
-            background: rgba(30, 30, 46, 0.9);
+            background: rgba(25, 25, 35, 0.85);
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5),
+                        inset 0 0 20px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
+            height: calc(100vh - 40px);
+            transform: translateZ(20px); /* 3D 深度 */
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar:hover {
+            transform: translateZ(30px); /* 悬停时增加深度 */
         }
         
         .logo {
@@ -45,15 +56,17 @@
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
         }
         
         .logo h1 {
             font-size: 1.8rem;
-            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             margin-bottom: 8px;
+            text-shadow: 0 0 15px rgba(229, 46, 113, 0.4);
         }
         
         .logo p {
@@ -62,17 +75,18 @@
         }
         
         .config-info {
-            background: rgba(106, 17, 203, 0.15);
+            background: rgba(229, 46, 113, 0.15);
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 20px;
-            border-left: 4px solid #6a11cb;
+            border-left: 4px solid #e52e71;
+            box-shadow: 0 5px 15px rgba(229, 46, 113, 0.1);
         }
         
         .config-info h3 {
             font-size: 1rem;
             margin-bottom: 10px;
-            color: #a78bfa;
+            color: #ff8a00;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -95,14 +109,14 @@
         }
         
         .sheet-list h3 i {
-            color: #6a11cb;
+            color: #ff8a00;
         }
         
         .sheet-items {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-height: 350px;
+            flex: 1;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -117,17 +131,21 @@
             align-items: center;
             gap: 12px;
             border-left: 4px solid transparent;
+            transform: translateZ(0); /* 3D 基础 */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
         .sheet-item:hover {
-            background: rgba(106, 17, 203, 0.15);
-            transform: translateX(5px);
+            background: rgba(229, 46, 113, 0.15);
+            transform: translateX(5px) translateZ(5px); /* 3D 悬停效果 */
+            box-shadow: 0 8px 20px rgba(229, 46, 113, 0.3);
         }
         
         .sheet-item.active {
-            background: rgba(106, 17, 203, 0.25);
-            border-left: 4px solid #6a11cb;
-            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.2);
+            background: rgba(229, 46, 113, 0.25);
+            border-left: 4px solid #e52e71;
+            box-shadow: 0 8px 25px rgba(229, 46, 113, 0.4);
+            transform: translateZ(10px); /* 3D 激活状态 */
         }
         
         .sheet-item.hidden {
@@ -143,12 +161,12 @@
         .sheet-icon {
             width: 40px;
             height: 40px;
-            background: rgba(106, 17, 203, 0.2);
+            background: rgba(255, 138, 0, 0.2);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #a78bfa;
+            color: #ff8a00;
             font-size: 1.2rem;
         }
         
@@ -168,26 +186,31 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            transform: translateZ(30px); /* 更深的Z轴偏移 */
+            transform-style: preserve-3d;
         }
         
         .header {
-            background: rgba(30, 30, 46, 0.9);
+            background: rgba(25, 25, 35, 0.85);
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5),
+                        inset 0 0 20px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transform: translateZ(15px); /* 3D 深度 */
         }
         
         .header h2 {
             font-size: 1.8rem;
-            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            text-shadow: 0 0 15px rgba(229, 46, 113, 0.4);
         }
         
         .sheet-stats {
@@ -200,14 +223,17 @@
             flex-direction: column;
             align-items: center;
             padding: 10px 20px;
-            background: rgba(106, 17, 203, 0.15);
+            background: rgba(229, 46, 113, 0.15);
             border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(229, 46, 113, 0.1);
+            transform: translateZ(5px); /* 3D 深度 */
         }
         
         .stat-value {
             font-size: 1.5rem;
             font-weight: bold;
-            color: #a78bfa;
+            color: #ff8a00;
+            text-shadow: 0 0 10px rgba(255, 138, 0, 0.3);
         }
         
         .stat-label {
@@ -217,13 +243,32 @@
         
         .table-container {
             flex: 1;
-            background: rgba(30, 30, 46, 0.9);
+            background: rgba(25, 25, 35, 0.85);
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5),
+                        inset 0 0 20px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            overflow: auto;
+            overflow-x: auto; /* 明确允许横向滚动 */
+            overflow-y: hidden; /* 防止垂直滚动干扰 */
+            scrollbar-width: thin; /* Firefox */
+            position: relative;
+            transform: translateZ(5px); /* 3D 深度 */
+        }
+        
+        /* 右侧渐变遮罩（提示可右滑）*/
+        .table-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(25, 25, 35, 0.9), transparent);
+            pointer-events: none;
+            z-index: 30;
+            opacity: 0.7;
         }
         
         .no-data {
@@ -239,22 +284,42 @@
         .no-data i {
             font-size: 4rem;
             margin-bottom: 20px;
-            color: #6a11cb;
+            color: #e52e71;
             opacity: 0.5;
+            text-shadow: 0 0 20px rgba(229, 46, 113, 0.5);
         }
         
-        /* 表格样式 */
+        /* 表格样式优化 */
         .excel-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5),
+                        inset 0 0 10px rgba(0, 0, 0, 0.2);
+            min-width: 800px; /* 确保表格有最小宽度以便滚动 */
+            background: rgba(255, 255, 255, 0.02);
+            transform: translateZ(0); /* 3D 基础 */
         }
         
         .excel-table thead {
-            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(90deg, #ff8a00 0%, #e52e71 100%);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .excel-table th,
+        .excel-table td {
+            position: relative;
+            transform: translateZ(2px); /* 微小Z轴提升 */
+            transition: transform 0.2s ease, background 0.3s ease;
+            word-break: break-all; /* 支持自动换行 */
+            white-space: pre-wrap; /* 保留空白符序列，但是正常地进行换行 */
+            max-width: 150px; /* 设置单元格最大宽度 */
+            min-width: 80px; /* 设置单元格最小宽度 */
         }
         
         .excel-table th {
@@ -265,6 +330,8 @@
             border-bottom: 2px solid rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
+            background: rgba(255, 138, 0, 0.8);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .excel-table th:after {
@@ -286,16 +353,15 @@
             background: rgba(255, 255, 255, 0.05);
         }
         
-        .excel-table tbody tr:hover {
-            background: rgba(106, 17, 203, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        .excel-table tbody tr:hover td {
+            transform: translateZ(8px); /* 悬停时提升更多 */
         }
         
         .excel-table td {
             padding: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             color: #e6e6e6;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
         
         .excel-table tbody tr:last-child td {
@@ -310,10 +376,7 @@
             
             .sidebar {
                 width: 100%;
-            }
-            
-            .sheet-items {
-                max-height: 200px;
+                height: auto;
             }
         }
         
@@ -338,7 +401,7 @@
             }
             
             .excel-table th, .excel-table td {
-                padding: 10px;
+                padding: 10px 8px;
             }
         }
         
@@ -354,12 +417,12 @@
         }
         
         ::-webkit-scrollbar-thumb {
-            background: rgba(106, 17, 203, 0.5);
+            background: rgba(229, 46, 113, 0.5);
             border-radius: 10px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(106, 17, 203, 0.7);
+            background: rgba(229, 46, 113, 0.7);
         }
         
         /* 加载动画 */
@@ -367,16 +430,18 @@
             display: none;
             width: 50px;
             height: 50px;
-            border: 5px solid rgba(106, 17, 203, 0.2);
-            border-top: 5px solid #6a11cb;
+            border: 5px solid rgba(229, 46, 113, 0.2);
+            border-top: 5px solid #e52e71;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto;
+            box-shadow: 0 0 20px rgba(229, 46, 113, 0.5);
+            transform: translateZ(20px); /* 浮在上方 */
         }
         
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% { transform: rotate(0deg) translateZ(20px); }
+            100% { transform: rotate(360deg) translateZ(20px); }
         }
         
         .loading .loader {
@@ -401,8 +466,8 @@
             padding: 12px;
             border-radius: 10px;
             border: none;
-            background: rgba(106, 17, 203, 0.2);
-            color: #a78bfa;
+            background: rgba(229, 46, 113, 0.2);
+            color: #ff8a00;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -410,20 +475,55 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateZ(0); /* 3D 基础 */
         }
         
         .btn:hover {
-            background: rgba(106, 17, 203, 0.3);
-            transform: translateY(-2px);
+            background: rgba(229, 46, 113, 0.3);
+            transform: translateY(-2px) translateZ(5px); /* 3D 悬停效果 */
+            box-shadow: 0 8px 20px rgba(229, 46, 113, 0.3);
         }
         
         .btn-primary {
-            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(90deg, #ff8a00 0%, #e52e71 100%);
             color: white;
+            box-shadow: 0 8px 20px rgba(229, 46, 113, 0.4);
         }
         
         .btn-primary:hover {
-            background: linear-gradient(90deg, #5a0db5 0%, #1c68e8 100%);
+            background: linear-gradient(90deg, #e52e71 0%, #ff8a00 100%);
+            transform: translateY(-3px) translateZ(8px); /* 更强的3D悬停效果 */
+            box-shadow: 0 12px 25px rgba(229, 46, 113, 0.5);
+        }
+        
+        /* 表格滚动提示 */
+        .scroll-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #ff8a00;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 20;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateZ(10px); /* 3D 深度 */
+        }
+
+        /* Three.js 容器 */
+        #threejs-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 让Three.js的canvas不影响下方HTML元素的交互 */
+            z-index: 1; /* 确保它在背景层 */
         }
     </style>
 </head>
@@ -498,12 +598,21 @@
                 <table class="excel-table" id="excel-table" style="display: none;">
                     <!-- 表格内容将通过JS动态生成 -->
                 </table>
+                
+                <div class="scroll-hint" id="scroll-hint">
+                    <i class="fas fa-arrows-alt-h"></i> 横向滚动
+                </div>
             </div>
         </div>
     </div>
     
+    <!-- Three.js 容器 -->
+    <div id="threejs-container"></div>
+
     <!-- 引入SheetJS库用于解析Excel文件 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- 引入Three.js库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
     <script>
         // ==============================
@@ -519,6 +628,37 @@
         // ==============================
         // 以下代码无需修改
         // ==============================
+        
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        const tableWrapper = document.querySelector('.table-container');
+
+        tableWrapper.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - tableWrapper.offsetLeft;
+            scrollLeft = tableWrapper.scrollLeft;
+            tableWrapper.style.cursor = 'grabbing';
+        });
+
+        tableWrapper.addEventListener('mouseleave', () => {
+            isDown = false;
+            tableWrapper.style.cursor = 'default';
+        });
+
+        tableWrapper.addEventListener('mouseup', () => {
+            isDown = false;
+            tableWrapper.style.cursor = 'default';
+        });
+
+        tableWrapper.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - tableWrapper.offsetLeft;
+            const walk = (x - startX) * 2; // 滚动速度
+            tableWrapper.scrollLeft = scrollLeft - walk;
+        });
         
         // 全局变量
         let workbook = null;
@@ -541,6 +681,7 @@
         const tableContainer = document.getElementById('table-container');
         const excelTable = document.getElementById('excel-table');
         const loader = document.querySelector('.loader');
+        const scrollHint = document.getElementById('scroll-hint');
         
         // 初始化显示配置信息
         function initConfigDisplay() {
@@ -652,203 +793,306 @@
             }
         }
         
-        // 显示所有工作表
-        function showAllSheets() {
-            isUsingConfigSheets = false;
-            showAllBtn.classList.add('btn-primary');
-            showConfigBtn.classList.remove('btn-primary');
-            updateVisibleSheets();
-            generateSheetList();
-            updateStats();
-            
-            // 如果当前工作表不在可见列表中，显示第一个可见的工作表
-            if (visibleSheets.length > 0 && !visibleSheets.includes(currentSheetName)) {
-                displaySheet(visibleSheets[0]);
-            }
-        }
-        
-        // 只显示配置的工作表
-        function showConfigSheets() {
-            isUsingConfigSheets = true;
-            showConfigBtn.classList.add('btn-primary');
-            showAllBtn.classList.remove('btn-primary');
-            updateVisibleSheets();
-            generateSheetList();
-            updateStats();
-            
-            // 如果当前工作表不在可见列表中，显示第一个可见的工作表
-            if (visibleSheets.length > 0 && !visibleSheets.includes(currentSheetName)) {
-                displaySheet(visibleSheets[0]);
-            } else if (visibleSheets.length === 0 && allSheets.length > 0) {
-                // 如果没有可见的工作表，显示提示
-                tableContainer.innerHTML = `
-                    <div class="no-data">
-                        <i class="fas fa-filter"></i>
-                        <h3>没有匹配的工作表</h3>
-                        <p>配置的工作表名称与Excel文件中的工作表不匹配</p>
-                        <p>Excel文件中的工作表: ${allSheets.join(', ')}</p>
-                        <p>配置的工作表: ${sheetsToDisplay.join(', ')}</p>
-                    </div>
-                `;
-            }
-        }
-        
         // 更新统计信息
         function updateStats() {
             totalSheetsElement.textContent = allSheets.length;
             visibleSheetsElement.textContent = visibleSheets.length;
-            
-            // 计算总行数（所有可见工作表的行数总和）
-            let totalRows = 0;
-            visibleSheets.forEach(sheetName => {
-                const worksheet = workbook.Sheets[sheetName];
-                const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                totalRows += Math.max(0, data.length - 1); // 减去标题行
-            });
-            
-            totalRowsElement.textContent = totalRows > 0 ? totalRows : 0;
         }
         
         // 生成工作表列表
         function generateSheetList() {
-            sheetListContainer.innerHTML = '';
-            
-            if (allSheets.length === 0) {
+            if (visibleSheets.length === 0) {
                 sheetListContainer.innerHTML = `
                     <div class="no-data">
                         <i class="fas fa-exclamation-circle"></i>
-                        <p>Excel文件中没有工作表</p>
+                        <p>没有找到符合条件的工作表</p>
                     </div>
                 `;
                 return;
             }
             
-            allSheets.forEach((sheetName, index) => {
-                const worksheet = workbook.Sheets[sheetName];
-                const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                const rowCount = data.length > 0 ? data.length - 1 : 0;
-                const colCount = data.length > 0 ? (data[0] ? data[0].length : 0) : 0;
-                
-                const isVisible = visibleSheets.includes(sheetName);
-                const isActive = currentSheetName === sheetName;
+            sheetListContainer.innerHTML = ''; // 清空列表
+            
+            allSheets.forEach(sheetName => {
+                const isHidden = !visibleSheets.includes(sheetName);
+                const isActive = sheetName === currentSheetName;
                 
                 const sheetItem = document.createElement('div');
-                sheetItem.className = `sheet-item ${isActive ? 'active' : ''} ${!isVisible ? 'hidden' : ''}`;
+                sheetItem.className = `sheet-item ${isActive ? 'active' : ''} ${isHidden ? 'hidden' : ''}`;
                 sheetItem.dataset.sheetName = sheetName;
                 
                 sheetItem.innerHTML = `
                     <div class="sheet-icon">
-                        <i class="fas fa-table"></i>
+                        <i class="fas fa-${isHidden ? 'eye-slash' : 'table'}"></i>
                     </div>
                     <div class="sheet-info">
-                        <h4>${sheetName} ${!isVisible ? '<span style="color:#888;font-size:0.8em;">(隐藏)</span>' : ''}</h4>
-                        <p>${rowCount} 行 × ${colCount} 列</p>
+                        <h4>${sheetName}</h4>
+                        <p>${isHidden ? '已隐藏' : '点击切换'}</p>
                     </div>
                 `;
                 
                 sheetItem.addEventListener('click', () => {
-                    // 如果工作表是隐藏的，先显示它
-                    if (!isVisible) {
-                        if (isUsingConfigSheets && sheetsToDisplay.length > 0) {
-                            // 如果使用配置模式，将工作表添加到配置中
-                            if (!sheetsToDisplay.includes(sheetName)) {
-                                sheetsToDisplay.push(sheetName);
-                                initConfigDisplay();
-                            }
-                        }
-                        // 更新可见工作表
-                        if (!visibleSheets.includes(sheetName)) {
-                            visibleSheets.push(sheetName);
-                        }
-                        generateSheetList();
-                        updateStats();
-                    }
-                    
-                    // 移除所有active类
-                    document.querySelectorAll('.sheet-item').forEach(item => {
-                        item.classList.remove('active');
-                    });
-                    
-                    // 添加active类到当前点击的工作表
-                    sheetItem.classList.add('active');
-                    
-                    // 显示选中的工作表
                     displaySheet(sheetName);
+                    updateActiveSheetInList(sheetName);
                 });
                 
                 sheetListContainer.appendChild(sheetItem);
             });
         }
         
+        // 更新列表中活动的工作表高亮
+        function updateActiveSheetInList(sheetName) {
+            document.querySelectorAll('.sheet-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.sheetName === sheetName) {
+                    item.classList.add('active');
+                }
+            });
+        }
+        
         // 显示指定工作表
         function displaySheet(sheetName) {
-            currentSheetName = sheetName;
-            currentSheetDisplay.textContent = sheetName;
+            if (!workbook) return;
             
-            const worksheet = workbook.Sheets[sheetName];
-            const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-            
-            // 清空表格
-            excelTable.innerHTML = '';
-            
-            if (data.length === 0) {
-                excelTable.style.display = 'none';
+            try {
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+                
+                // 清空现有表格
+                excelTable.innerHTML = '';
+                
+                if (jsonData.length === 0) {
+                    tableContainer.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-inbox"></i>
+                            <h3>工作表为空</h3>
+                            <p>工作表 "${sheetName}" 中没有数据</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 隐藏空数据提示，显示表格
+                tableContainer.innerHTML = '';
+                tableContainer.appendChild(excelTable);
+                excelTable.style.display = 'table';
+                
+                // 生成表头
+                const headerRow = document.createElement('tr');
+                if (jsonData.length > 0) {
+                    jsonData[0].forEach(cell => {
+                        const th = document.createElement('th');
+                        th.textContent = cell || '';
+                        headerRow.appendChild(th);
+                    });
+                }
+                const thead = document.createElement('thead');
+                thead.appendChild(headerRow);
+                excelTable.appendChild(thead);
+                
+                // 生成表体
+                const tbody = document.createElement('tbody');
+                for (let i = 1; i < jsonData.length; i++) { // 从1开始，跳过表头
+                    const row = document.createElement('tr');
+                    jsonData[i].forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell || '';
+                        row.appendChild(td);
+                    });
+                    tbody.appendChild(row);
+                }
+                excelTable.appendChild(tbody);
+                
+                // 更新当前工作表标题和行数统计
+                currentSheetDisplay.textContent = sheetName;
+                totalRowsElement.textContent = jsonData.length - 1; // 减去表头
+                
+                // 更新当前活动工作表名称
+                currentSheetName = sheetName;
+                
+            } catch (error) {
+                console.error('显示工作表时出错:', error);
                 tableContainer.innerHTML = `
                     <div class="no-data">
                         <i class="fas fa-exclamation-circle"></i>
-                        <h3>工作表为空</h3>
-                        <p>选中的工作表 "${sheetName}" 没有数据</p>
+                        <h3>显示失败</h3>
+                        <p>无法显示工作表 "${sheetName}"</p>
                     </div>
                 `;
-                return;
             }
-            
-            // 创建表头
-            const thead = document.createElement('thead');
-            const headerRow = document.createElement('tr');
-            
-            // 获取列数（以第一行的列数为准）
-            const colCount = data[0] ? data[0].length : 0;
-            
-            // 创建表头单元格
-            for (let i = 0; i < colCount; i++) {
-                const th = document.createElement('th');
-                th.textContent = data[0][i] !== undefined ? data[0][i] : `列 ${i + 1}`;
-                headerRow.appendChild(th);
-            }
-            
-            thead.appendChild(headerRow);
-            excelTable.appendChild(thead);
-            
-            // 创建表格主体
-            const tbody = document.createElement('tbody');
-            
-            // 从第二行开始（跳过表头）
-            for (let i = 1; i < data.length; i++) {
-                const row = document.createElement('tr');
-                
-                for (let j = 0; j < colCount; j++) {
-                    const td = document.createElement('td');
-                    td.textContent = data[i] && data[i][j] !== undefined ? data[i][j] : '';
-                    row.appendChild(td);
-                }
-                
-                tbody.appendChild(row);
-            }
-            
-            excelTable.appendChild(tbody);
-            excelTable.style.display = 'table';
-            
-            // 如果表格容器中有.no-data，则移除
-            const noData = tableContainer.querySelector('.no-data');
-            if (noData) {
-                noData.remove();
-            }
-            
-            // 确保表格容器中只有表格
-            tableContainer.innerHTML = '';
-            tableContainer.appendChild(excelTable);
         }
+        
+        // 显示所有工作表
+        function showAllSheets() {
+            isUsingConfigSheets = false;
+            updateVisibleSheets();
+            updateStats();
+            generateSheetList();
+            if (visibleSheets.includes(currentSheetName)) {
+                // 如果当前工作表仍在可见列表中，保持不变
+            } else if (visibleSheets.length > 0) {
+                // 否则切换到第一个可见工作表
+                displaySheet(visibleSheets[0]);
+            }
+        }
+        
+        // 显示配置的工作表
+        function showConfigSheets() {
+            isUsingConfigSheets = true;
+            updateVisibleSheets();
+            updateStats();
+            generateSheetList();
+            if (visibleSheets.includes(currentSheetName)) {
+                // 如果当前工作表仍在可见列表中，保持不变
+            } else if (visibleSheets.length > 0) {
+                // 否则切换到第一个可见工作表
+                displaySheet(visibleSheets[0]);
+            }
+        }
+        
+        // 在桌面端，当鼠标悬停在表格上时，显示滚动提示
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (!isTouchDevice) {
+            tableWrapper.addEventListener('mouseenter', () => {
+                scrollHint.style.display = 'flex';
+            });
+            
+            tableWrapper.addEventListener('mouseleave', () => {
+                scrollHint.style.display = 'none';
+            });
+        } else {
+            // 在触摸设备上，始终隐藏提示文字，因为滑动是默认行为
+            scrollHint.style.display = 'none';
+        }
+
+
+        // Three.js 初始化代码
+        let scene, camera, renderer;
+        let particles = [];
+
+        function initThreeJs() {
+            const container = document.getElementById('threejs-container');
+            
+            // 1. 创建场景
+            scene = new THREE.Scene();
+
+            // 2. 创建相机
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            // 3. 创建渲染器
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); // 启用透明和抗锯齿
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio); // 适配高DPI屏幕
+            container.appendChild(renderer.domElement);
+
+            // 4. 创建粒子系统
+            const particleGeometry = new THREE.BufferGeometry();
+            const particleCount = 2000; // 粒子数量
+
+            const posArray = new Float32Array(particleCount * 3);
+            const colorArray = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                // 随机位置
+                posArray[i] = (Math.random() - 0.5) * 20; // X
+                posArray[i + 1] = (Math.random() - 0.5) * 20; // Y
+                posArray[i + 2] = (Math.random() - 0.5) * 20; // Z
+
+                // 随机颜色 (基于渐变背景色)
+                const colors = [
+                    new THREE.Color(0x0f0c29),
+                    new THREE.Color(0x302b63),
+                    new THREE.Color(0x24243e),
+                    new THREE.Color(0xff8a00),
+                    new THREE.Color(0xe52e71)
+                ];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                colorArray[i] = randomColor.r;
+                colorArray[i + 1] = randomColor.g;
+                colorArray[i + 2] = randomColor.b;
+            }
+
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particleGeometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 0.05,
+                vertexColors: true, // 使用顶点颜色
+                transparent: true,
+                opacity: 0.8,
+                sizeAttenuation: true // 距离越远，点越小
+            });
+
+            const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particleSystem);
+            particles.push(particleSystem);
+
+            // 5. 创建一些几何体 (立方体)
+            const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0x00ff00,
+                wireframe: true, // 线框模式
+                transparent: true,
+                opacity: 0.5
+            });
+
+            for (let i = 0; i < 50; i++) {
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.x = (Math.random() - 0.5) * 10;
+                cube.position.y = (Math.random() - 0.5) * 10;
+                cube.position.z = (Math.random() - 0.5) * 10;
+                cube.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.01,
+                    (Math.random() - 0.5) * 0.01,
+                    (Math.random() - 0.5) * 0.01
+                );
+                scene.add(cube);
+                particles.push(cube);
+            }
+
+            // 6. 开始动画循环
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 更新粒子和几何体的动画
+            particles.forEach(p => {
+                if (p instanceof THREE.Points) {
+                    // 对粒子系统进行轻微的旋转
+                    p.rotation.x += 0.001;
+                    p.rotation.y += 0.001;
+                } else {
+                    // 对立方体进行旋转和移动
+                    p.rotation.x += 0.01;
+                    p.rotation.y += 0.01;
+                    p.position.add(p.userData.velocity);
+                    
+                    // 简单的边界反弹
+                    if (Math.abs(p.position.x) > 5) p.userData.velocity.x *= -1;
+                    if (Math.abs(p.position.y) > 5) p.userData.velocity.y *= -1;
+                    if (Math.abs(p.position.z) > 5) p.userData.velocity.z *= -1;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        // 监听窗口大小变化，更新Three.js渲染器尺寸
+        window.addEventListener('resize', () => {
+            if (renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+
+        // 当文档加载完成后初始化Three.js
+        document.addEventListener('DOMContentLoaded', function() {
+            initThreeJs();
+        });
     </script>
 </body>
 </html>

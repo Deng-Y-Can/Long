@@ -363,29 +363,38 @@
             gap: 0.5rem;
         }
 
+        /* 表格容器 - 优化：添加固定宽度和滚动 */
+        .table-container {
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 60vh; /* 可根据需要调整 */
+        }
+
         /* 表格样式 */
         .data-table {
             width: 100%;
-            border-collapse: collapse;
+            min-width: 800px; /* 确保表格有足够宽度以支持滚动 */
+            border-collapse: separate; /* 与 border-spacing 配合使用 */
+            border-spacing: 0;
         }
 
         .table-header {
             background: linear-gradient(90deg, rgba(37, 99, 235, 0.1), rgba(30, 41, 59, 1));
+            position: sticky; /* 固定表头 */
+            top: 0;
+            z-index: 10;
         }
 
         .table-header th {
-            padding: 1.25rem 1.5rem;
+            padding: 1rem 1.5rem;
             text-align: left;
             font-weight: 600;
             color: var(--text-primary);
             font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .table-header th:not(:last-child) {
-            border-right: 1px solid var(--border);
+            border-bottom: 2px solid var(--border);
+            background: var(--bg-card); /* 与sticky配合，覆盖滚动内容 */
         }
 
         .table-body tr {
@@ -394,13 +403,14 @@
         }
 
         .table-body tr:hover {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .table-body td {
-            padding: 1.25rem 1.5rem;
+            padding: 1rem 1.5rem;
             color: var(--text-secondary);
             font-size: 0.9375rem;
+            border-bottom: 1px solid var(--border);
         }
 
         /* 单元格内容支持换行 */
@@ -408,13 +418,14 @@
             white-space: pre-wrap;
             word-wrap: break-word;
             line-height: 1.5;
-            max-height: 150px;
+            max-height: 120px; /* 限制单元格内容最大高度 */
             overflow-y: auto;
-            padding-right: 0.5rem;
+            padding-right: 0.5rem; /* 为滚动条留出空间 */
         }
 
         .cell-content::-webkit-scrollbar {
-            width: 4px;
+            width: 6px;
+            height: 6px;
         }
 
         .cell-content::-webkit-scrollbar-track {
@@ -423,7 +434,11 @@
 
         .cell-content::-webkit-scrollbar-thumb {
             background: var(--border);
-            border-radius: 2px;
+            border-radius: 3px;
+        }
+
+        .cell-content::-webkit-scrollbar-corner {
+            background: transparent;
         }
 
         /* 空状态 */
@@ -675,6 +690,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- 新增表格容器 -->
                 <div class="table-container">
                     <div class="empty-state" id="table-empty">
                         <div class="empty-icon">
@@ -724,7 +740,6 @@
        const excelFileName = "main.xlsx";
        const sheetsToLoad = [ "人工智能", "计算机视觉", "自然语言处理（NLP）", "语音技术", "生成式AI", "机器人学", "开源数据源", "接单网站", "机器学习&深度学习", "规划与调度", "人机交互", "计算机图形学", "网络安全", "嵌入式", "电气", "机械制图", "PLC", "数据结构与算法", "游戏开发", "英语口语", "初中知识", "高中知识", "会计", "excel", "摄影"];
         
-
         // 大纲模块配置
         const outlineConfig = {
             "Sheet1": {
@@ -879,7 +894,7 @@
                         // 获取工作表
                         const worksheet = workbook.Sheets[sheetName];
                         
-                        // 将工作表转换为JSON数据
+                        // 将工作表转换为JSON数据 - 使用header: 1获取二维数组
                         const data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
                         
                         // 计算统计信息
@@ -1038,7 +1053,7 @@
             dataTable.style.display = 'table';
         }
 
-        // 创建数据表格（支持换行）
+        // 创建数据表格（支持换行和格式化）
         function createDataTable(data) {
             // 创建表头
             const thead = document.createElement('thead');
@@ -1071,9 +1086,22 @@
                 for (let col = 0; col < colCount; col++) {
                     const td = document.createElement('td');
                     
-                    // 获取单元格数据
-                    const cellData = data[row] && data[row][col] !== undefined ? data[row][col] : '';
-                    const cellText = String(cellData).trim();
+                    // 获取单元格数据 - 使用原始单元格对象以获取格式信息
+                    const rawCell = XLSX.utils.sheet_to_json(workbook.Sheets[currentOutline], { header: 1, defval: '' })[row][col];
+                    let cellText = '';
+                    
+                    // 使用 XLSX.SSF.format 来格式化单元格值
+                    if (rawCell !== undefined && rawCell !== null) {
+                        // 如果 rawCell 是对象（包含 t, v, z 等属性）
+                        if (typeof rawCell === 'object' && rawCell.t) {
+                            // 使用单元格的格式字符串 (z) 或默认格式化
+                            const fmt = rawCell.z || '@';
+                            cellText = XLSX.SSF.format(fmt, rawCell.v);
+                        } else {
+                            // 如果是简单值
+                            cellText = String(rawCell).trim();
+                        }
+                    }
                     
                     // 创建单元格内容容器
                     const cellContent = document.createElement('div');

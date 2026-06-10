@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page 功能备份导航</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+  }
+  .card {
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  }
+  .category-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(180deg, #667eea, #764ba2);
+    margin-right: 12px;
+    vertical-align: middle;
+    border-radius: 2px;
+  }
+  .file-item {
+    transition: all 0.2s ease;
+  }
+  .file-item:hover {
+    background: linear-gradient(90deg, #f0f4ff 0%, #e9d5ff 100%);
+    padding-left: 20px;
+  }
+  .highlight {
+    background: #fef08a;
+    color: #713f12;
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+  .no-result {
+    display: none;
+  }
+</style>
+</head>
+<body class="py-8 px-4">
+
+<div class="max-w-7xl mx-auto">
+
+  <!-- 顶部标题区 -->
+  <div class="text-center mb-8 text-white">
+    <a href="../index.html" class="inline-block mb-4 px-5 py-2 bg-white/20 hover:bg-white/30 rounded-full text-white text-sm backdrop-blur transition-all">
+      <i class="fas fa-arrow-left mr-2"></i>返回主页
+    </a>
+    <h1 class="text-4xl md:text-5xl font-bold mb-3 drop-shadow-lg">
+      <i class="fas fa-folder-open mr-3"></i>Page 功能备份导航
+    </h1>
+    <p class="text-lg md:text-xl text-white/90">原始功能备份 · 方便查找原始 Page 文件夹所有文件</p>
+  </div>
+
+  <!-- 内容区 -->
+  <div class="space-y-8" id="content">
+
+    <!-- 学习 -->
+    <section class="bg-white/95 rounded-2xl shadow-xl p-6 card">
+      <h2 class="category-title text-2xl font-bold text-gray-800 mb-5 flex items-center">
+        <i class="fas fa-graduation-cap text-purple-600 mr-2"></i>学习
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-category="学习">
+        <a href="学习/分组小工具/index.html" class="file-item block bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-4" data-name="分组小工具 index">
+          <div class="flex items-start">
+            <div class="text-3xl text-purple-500 mr-3 mt-1"><i class="fas fa-users"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">分组小工具</h3>
+              <p class="text-sm text-gray-600 mt-1">快速分组与随机分配工具</p>
+              <span class="text-xs text-purple-600 font-mono">分组小工具/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习/分组小工具/index2.html" class="file-item block bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-4" data-name="分组小工具 index2">
+          <div class="flex items-start">
+            <div class="text-3xl text-purple-500 mr-3 mt-1"><i class="fas fa-user-group"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">分组小工具 v2</h3>
+              <p class="text-sm text-gray-600 mt-1">增强版分组功能</p>
+              <span class="text-xs text-purple-600 font-mono">分组小工具/index2.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习/单词轮播/index.html" class="file-item block bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 rounded-xl p-4" data-name="单词轮播 index">
+          <div class="flex items-start">
+            <div class="text-3xl text-blue-500 mr-3 mt-1"><i class="fas fa-language"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">单词轮播</h3>
+              <p class="text-sm text-gray-600 mt-1">单词循环展示记忆工具</p>
+              <span class="text-xs text-blue-600 font-mono">单词轮播/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习/单词轮播/index2.html" class="file-item block bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 rounded-xl p-4" data-name="单词轮播 index2">
+          <div class="flex items-start">
+            <div class="text-3xl text-blue-500 mr-3 mt-1"><i class="fas fa-book-open"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">单词轮播 v2</h3>
+              <p class="text-sm text-gray-600 mt-1">增强版单词学习</p>
+              <span class="text-xs text-blue-600 font-mono">单词轮播/index2.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习/地区与旅游/index.html" class="file-item block bg-gradient-to-br from-green-50 to-blue-50 border border-green-100 rounded-xl p-4" data-name="地区与旅游 index">
+          <div class="flex items-start">
+            <div class="text-3xl text-green-500 mr-3 mt-1"><i class="fas fa-map-marked-alt"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">地区与旅游</h3>
+              <p class="text-sm text-gray-600 mt-1">地区信息与旅游推荐</p>
+              <span class="text-xs text-green-600 font-mono">地区与旅游/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习/地区与旅游/index2.html" class="file-item block bg-gradient-to-br from-green-50 to-blue-50 border border-green-100 rounded-xl p-4" data-name="地区与旅游 index2">
+          <div class="flex items-start">
+            <div class="text-3xl text-green-500 mr-3 mt-1"><i class="fas fa-plane-departure"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">地区与旅游 v2</h3>
+              <p class="text-sm text-gray-600 mt-1">增强版旅游信息</p>
+              <span class="text-xs text-green-600 font-mono">地区与旅游/index2.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习/地区与旅游/index3.html" class="file-item block bg-gradient-to-br from-green-50 to-blue-50 border border-green-100 rounded-xl p-4" data-name="地区与旅游 index3">
+          <div class="flex items-start">
+            <div class="text-3xl text-green-500 mr-3 mt-1"><i class="fas fa-globe-asia"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">地区与旅游 v3</h3>
+              <p class="text-sm text-gray-600 mt-1">完整版地区旅游</p>
+              <span class="text-xs text-green-600 font-mono">地区与旅游/index3.html</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 学习指南 -->
+    <section class="bg-white/95 rounded-2xl shadow-xl p-6 card">
+      <h2 class="category-title text-2xl font-bold text-gray-800 mb-5 flex items-center">
+        <i class="fas fa-book text-indigo-600 mr-2"></i>学习指南
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-category="学习指南">
+        <a href="学习指南/index.html" class="file-item block bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-4" data-name="学习指南 index">
+          <div class="flex items-start">
+            <div class="text-3xl text-indigo-500 mr-3 mt-1"><i class="fas fa-compass"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">学习指南</h3>
+              <p class="text-sm text-gray-600 mt-1">基础学习导航入口</p>
+              <span class="text-xs text-indigo-600 font-mono">学习指南/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习指南/index2.html" class="file-item block bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-4" data-name="学习指南 index2">
+          <div class="flex items-start">
+            <div class="text-3xl text-indigo-500 mr-3 mt-1"><i class="fas fa-map"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">学习指南 v2</h3>
+              <p class="text-sm text-gray-600 mt-1">进阶学习内容</p>
+              <span class="text-xs text-indigo-600 font-mono">学习指南/index2.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习指南/index3.html" class="file-item block bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-4" data-name="学习指南 index3">
+          <div class="flex items-start">
+            <div class="text-3xl text-indigo-500 mr-3 mt-1"><i class="fas fa-route"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">学习指南 v3</h3>
+              <p class="text-sm text-gray-600 mt-1">专题学习资源</p>
+              <span class="text-xs text-indigo-600 font-mono">学习指南/index3.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习指南/index4.html" class="file-item block bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-4" data-name="学习指南 index4">
+          <div class="flex items-start">
+            <div class="text-3xl text-indigo-500 mr-3 mt-1"><i class="fas fa-lightbulb"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">学习指南 v4</h3>
+              <p class="text-sm text-gray-600 mt-1">学习技巧集锦</p>
+              <span class="text-xs text-indigo-600 font-mono">学习指南/index4.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习指南/index5.html" class="file-item block bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-4" data-name="学习指南 index5">
+          <div class="flex items-start">
+            <div class="text-3xl text-indigo-500 mr-3 mt-1"><i class="fas fa-star"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">学习指南 v5</h3>
+              <p class="text-sm text-gray-600 mt-1">精选学习内容</p>
+              <span class="text-xs text-indigo-600 font-mono">学习指南/index5.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学习指南/index6.html" class="file-item block bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-4" data-name="学习指南 index6">
+          <div class="flex items-start">
+            <div class="text-3xl text-indigo-500 mr-3 mt-1"><i class="fas fa-crown"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">学习指南 v6</h3>
+              <p class="text-sm text-gray-600 mt-1">完整学习方案</p>
+              <span class="text-xs text-indigo-600 font-mono">学习指南/index6.html</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 学科 -->
+    <section class="bg-white/95 rounded-2xl shadow-xl p-6 card">
+      <h2 class="category-title text-2xl font-bold text-gray-800 mb-5 flex items-center">
+        <i class="fas fa-flask text-orange-600 mr-2"></i>学科
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-category="学科">
+        <a href="学科/index.html" class="file-item block bg-gradient-to-br from-orange-50 to-yellow-50 border border-orange-100 rounded-xl p-4" data-name="学科总览">
+          <div class="flex items-start">
+            <div class="text-3xl text-orange-500 mr-3 mt-1"><i class="fas fa-school"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">学科总览</h3>
+              <p class="text-sm text-gray-600 mt-1">所有学科导航入口</p>
+              <span class="text-xs text-orange-600 font-mono">学科/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/化学/index.html" class="file-item block bg-gradient-to-br from-green-50 to-teal-50 border border-green-100 rounded-xl p-4" data-name="化学 index">
+          <div class="flex items-start">
+            <div class="text-3xl text-green-500 mr-3 mt-1"><i class="fas fa-atom"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">化学</h3>
+              <p class="text-sm text-gray-600 mt-1">化学学习与实验</p>
+              <span class="text-xs text-green-600 font-mono">学科/化学/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/化学/index2.html" class="file-item block bg-gradient-to-br from-green-50 to-teal-50 border border-green-100 rounded-xl p-4" data-name="化学 index2">
+          <div class="flex items-start">
+            <div class="text-3xl text-green-500 mr-3 mt-1"><i class="fas fa-flask-vial"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">化学 v2</h3>
+              <p class="text-sm text-gray-600 mt-1">化学进阶内容</p>
+              <span class="text-xs text-green-600 font-mono">学科/化学/index2.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/化学/index3.html" class="file-item block bg-gradient-to-br from-green-50 to-teal-50 border border-green-100 rounded-xl p-4" data-name="化学 index3">
+          <div class="flex items-start">
+            <div class="text-3xl text-green-500 mr-3 mt-1"><i class="fas fa-vial"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">化学 v3</h3>
+              <p class="text-sm text-gray-600 mt-1">化学实验专题</p>
+              <span class="text-xs text-green-600 font-mono">学科/化学/index3.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/化学/ph.html" class="file-item block bg-gradient-to-br from-green-50 to-teal-50 border border-green-100 rounded-xl p-4" data-name="化学 pH">
+          <div class="flex items-start">
+            <div class="text-3xl text-green-500 mr-3 mt-1"><i class="fas fa-droplet"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">pH 酸碱值</h3>
+              <p class="text-sm text-gray-600 mt-1">pH 值学习工具</p>
+              <span class="text-xs text-green-600 font-mono">学科/化学/ph.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/化学/substance.html" class="file-item block bg-gradient-to-br from-green-50 to-teal-50 border border-green-100 rounded-xl p-4" data-name="化学 substance">
+          <div class="flex items-start">
+            <div class="text-3xl text-green-500 mr-3 mt-1"><i class="fas fa-cubes"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">物质查询</h3>
+              <p class="text-sm text-gray-600 mt-1">化学物质信息库</p>
+              <span class="text-xs text-green-600 font-mono">学科/化学/substance.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/历史/index.html" class="file-item block bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-xl p-4" data-name="历史">
+          <div class="flex items-start">
+            <div class="text-3xl text-amber-600 mr-3 mt-1"><i class="fas fa-landmark"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">历史</h3>
+              <p class="text-sm text-gray-600 mt-1">历史知识学习</p>
+              <span class="text-xs text-amber-600 font-mono">学科/历史/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/地理/index.html" class="file-item block bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-100 rounded-xl p-4" data-name="地理">
+          <div class="flex items-start">
+            <div class="text-3xl text-cyan-500 mr-3 mt-1"><i class="fas fa-earth-asia"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">地理</h3>
+              <p class="text-sm text-gray-600 mt-1">地理知识探索</p>
+              <span class="text-xs text-cyan-600 font-mono">学科/地理/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/数学/index.html" class="file-item block bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4" data-name="数学">
+          <div class="flex items-start">
+            <div class="text-3xl text-blue-500 mr-3 mt-1"><i class="fas fa-calculator"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">数学</h3>
+              <p class="text-sm text-gray-600 mt-1">数学学习工具</p>
+              <span class="text-xs text-blue-600 font-mono">学科/数学/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/物理/index.html" class="file-item block bg-gradient-to-br from-slate-50 to-gray-100 border border-slate-200 rounded-xl p-4" data-name="物理">
+          <div class="flex items-start">
+            <div class="text-3xl text-slate-600 mr-3 mt-1"><i class="fas fa-bolt"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">物理</h3>
+              <p class="text-sm text-gray-600 mt-1">物理知识学习</p>
+              <span class="text-xs text-slate-600 font-mono">学科/物理/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="学科/生物/index.html" class="file-item block bg-gradient-to-br from-lime-50 to-green-50 border border-lime-100 rounded-xl p-4" data-name="生物">
+          <div class="flex items-start">
+            <div class="text-3xl text-lime-600 mr-3 mt-1"><i class="fas fa-dna"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">生物</h3>
+              <p class="text-sm text-gray-600 mt-1">生物知识探索</p>
+              <span class="text-xs text-lime-600 font-mono">学科/生物/index.html</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 安全 -->
+    <section class="bg-white/95 rounded-2xl shadow-xl p-6 card">
+      <h2 class="category-title text-2xl font-bold text-gray-800 mb-5 flex items-center">
+        <i class="fas fa-shield-halved text-red-600 mr-2"></i>安全
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-category="安全">
+        <a href="安全/index.html" class="file-item block bg-gradient-to-br from-red-50 to-pink-50 border border-red-100 rounded-xl p-4" data-name="安全 index">
+          <div class="flex items-start">
+            <div class="text-3xl text-red-500 mr-3 mt-1"><i class="fas fa-shield-alt"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">安全中心</h3>
+              <p class="text-sm text-gray-600 mt-1">安全知识与防护</p>
+              <span class="text-xs text-red-600 font-mono">安全/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="安全/call.html" class="file-item block bg-gradient-to-br from-red-50 to-pink-50 border border-red-100 rounded-xl p-4" data-name="安全 call">
+          <div class="flex items-start">
+            <div class="text-3xl text-red-500 mr-3 mt-1"><i class="fas fa-phone-volume"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">紧急呼叫</h3>
+              <p class="text-sm text-gray-600 mt-1">紧急联系号码速查</p>
+              <span class="text-xs text-red-600 font-mono">安全/call.html</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 工具 -->
+    <section class="bg-white/95 rounded-2xl shadow-xl p-6 card">
+      <h2 class="category-title text-2xl font-bold text-gray-800 mb-5 flex items-center">
+        <i class="fas fa-screwdriver-wrench text-teal-600 mr-2"></i>工具
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-category="工具">
+        <a href="工具/calculator.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="计算器">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-calculator"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">计算器</h3>
+              <p class="text-sm text-gray-600 mt-1">多功能科学计算器</p>
+              <span class="text-xs text-teal-600 font-mono">工具/calculator.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/二进制查看器/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="二进制查看器">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-code"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">二进制查看器</h3>
+              <p class="text-sm text-gray-600 mt-1">二进制数据浏览工具</p>
+              <span class="text-xs text-teal-600 font-mono">工具/二进制查看器/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/图层编辑器/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="图层编辑器 index">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-layer-group"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">图层编辑器</h3>
+              <p class="text-sm text-gray-600 mt-1">图像图层编辑工具</p>
+              <span class="text-xs text-teal-600 font-mono">工具/图层编辑器/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/图层编辑器/index2.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="图层编辑器 index2">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-pen-ruler"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">图层编辑器 v2</h3>
+              <p class="text-sm text-gray-600 mt-1">增强版图层编辑</p>
+              <span class="text-xs text-teal-600 font-mono">工具/图层编辑器/index2.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/思维导图/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="思维导图">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-brain"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">思维导图</h3>
+              <p class="text-sm text-gray-600 mt-1">思维导图绘制工具</p>
+              <span class="text-xs text-teal-600 font-mono">工具/思维导图/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/摩斯密码/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="摩斯密码">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-tower-broadcast"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">摩斯密码</h3>
+              <p class="text-sm text-gray-600 mt-1">摩斯密码编码与解码</p>
+              <span class="text-xs text-teal-600 font-mono">工具/摩斯密码/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/文本处理工具/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="文本处理工具">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-file-lines"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">文本处理工具</h3>
+              <p class="text-sm text-gray-600 mt-1">文本格式转换与处理</p>
+              <span class="text-xs text-teal-600 font-mono">工具/文本处理工具/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/时钟/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="时钟">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-clock"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">时钟</h3>
+              <p class="text-sm text-gray-600 mt-1">时钟与计时工具</p>
+              <span class="text-xs text-teal-600 font-mono">工具/时钟/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/测量工具/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="测量工具 index">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-ruler"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">测量工具</h3>
+              <p class="text-sm text-gray-600 mt-1">在线测量与标尺</p>
+              <span class="text-xs text-teal-600 font-mono">工具/测量工具/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/测量工具/index2.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="测量工具 index2">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-ruler-combined"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">测量工具 v2</h3>
+              <p class="text-sm text-gray-600 mt-1">增强版测量工具</p>
+              <span class="text-xs text-teal-600 font-mono">工具/测量工具/index2.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/笔记宝/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="笔记宝">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-note-sticky"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">笔记宝</h3>
+              <p class="text-sm text-gray-600 mt-1">在线笔记记录工具</p>
+              <span class="text-xs text-teal-600 font-mono">工具/笔记宝/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/符号与特殊字符大全/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="符号与特殊字符">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-font"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">符号与特殊字符</h3>
+              <p class="text-sm text-gray-600 mt-1">特殊符号字符大全</p>
+              <span class="text-xs text-teal-600 font-mono">工具/符号与特殊字符大全/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/系统监控仪表板/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="系统监控仪表板">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-gauge-high"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">系统监控仪表板</h3>
+              <p class="text-sm text-gray-600 mt-1">系统状态实时监控</p>
+              <span class="text-xs text-teal-600 font-mono">工具/系统监控仪表板/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="工具/钢琴/index.html" class="file-item block bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4" data-name="钢琴">
+          <div class="flex items-start">
+            <div class="text-3xl text-teal-500 mr-3 mt-1"><i class="fas fa-music"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">钢琴</h3>
+              <p class="text-sm text-gray-600 mt-1">在线钢琴演奏工具</p>
+              <span class="text-xs text-teal-600 font-mono">工具/钢琴/index.html</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 游戏 -->
+    <section class="bg-white/95 rounded-2xl shadow-xl p-6 card">
+      <h2 class="category-title text-2xl font-bold text-gray-800 mb-5 flex items-center">
+        <i class="fas fa-gamepad text-pink-600 mr-2"></i>游戏
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-category="游戏">
+        <a href="游戏/五子棋/index.html" class="file-item block bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4" data-name="五子棋">
+          <div class="flex items-start">
+            <div class="text-3xl text-pink-500 mr-3 mt-1"><i class="fas fa-chess-board"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">五子棋</h3>
+              <p class="text-sm text-gray-600 mt-1">经典五子棋对战游戏</p>
+              <span class="text-xs text-pink-600 font-mono">游戏/五子棋/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="游戏/俄罗斯方块/tetris.html" class="file-item block bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4" data-name="俄罗斯方块">
+          <div class="flex items-start">
+            <div class="text-3xl text-pink-500 mr-3 mt-1"><i class="fas fa-shapes"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">俄罗斯方块</h3>
+              <p class="text-sm text-gray-600 mt-1">经典俄罗斯方块游戏</p>
+              <span class="text-xs text-pink-600 font-mono">游戏/俄罗斯方块/tetris.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="游戏/围棋/index.html" class="file-item block bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4" data-name="围棋">
+          <div class="flex items-start">
+            <div class="text-3xl text-pink-500 mr-3 mt-1"><i class="fas fa-circle-dot"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">围棋</h3>
+              <p class="text-sm text-gray-600 mt-1">围棋对弈游戏</p>
+              <span class="text-xs text-pink-600 font-mono">游戏/围棋/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="游戏/小转盘/index.html" class="file-item block bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4" data-name="小转盘">
+          <div class="flex items-start">
+            <div class="text-3xl text-pink-500 mr-3 mt-1"><i class="fas fa-dharmachakra"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">小转盘</h3>
+              <p class="text-sm text-gray-600 mt-1">幸运转盘抽奖游戏</p>
+              <span class="text-xs text-pink-600 font-mono">游戏/小转盘/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="游戏/扫雷/index.html" class="file-item block bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4" data-name="扫雷">
+          <div class="flex items-start">
+            <div class="text-3xl text-pink-500 mr-3 mt-1"><i class="fas fa-bomb"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">扫雷</h3>
+              <p class="text-sm text-gray-600 mt-1">经典扫雷益智游戏</p>
+              <span class="text-xs text-pink-600 font-mono">游戏/扫雷/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="游戏/数独/index.html" class="file-item block bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4" data-name="数独">
+          <div class="flex items-start">
+            <div class="text-3xl text-pink-500 mr-3 mt-1"><i class="fas fa-table-cells-large"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">数独</h3>
+              <p class="text-sm text-gray-600 mt-1">数独益智游戏</p>
+              <span class="text-xs text-pink-600 font-mono">游戏/数独/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="游戏/汉诺塔/index.html" class="file-item block bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4" data-name="汉诺塔">
+          <div class="flex items-start">
+            <div class="text-3xl text-pink-500 mr-3 mt-1"><i class="fas fa-tower-observation"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">汉诺塔</h3>
+              <p class="text-sm text-gray-600 mt-1">汉诺塔经典益智游戏</p>
+              <span class="text-xs text-pink-600 font-mono">游戏/汉诺塔/index.html</span>
+            </div>
+          </div>
+        </a>
+        <a href="游戏/跳跳板大冒险/index.html" class="file-item block bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-4" data-name="跳跳板大冒险">
+          <div class="flex items-start">
+            <div class="text-3xl text-pink-500 mr-3 mt-1"><i class="fas fa-person-running"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">跳跳板大冒险</h3>
+              <p class="text-sm text-gray-600 mt-1">跳跃冒险闯关游戏</p>
+              <span class="text-xs text-pink-600 font-mono">游戏/跳跳板大冒险/index.html</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 生日 -->
+    <section class="bg-white/95 rounded-2xl shadow-xl p-6 card">
+      <h2 class="category-title text-2xl font-bold text-gray-800 mb-5 flex items-center">
+        <i class="fas fa-cake-candles text-rose-600 mr-2"></i>生日
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-category="生日">
+        <a href="生日/Dad/index.html" class="file-item block bg-gradient-to-br from-rose-50 to-red-50 border border-rose-100 rounded-xl p-4" data-name="Dad 生日">
+          <div class="flex items-start">
+            <div class="text-3xl text-rose-500 mr-3 mt-1"><i class="fas fa-gift"></i></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-800">Dad 生日</h3>
+              <p class="text-sm text-gray-600 mt-1">爸爸生日祝福页面</p>
+              <span class="text-xs text-rose-600 font-mono">生日/Dad/index.html</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- 无结果提示 -->
+    <div id="noResult" class="hidden text-center text-white py-12">
+      <i class="fas fa-search-minus text-5xl mb-4 opacity-70"></i>
+      <p class="text-xl">未找到匹配的文件</p>
+    </div>
+
+  </div>
+
+  <!-- 底部搜索 -->
+  <div class="mt-10 bg-white/95 rounded-2xl shadow-xl p-6 card">
+    <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+      <i class="fas fa-magnifying-glass text-purple-600 mr-2"></i>快速搜索
+    </h3>
+    <div class="flex gap-3">
+      <input type="text" id="searchInput" placeholder="输入文件名或关键词进行搜索..."
+        class="flex-1 px-5 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors text-gray-700">
+      <button id="clearBtn" class="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors">
+        <i class="fas fa-eraser mr-1"></i>清除
+      </button>
+    </div>
+    <p class="text-sm text-gray-500 mt-3">
+      <i class="fas fa-info-circle mr-1"></i>
+      共 <span id="totalCount" class="font-bold text-purple-600">0</span> 个文件 · 当前显示 <span id="visibleCount" class="font-bold text-purple-600">0</span> 个
+    </p>
+  </div>
+
+  <!-- 页脚 -->
+  <div class="text-center mt-8 text-white/80 text-sm">
+    <p><i class="far fa-folder mr-1"></i>Page 文件夹备份导航 · 原始功能备份</p>
+  </div>
+
+</div>
+
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearBtn');
+  const noResult = document.getElementById('noResult');
+  const totalCountEl = document.getElementById('totalCount');
+  const visibleCountEl = document.getElementById('visibleCount');
+  const allItems = document.querySelectorAll('.file-item');
+  const allSections = document.querySelectorAll('#content > section');
+
+  totalCountEl.textContent = allItems.length;
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function doSearch() {
+    const keyword = searchInput.value.trim().toLowerCase();
+    let visibleTotal = 0;
+
+    allItems.forEach(item => {
+      const name = item.getAttribute('data-name') || '';
+      const path = item.querySelector('span')?.textContent || '';
+      const desc = item.querySelector('p')?.textContent || '';
+      const text = (name + ' ' + path + ' ' + desc).toLowerCase();
+
+      if (!keyword || text.includes(keyword)) {
+        item.style.display = '';
+        visibleTotal++;
+
+        if (keyword) {
+          const titleEl = item.querySelector('h3');
+          const descEl = item.querySelector('p');
+          const pathEl = item.querySelector('span');
+          const re = new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+          const originalName = item.getAttribute('data-name');
+          const originalDesc = item.querySelector('p').getAttribute('data-original') || item.querySelector('p').textContent;
+          const originalPath = pathEl.getAttribute('data-original') || pathEl.textContent;
+
+          if (!item.querySelector('p').getAttribute('data-original')) {
+            item.querySelector('p').setAttribute('data-original', originalDesc);
+            pathEl.setAttribute('data-original', originalPath);
+          }
+
+          titleEl.innerHTML = originalName.replace(re, '<span class="highlight">$1</span>');
+          item.querySelector('p').innerHTML = item.querySelector('p').getAttribute('data-original').replace(re, '<span class="highlight">$1</span>');
+          pathEl.innerHTML = pathEl.getAttribute('data-original').replace(re, '<span class="highlight">$1</span>');
+        } else {
+          const titleEl = item.querySelector('h3');
+          const descEl = item.querySelector('p');
+          const pathEl = item.querySelector('span');
+          const originalDesc = item.querySelector('p').getAttribute('data-original');
+          const originalPath = pathEl.getAttribute('data-original');
+          titleEl.innerHTML = item.getAttribute('data-name');
+          if (originalDesc) item.querySelector('p').innerHTML = originalDesc;
+          if (originalPath) pathEl.innerHTML = originalPath;
+        }
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    allSections.forEach(section => {
+      const visible = section.querySelectorAll('.file-item:not([style*="display: none"])');
+      if (visible.length === 0 && keyword) {
+        section.style.display = 'none';
+      } else {
+        section.style.display = '';
+      }
+    });
+
+    visibleCountEl.textContent = visibleTotal;
+    noResult.classList.toggle('hidden', visibleTotal > 0 || !keyword);
+    if (!keyword) noResult.classList.add('hidden');
+  }
+
+  searchInput.addEventListener('input', doSearch);
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    doSearch();
+  });
+
+  // 初始化
+  doSearch();
+</script>
+
+</body>
+</html>

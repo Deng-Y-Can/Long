@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摩斯密码工具 | 编码、解码与学习</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        // Tailwind 配置
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#722ED1',
+                        dark: '#1D2129',
+                        light: '#F2F3F5'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .morse-dot {
+                @apply w-3 h-3 rounded-full bg-primary inline-block mx-0.5;
+            }
+            .morse-dash {
+                @apply w-8 h-3 rounded bg-primary inline-block mx-0.5;
+            }
+            .morse-space {
+                @apply w-12 inline-block;
+            }
+            .btn-primary {
+                @apply bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
+            }
+            .btn-secondary {
+                @apply bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
+            }
+            .card {
+                @apply bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl;
+            }
+            .section {
+                @apply py-12 px-4 md:px-8 max-w-7xl mx-auto;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md fixed w-full z-10 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fa fa-signal text-primary text-2xl mr-2"></i>
+                        <span class="font-bold text-xl text-primary">摩斯密码工具</span>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#encoder" class="text-gray-700 hover:text-primary transition-colors">编码</a>
+                    <a href="#decoder" class="text-gray-700 hover:text-primary transition-colors">解码</a>
+                    <a href="#visualization" class="text-gray-700 hover:text-primary transition-colors">可视化</a>
+                    <a href="#learn" class="text-gray-700 hover:text-primary transition-colors">学习</a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-700 hover:text-primary">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#encoder" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">编码</a>
+                <a href="#decoder" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">解码</a>
+                <a href="#visualization" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">可视化</a>
+                <a href="#learn" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50">学习</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <header class="pt-28 pb-16 bg-gradient-to-br from-primary/5 to-secondary/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-dark mb-6">
+                摩斯密码 <span class="text-primary">编码与解码</span> 工具
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+                轻松实现文本与摩斯密码之间的转换，探索这一经典通信方式的奥秘
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#encoder" class="btn-primary">
+                    <i class="fa fa-arrow-right mr-2"></i>开始使用
+                </a>
+                <a href="#learn" class="btn-secondary">
+                    <i class="fa fa-book mr-2"></i>学习摩斯密码
+                </a>
+            </div>
+            
+            <!-- 摩斯密码动画示例 -->
+            <div class="mt-12 flex justify-center items-center space-x-1">
+                <div class="morse-dot animate-pulse"></div>
+                <div class="morse-dot animate-pulse" style="animation-delay: 0.3s"></div>
+                <div class="morse-dot animate-pulse" style="animation-delay: 0.6s"></div>
+                <div class="morse-space"></div>
+                <div class="morse-dash animate-pulse" style="animation-delay: 0.9s"></div>
+                <div class="morse-dash animate-pulse" style="animation-delay: 1.2s"></div>
+                <div class="morse-dash animate-pulse" style="animation-delay: 1.5s"></div>
+                <div class="morse-space"></div>
+                <div class="morse-dot animate-pulse" style="animation-delay: 1.8s"></div>
+                <div class="morse-dot animate-pulse" style="animation-delay: 2.1s"></div>
+                <div class="morse-dot animate-pulse" style="animation-delay: 2.4s"></div>
+            </div>
+            <p class="text-gray-500 mt-4">SOS 信号示例</p>
+        </div>
+    </header>
+
+    <main>
+        <!-- 编码区域 -->
+        <section id="encoder" class="section">
+            <div class="card">
+                <h2 class="text-3xl font-bold mb-6 flex items-center">
+                    <i class="fa fa-code text-primary mr-3"></i>文本转摩斯密码
+                </h2>
+                <div class="grid md:grid-cols-12 gap-6">
+                    <div class="md:col-span-6">
+                        <label for="text-input" class="block text-sm font-medium text-gray-700 mb-2">输入文本</label>
+                        <textarea 
+                            id="text-input" 
+                            rows="8" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                            placeholder="请输入要转换为摩斯密码的文本..."></textarea>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <button id="encode-btn" class="btn-primary">
+                                <i class="fa fa-arrow-right mr-1"></i>转换为摩斯密码
+                            </button>
+                            <button id="clear-text-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all">
+                                <i class="fa fa-eraser mr-1"></i>清空
+                            </button>
+                            <button id="sample-text-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all">
+                                <i class="fa fa-file-text-o mr-1"></i>示例文本
+                            </button>
+                        </div>
+                    </div>
+                    <div class="md:col-span-6">
+                        <label for="morse-output" class="block text-sm font-medium text-gray-700 mb-2">摩斯密码输出</label>
+                        <div id="morse-output" class="w-full min-h-[140px] px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 overflow-auto"></div>
+                        <div class="flex items-center mt-2">
+                            <button id="copy-morse-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all mr-2">
+                                <i class="fa fa-copy mr-1"></i>复制结果
+                            </button>
+                            <span id="copy-morse-message" class="text-green-600 text-sm hidden">已复制到剪贴板!</span>
+                            <button id="play-morse-btn" class="ml-auto bg-accent hover:bg-accent/90 text-white font-medium py-2 px-4 rounded-lg transition-all">
+                                <i class="fa fa-volume-up mr-1"></i>播放摩斯信号
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 解码区域 -->
+        <section id="decoder" class="section bg-gray-50">
+            <div class="card">
+                <h2 class="text-3xl font-bold mb-6 flex items-center">
+                    <i class="fa fa-decode text-primary mr-3"></i>摩斯密码转文本
+                </h2>
+                <div class="grid md:grid-cols-12 gap-6">
+                    <div class="md:col-span-6">
+                        <label for="morse-input" class="block text-sm font-medium text-gray-700 mb-2">输入摩斯密码</label>
+                        <textarea 
+                            id="morse-input" 
+                            rows="8" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                            placeholder="请输入要转换为文本的摩斯密码，用空格分隔字母，用斜杠(/)分隔单词..."></textarea>
+                        <p class="text-xs text-gray-500 mt-1">提示：用空格分隔字母，用斜杠(/)分隔单词，例如: .- .-.. .-.. / -- . ..- ... .</p>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <button id="decode-btn" class="btn-primary">
+                                <i class="fa fa-arrow-left mr-1"></i>转换为文本
+                            </button>
+                            <button id="clear-morse-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all">
+                                <i class="fa fa-eraser mr-1"></i>清空
+                            </button>
+                            <button id="sample-morse-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all">
+                                <i class="fa fa-file-text-o mr-1"></i>示例密码
+                            </button>
+                        </div>
+                    </div>
+                    <div class="md:col-span-6">
+                        <label for="text-output" class="block text-sm font-medium text-gray-700 mb-2">文本输出</label>
+                        <div id="text-output" class="w-full min-h-[140px] px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 overflow-auto"></div>
+                        <div class="flex items-center mt-2">
+                            <button id="copy-text-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all mr-2">
+                                <i class="fa fa-copy mr-1"></i>复制结果
+                            </button>
+                            <span id="copy-text-message" class="text-green-600 text-sm hidden">已复制到剪贴板!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 可视化区域 -->
+        <section id="visualization" class="section">
+            <div class="card">
+                <h2 class="text-3xl font-bold mb-6 flex items-center">
+                    <i class="fa fa-bar-chart text-primary mr-3"></i>摩斯密码可视化
+                </h2>
+                <p class="text-gray-600 mb-6">直观展示摩斯密码的节奏和结构，帮助理解其时间间隔规则</p>
+                
+                <div class="mb-6">
+                    <label for="visualization-input" class="block text-sm font-medium text-gray-700 mb-2">输入文本或摩斯密码</label>
+                    <input 
+                        id="visualization-input" 
+                        type="text" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                        placeholder="输入内容以可视化展示..."
+                        value="SOS">
+                    <button id="visualize-btn" class="btn-primary mt-3">
+                        <i class="fa fa-eye mr-1"></i>生成可视化
+                    </button>
+                </div>
+                
+                <div id="visualization-container" class="w-full h-40 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-center p-4 overflow-x-auto">
+                    <!-- 可视化内容将在这里生成 -->
+                </div>
+                
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center mb-2">
+                            <div class="morse-dot mr-2"></div>
+                            <span class="font-medium">点 (·)</span>
+                        </div>
+                        <p class="text-sm text-gray-600">持续1个时间单位，是摩斯密码中最短的信号</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center mb-2">
+                            <div class="morse-dash mr-2"></div>
+                            <span class="font-medium">划 (-)</span>
+                        </div>
+                        <p class="text-sm text-gray-600">持续3个时间单位，长度是点的三倍</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center mb-2">
+                            <div class="morse-space mr-2 border-b border-gray-400"></div>
+                            <span class="font-medium">间隔</span>
+                        </div>
+                        <p class="text-sm text-gray-600">点和划之间1单位，字母间3单位，单词间7单位</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 学习区域 -->
+        <section id="learn" class="section bg-gray-50">
+            <h2 class="text-3xl font-bold mb-8 text-center">
+                <i class="fa fa-graduation-cap text-primary mr-3"></i>学习摩斯密码
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-4 text-primary">字母与数字对应表</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-3 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">字符</th>
+                                    <th class="px-3 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">摩斯密码</th>
+                                    <th class="px-3 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">字符</th>
+                                    <th class="px-3 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">摩斯密码</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="morse-table-body">
+                                <!-- 表格内容将通过JavaScript生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-4 text-primary">摩斯密码历史与应用</h3>
+                    <p class="text-gray-600 mb-4">
+                        摩斯密码是由塞缪尔·摩尔斯在1830年代发明的一种电信编码系统，最初用于电报通信。它通过不同的点、划组合来表示字母、数字和标点符号。
+                    </p>
+                    <p class="text-gray-600 mb-4">
+                        在历史上，摩斯密码在战争、航海和紧急救援中发挥了重要作用。著名的"SOS"紧急信号就是用摩斯密码发送的："... --- ..."。
+                    </p>
+                    <p class="text-gray-600">
+                        即使在现代通信技术高度发达的今天，摩斯密码仍然被业余无线电爱好者使用，并且是国际通用的紧急信号传递方式之一。
+                    </p>
+                    
+                    <div class="mt-6">
+                        <h4 class="font-bold mb-2">学习技巧</h4>
+                        <ul class="list-disc pl-5 text-gray-600 space-y-1">
+                            <li>从常用字母开始学习（如E、T、A）</li>
+                            <li>通过听力练习加深记忆</li>
+                            <li>使用联想记忆法记住每个字符的编码</li>
+                            <li>每天练习15-20分钟，循序渐进</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4 text-primary">摩斯密码练习</h3>
+                <p class="text-gray-600 mb-6">测试你的摩斯密码识别能力</p>
+                
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="md:w-1/2">
+                        <div id="exercise-display" class="p-6 bg-gray-50 rounded-lg border border-gray-200 min-h-[100px] flex items-center justify-center">
+                            <!-- 练习内容将在这里显示 -->
+                        </div>
+                        <div class="mt-4 flex justify-center">
+                            <button id="next-exercise-btn" class="btn-primary">
+                                <i class="fa fa-refresh mr-1"></i>新练习
+                            </button>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2">
+                        <label for="exercise-answer" class="block text-sm font-medium text-gray-700 mb-2">你的答案</label>
+                        <input 
+                            id="exercise-answer" 
+                            type="text" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                            placeholder="输入你的答案...">
+                        <div class="mt-4 flex gap-2">
+                            <button id="check-answer-btn" class="btn-primary">
+                                <i class="fa fa-check mr-1"></i>检查答案
+                            </button>
+                            <button id="show-answer-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-all">
+                                <i class="fa fa-eye mr-1"></i>显示答案
+                            </button>
+                        </div>
+                        <div id="exercise-feedback" class="mt-4 p-3 rounded-lg hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center">
+                        <i class="fa fa-signal text-primary text-2xl mr-2"></i>
+                        <span class="font-bold text-xl">摩斯密码工具</span>
+                    </div>
+                    <p class="text-gray-400 mt-2">一个功能全面的摩斯密码学习与转换工具</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-envelope text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+                &copy; 2023 摩斯密码工具 | 用现代技术传承经典通信方式
+            </div>
+        </div>
+    </footer>
+
+    <!-- 音频上下文初始化 -->
+    <script>
+        // 摩斯密码映射表
+        const morseCodeMap = {
+            'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 'G': '--.', 'H': '....',
+            'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---', 'P': '.--.',
+            'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+            'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
+            '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.', '.': '.-.-.-', ',': '--..--',
+            '?': '..--..', "'": '.----.', '!': '-.-.--', '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...',
+            ':': '---...', ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-', '"': '.-..-.',
+            '$': '...-..-', '@': '.--.-.', ' ': '/'
+        };
+
+        // 反向映射表（摩斯密码到字符）
+        const reverseMorseMap = {};
+        for (const [char, code] of Object.entries(morseCodeMap)) {
+            reverseMorseMap[code] = char;
+        }
+
+        // DOM 元素
+        const textInput = document.getElementById('text-input');
+        const morseOutput = document.getElementById('morse-output');
+        const morseInput = document.getElementById('morse-input');
+        const textOutput = document.getElementById('text-output');
+        const encodeBtn = document.getElementById('encode-btn');
+        const decodeBtn = document.getElementById('decode-btn');
+        const clearTextBtn = document.getElementById('clear-text-btn');
+        const clearMorseBtn = document.getElementById('clear-morse-btn');
+        const sampleTextBtn = document.getElementById('sample-text-btn');
+        const sampleMorseBtn = document.getElementById('sample-morse-btn');
+        const copyMorseBtn = document.getElementById('copy-morse-btn');
+        const copyTextBtn = document.getElementById('copy-text-btn');
+        const copyMorseMessage = document.getElementById('copy-morse-message');
+        const copyTextMessage = document.getElementById('copy-text-message');
+        const playMorseBtn = document.getElementById('play-morse-btn');
+        const visualizationInput = document.getElementById('visualization-input');
+        const visualizationContainer = document.getElementById('visualization-container');
+        const visualizeBtn = document.getElementById('visualize-btn');
+        const morseTableBody = document.getElementById('morse-table-body');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navbar = document.getElementById('navbar');
+        const exerciseDisplay = document.getElementById('exercise-display');
+        const exerciseAnswer = document.getElementById('exercise-answer');
+        const nextExerciseBtn = document.getElementById('next-exercise-btn');
+        const checkAnswerBtn = document.getElementById('check-answer-btn');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+        const exerciseFeedback = document.getElementById('exercise-feedback');
+
+        // 当前练习的正确答案
+        let currentExerciseAnswer = '';
+
+        // 编码功能
+        function encodeToMorse(text) {
+            if (!text) return '';
+            
+            const upperText = text.toUpperCase();
+            let morse = [];
+            
+            for (const char of upperText) {
+                if (morseCodeMap[char]) {
+                    morse.push(morseCodeMap[char]);
+                }
+            }
+            
+            return morse.join(' ');
+        }
+
+        // 解码功能
+        function decodeFromMorse(morse) {
+            if (!morse) return '';
+            
+            const words = morse.split('/');
+            let text = [];
+            
+            for (const word of words) {
+                const chars = word.trim().split(' ');
+                let decodedWord = '';
+                
+                for (const char of chars) {
+                    if (char && reverseMorseMap[char]) {
+                        decodedWord += reverseMorseMap[char];
+                    }
+                }
+                
+                text.push(decodedWord);
+            }
+            
+            return text.join(' ');
+        }
+
+        // 播放摩斯密码声音
+        function playMorseCode(morse) {
+            if (!morse) return;
+            
+            // 创建音频上下文
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const dotDuration = 100; // 点的持续时间（毫秒）
+            const dashDuration = dotDuration * 3; // 划的持续时间
+            const charGap = dotDuration; // 字符内点划间隔
+            const letterGap = dotDuration * 3; // 字母间隔
+            const wordGap = dotDuration * 7; // 单词间隔
+            
+            let time = 0;
+            
+            // 创建 oscillator
+            function createTone(duration) {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 600; // 频率（Hz）
+                gainNode.gain.value = 0.1; // 音量
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.start(audioContext.currentTime + time / 1000);
+                oscillator.stop(audioContext.currentTime + (time + duration) / 1000);
+                
+                time += duration;
+            }
+            
+            // 处理摩斯密码
+            const words = morse.split('/');
+            
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                const chars = word.trim().split(' ');
+                
+                for (let j = 0; j < chars.length; j++) {
+                    const char = chars[j];
+                    
+                    if (!char) continue;
+                    
+                    // 处理每个点和划
+                    for (const symbol of char) {
+                        if (symbol === '.') {
+                            createTone(dotDuration);
+                        } else if (symbol === '-') {
+                            createTone(dashDuration);
+                        }
+                        time += charGap; // 点划之间的间隔
+                    }
+                    
+                    // 字母之间的间隔（减去已添加的charGap）
+                    if (j < chars.length - 1) {
+                        time += letterGap - charGap;
+                    }
+                }
+                
+                // 单词之间的间隔（减去已添加的letterGap）
+                if (i < words.length - 1) {
+                    time += wordGap - letterGap;
+                }
+            }
+        }
+
+        // 可视化摩斯密码
+        function visualizeMorse(input) {
+            visualizationContainer.innerHTML = '';
+            
+            let morse;
+            // 判断输入是文本还是摩斯密码
+            if (/^[.\- /]+$/.test(input)) {
+                morse = input;
+            } else {
+                morse = encodeToMorse(input);
+            }
+            
+            if (!morse) return;
+            
+            const words = morse.split('/');
+            
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                const chars = word.trim().split(' ');
+                
+                const wordContainer = document.createElement('div');
+                wordContainer.className = 'flex items-center mr-8';
+                
+                for (let j = 0; j < chars.length; j++) {
+                    const char = chars[j];
+                    
+                    if (!char) continue;
+                    
+                    const charContainer = document.createElement('div');
+                    charContainer.className = 'flex items-center mr-4';
+                    
+                    // 处理每个点和划
+                    for (const symbol of char) {
+                        const symbolElement = document.createElement('div');
+                        if (symbol === '.') {
+                            symbolElement.className = 'morse-dot';
+                        } else if (symbol === '-') {
+                            symbolElement.className = 'morse-dash';
+                        }
+                        charContainer.appendChild(symbolElement);
+                    }
+                    
+                    wordContainer.appendChild(charContainer);
+                }
+                
+                visualizationContainer.appendChild(wordContainer);
+            }
+        }
+
+        // 生成摩斯密码表
+        function generateMorseTable() {
+            morseTableBody.innerHTML = '';
+            
+            const characters = Object.keys(morseCodeMap);
+            // 只显示字母和数字
+            const filteredChars = characters.filter(char => /[A-Z0-9]/.test(char));
+            
+            // 每两行显示8个字符
+            for (let i = 0; i < filteredChars.length; i += 4) {
+                const row = document.createElement('tr');
+                
+                for (let j = 0; j < 4 && i + j < filteredChars.length; j++) {
+                    const char = filteredChars[i + j];
+                    const code = morseCodeMap[char];
+                    
+                    // 创建字符和编码单元格
+                    const charCell = document.createElement('td');
+                    charCell.className = 'px-3 py-2 whitespace-nowrap';
+                    charCell.innerHTML = `<div class="font-medium text-gray-900">${char}</div>`;
+                    
+                    const codeCell = document.createElement('td');
+                    codeCell.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-500';
+                    codeCell.textContent = code;
+                    
+                    row.appendChild(charCell);
+                    row.appendChild(codeCell);
+                }
+                
+                morseTableBody.appendChild(row);
+            }
+        }
+
+        // 生成练习
+        function generateExercise() {
+            // 选择常用字符作为练习
+            const commonChars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
+                                'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            
+            // 随机选择一个字符
+            const randomIndex = Math.floor(Math.random() * commonChars.length);
+            currentExerciseAnswer = commonChars[randomIndex];
+            const morseCode = morseCodeMap[currentExerciseAnswer];
+            
+            // 显示摩斯密码
+            exerciseDisplay.innerHTML = '';
+            for (const symbol of morseCode) {
+                const symbolElement = document.createElement('div');
+                if (symbol === '.') {
+                    symbolElement.className = 'morse-dot';
+                } else if (symbol === '-') {
+                    symbolElement.className = 'morse-dash';
+                }
+                exerciseDisplay.appendChild(symbolElement);
+            }
+            
+            // 重置答案和反馈
+            exerciseAnswer.value = '';
+            exerciseFeedback.className = 'mt-4 p-3 rounded-lg hidden';
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            const userAnswer = exerciseAnswer.value.toUpperCase();
+            
+            if (userAnswer === currentExerciseAnswer) {
+                exerciseFeedback.textContent = '正确！太棒了！';
+                exerciseFeedback.className = 'mt-4 p-3 rounded-lg bg-green-100 text-green-800';
+            } else {
+                exerciseFeedback.textContent = `不正确。你输入的是 ${userAnswer}，正确答案是 ${currentExerciseAnswer}`;
+                exerciseFeedback.className = 'mt-4 p-3 rounded-lg bg-red-100 text-red-800';
+            }
+        }
+
+        // 显示答案
+        function showAnswer() {
+            exerciseAnswer.value = currentExerciseAnswer;
+            exerciseFeedback.textContent = `正确答案是 ${currentExerciseAnswer}`;
+            exerciseFeedback.className = 'mt-4 p-3 rounded-lg bg-blue-100 text-blue-800';
+        }
+
+        // 事件监听
+        encodeBtn.addEventListener('click', () => {
+            const text = textInput.value;
+            const morse = encodeToMorse(text);
+            morseOutput.textContent = morse;
+        });
+
+        decodeBtn.addEventListener('click', () => {
+            const morse = morseInput.value;
+            const text = decodeFromMorse(morse);
+            textOutput.textContent = text;
+        });
+
+        clearTextBtn.addEventListener('click', () => {
+            textInput.value = '';
+            morseOutput.textContent = '';
+        });
+
+        clearMorseBtn.addEventListener('click', () => {
+            morseInput.value = '';
+            textOutput.textContent = '';
+        });
+
+        sampleTextBtn.addEventListener('click', () => {
+            textInput.value = 'Hello, World! This is a Morse code converter.';
+            const morse = encodeToMorse(textInput.value);
+            morseOutput.textContent = morse;
+        });
+
+        sampleMorseBtn.addEventListener('click', () => {
+            morseInput.value = '.... . .-.. .-.. --- --..-- / .-- --- .-. .-.. -.. -.-.-- / - .... .. ... / .. ... / .- / -- --- .-. ... . / -.-. --- -.. . / -.-. --- -. ...- . .-. - ... .--. .-.. . .-.';
+            const text = decodeFromMorse(morseInput.value);
+            textOutput.textContent = text;
+        });
+
+        copyMorseBtn.addEventListener('click', () => {
+            const textToCopy = morseOutput.textContent;
+            if (textToCopy) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    copyMorseMessage.classList.remove('hidden');
+                    setTimeout(() => {
+                        copyMorseMessage.classList.add('hidden');
+                    }, 2000);
+                });
+            }
+        });
+
+        copyTextBtn.addEventListener('click', () => {
+            const textToCopy = textOutput.textContent;
+            if (textToCopy) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    copyTextMessage.classList.remove('hidden');
+                    setTimeout(() => {
+                        copyTextMessage.classList.add('hidden');
+                    }, 2000);
+                });
+            }
+        });
+
+        playMorseBtn.addEventListener('click', () => {
+            const morse = morseOutput.textContent || encodeToMorse(textInput.value);
+            playMorseCode(morse);
+        });
+
+        visualizeBtn.addEventListener('click', () => {
+            visualizeMorse(visualizationInput.value);
+        });
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        nextExerciseBtn.addEventListener('click', generateExercise);
+        checkAnswerBtn.addEventListener('click', checkAnswer);
+        showAnswerBtn.addEventListener('click', showAnswer);
+
+        // 页面滚动时改变导航栏样式
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+                navbar.classList.add('shadow-lg', 'bg-white/95', 'backdrop-blur-sm');
+                navbar.classList.remove('shadow-md', 'bg-white');
+            } else {
+                navbar.classList.remove('shadow-lg', 'bg-white/95', 'backdrop-blur-sm');
+                navbar.classList.add('shadow-md', 'bg-white');
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                // 关闭移动菜单（如果打开）
+                mobileMenu.classList.add('hidden');
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            generateMorseTable();
+            visualizeMorse(visualizationInput.value);
+            generateExercise();
+            
+            // 示例文本编码
+            sampleTextBtn.click();
+        });
+    </script>
+</body>
+</html>

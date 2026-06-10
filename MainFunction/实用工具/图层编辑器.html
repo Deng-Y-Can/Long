@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy编程助手 - 图层编辑器</title>
+    <style>
+        /* 基础样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            color: #1e293b;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+        }
+
+        input, textarea, select {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+        }
+
+            input:focus, textarea:focus, select:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            }
+
+        /* 顶部导航栏 */
+        header {
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .logo h1 {
+                font-size: 1.25rem;
+                font-weight: bold;
+                color: #3b82f6;
+            }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: #e5e7eb;
+            color: #1e293b;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 主内容区 */
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* 左侧工具栏 */
+        .sidebar {
+            background-color: white;
+            width: 16rem;
+            box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .panel {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .tool-btn {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+            .tool-btn i {
+                font-size: 1.25rem;
+                margin-bottom: 0.25rem;
+            }
+
+        .layers-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .layer-item {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+            .layer-item:hover {
+                border-color: rgba(59, 130, 246, 0.5);
+            }
+
+            .layer-item.active {
+                background-color: rgba(59, 130, 246, 0.1);
+                border-color: #3b82f6;
+            }
+
+            .layer-item i {
+                margin-right: 0.5rem;
+            }
+
+        .layer-name {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 中央画布区域 */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: #e5e7eb;
+            position: relative;
+        }
+
+        .canvas-container {
+            position: relative;
+            background-color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform-origin: center;
+            transition: transform 0.3s ease;
+        }
+
+        canvas {
+            display: block;
+            cursor: grab;
+        }
+
+            canvas:active {
+                cursor: grabbing;
+            }
+
+        .selection-indicator {
+            position: absolute;
+            border: 2px dashed #ef4444;
+            pointer-events: none;
+            display: none;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 0.25rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .zoom-btn {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            background-color: transparent;
+            color: #1e293b;
+        }
+
+        .zoom-level {
+            padding: 0 0.5rem;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* 右侧属性面板 */
+        .properties-panel {
+            background-color: white;
+            width: 18rem;
+            box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control {
+            width: 100%;
+        }
+
+        .color-inputs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .color-picker {
+            width: 2.5rem;
+            height: 2.5rem;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .color-hex {
+            flex: 1;
+        }
+
+        /* 底部状态栏 */
+        footer {
+            background-color: #1e293b;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 帮助模态框 */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            display: none;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 42rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+            .modal-close:hover {
+                color: #1e293b;
+            }
+
+        .help-section {
+            margin-bottom: 1rem;
+        }
+
+            .help-section h3 {
+                font-size: 1.125rem;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+            }
+
+            .help-section ul {
+                list-style-type: disc;
+                padding-left: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .help-section li {
+                margin-bottom: 0.25rem;
+            }
+
+        /* 隐藏滚动条 */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 显示/隐藏元素 */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header>
+        <div class="logo">
+            <span>🎨</span>
+            <h1>Candy图层编辑器</h1>
+        </div>
+        <div class="header-actions">
+            <button id="exportBtn" class="btn btn-secondary">
+                导出图像
+            </button>
+            <button id="helpBtn" class="btn btn-outline">
+                帮助
+            </button>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main>
+        <!-- 左侧工具栏 -->
+        <aside class="sidebar">
+            <div class="panel">
+                <h2 class="panel-title">图层操作</h2>
+                <div class="grid">
+                    <button id="addImageLayer" class="tool-btn btn-primary">
+                        <i>🖼️</i>
+                        <span>添加图片</span>
+                    </button>
+                    <button id="addColorLayer" class="tool-btn" style="background-color: #8b5cf6; color: white;">
+                        <i>⬜</i>
+                        <span>添加纯色</span>
+                    </button>
+                    <button id="moveUpBtn" class="tool-btn" style="background-color: #e5e7eb;">
+                        <i>⬆️</i>
+                        <span>上移</span>
+                    </button>
+                    <button id="moveDownBtn" class="tool-btn" style="background-color: #e5e7eb;">
+                        <i>⬇️</i>
+                        <span>下移</span>
+                    </button>
+                    <button id="deleteLayerBtn" class="tool-btn" style="background-color: #ef4444; color: white;">
+                        <i>🗑️</i>
+                        <span>删除</span>
+                    </button>
+                    <button id="clearAllBtn" class="tool-btn" style="background-color: #4b5563; color: white;">
+                        <i>🧹</i>
+                        <span>清空</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 图层列表 -->
+            <div class="layers-list scrollbar-hide">
+                <h2 class="panel-title">图层列表</h2>
+                <div id="layersList" class="space-y-1">
+                    <!-- 图层项将通过JavaScript动态添加 -->
+                </div>
+            </div>
+
+            <!-- 当前图层属性 -->
+            <div id="layerProperties" class="panel hidden">
+                <h2 class="panel-title">图层属性</h2>
+                <div class="space-y-4">
+                    <div class="form-group">
+                        <label class="form-label">图层名称</label>
+                        <input type="text" id="layerName" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">透明度</label>
+                        <input type="range" id="opacitySlider" min="0" max="100" value="100" class="form-control">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                            <span>0%</span>
+                            <span id="opacityValue">100%</span>
+                        </div>
+                    </div>
+                    <div id="positionControls" class="hidden">
+                        <label class="form-label">位置调整</label>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; color: #6b7280;">X坐标</label>
+                                <input type="number" id="layerX" style="width: 100%; padding: 0.25rem; font-size: 0.75rem;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.75rem; color: #6b7280;">Y坐标</label>
+                                <input type="number" id="layerY" style="width: 100%; padding: 0.25rem; font-size: 0.75rem;">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="colorPickerContainer" class="hidden">
+                        <label class="form-label">颜色</label>
+                        <div class="color-inputs">
+                            <input type="color" id="colorPicker" class="color-picker">
+                            <input type="text" id="colorHex" class="color-hex">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中央画布区域 -->
+        <section class="canvas-area">
+            <div id="canvasContainer" class="canvas-container">
+                <canvas id="mainCanvas"></canvas>
+                <!-- 区域选择指示器 -->
+                <div id="selectionIndicator" class="selection-indicator"></div>
+            </div>
+            <!-- 缩放控制 -->
+            <div class="zoom-controls">
+                <button id="zoomOut" class="zoom-btn">➖</button>
+                <span id="zoomLevel" class="zoom-level">100%</span>
+                <button id="zoomIn" class="zoom-btn">➕</button>
+                <button id="resetZoom" class="zoom-btn">🔄</button>
+            </div>
+        </section>
+
+        <!-- 右侧属性面板 -->
+        <aside class="properties-panel">
+            <div class="panel">
+                <h2 class="panel-title">画布属性</h2>
+                <div class="space-y-4">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                        <div class="form-group">
+                            <label class="form-label">宽度</label>
+                            <input type="number" id="canvasWidth" value="800" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">高度</label>
+                            <input type="number" id="canvasHeight" value="600" class="form-control">
+                        </div>
+                    </div>
+                    <button id="resizeCanvasBtn" class="btn btn-primary" style="width: 100%;">
+                        调整画布大小
+                    </button>
+                    <div class="form-group">
+                        <label class="form-label">背景颜色</label>
+                        <div class="color-inputs">
+                            <input type="color" id="bgColorPicker" value="#ffffff" class="color-picker">
+                            <input type="text" id="bgColorHex" value="#FFFFFF" class="color-hex">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图片编辑工具 -->
+            <div id="imageEditingTools" class="panel hidden">
+                <h2 class="panel-title">图片编辑</h2>
+                <div class="space-y-4">
+                    <div class="form-group">
+                        <label class="form-label">区域选择</label>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                            <button id="selectRectangleBtn" class="btn" style="background-color: #e5e7eb;">
+                                矩形
+                            </button>
+                            <button id="selectCircleBtn" class="btn" style="background-color: #e5e7eb;">
+                                圆形
+                            </button>
+                        </div>
+                        <button id="clearSelectionBtn" class="btn" style="width: 100%; margin-top: 0.5rem; background-color: #e5e7eb; font-size: 0.75rem;">
+                            清除选择
+                        </button>
+                    </div>
+
+                    <div id="selectionInfo" class="hidden">
+                        <div style="font-size: 0.75rem; background-color: #f3f4f6; padding: 0.5rem; border-radius: 0.375rem;">
+                            <p>已选择: <span id="selectionTypeText">矩形</span></p>
+                            <p>位置: <span id="selectionPosition">0, 0</span></p>
+                            <p>大小: <span id="selectionSize">0 x 0</span></p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">颜色修改</label>
+                        <div class="space-y-2">
+                            <div class="form-group">
+                                <label style="display: block; font-size: 0.75rem; color: #6b7280;">目标颜色</label>
+                                <div class="color-inputs">
+                                    <input type="color" id="targetColorPicker" value="#000000" class="color-picker">
+                                    <input type="text" id="targetColorHex" value="#000000" class="color-hex">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: block; font-size: 0.75rem; color: #6b7280;">替换颜色</label>
+                                <div class="color-inputs">
+                                    <input type="color" id="replaceColorPicker" value="#ff0000" class="color-picker">
+                                    <input type="text" id="replaceColorHex" value="#FF0000" class="color-hex">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                                <button id="replaceColorBtn" class="btn btn-primary" style="font-size: 0.75rem;">
+                                    替换指定颜色
+                                </button>
+                                <button id="replaceAreaColorBtn" class="btn" style="background-color: #8b5cf6; color: white; font-size: 0.75rem;">
+                                    替换区域颜色
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex: 1; overflow-y: auto; padding: 1rem;">
+                <h2 class="panel-title">操作指南</h2>
+                <div style="font-size: 0.75rem; line-height: 1.5;">
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>点击"添加图片"按钮导入图片作为新图层</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>点击"添加纯色"按钮创建纯色图层</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>选中图层后可调整其透明度和其他属性</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>拖拽图层可以调整图层顺序，影响最终渲染效果</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>点击图层旁的眼睛图标可以隐藏/显示图层</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>完成编辑后点击"导出图像"保存作品</p>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <p>选中图片图层后，可在右侧面板进行颜色修改操作</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- 底部状态栏 -->
+    <footer>
+        <div>Candy编程助手 © 2025</div>
+        <div id="statusBar">就绪</div>
+    </footer>
+
+    <!-- 帮助模态框 -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">使用帮助</h2>
+                <button id="closeHelpBtn" class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>基本操作</h3>
+                    <ul>
+                        <li>点击"添加图片"按钮可以选择并导入图片作为新图层</li>
+                        <li>点击"添加纯色"按钮可以创建一个指定颜色的纯色图层</li>
+                        <li>在图层列表中点击图层可以选中该图层进行编辑</li>
+                        <li>选中图层后，可以调整其透明度或修改纯色图层的颜色</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>图层管理</h3>
+                    <ul>
+                        <li>拖拽图层可以调整图层顺序，影响最终渲染效果</li>
+                        <li>点击图层旁的眼睛图标可以切换图层的显示/隐藏状态</li>
+                        <li>使用"上移"和"下移"按钮可以微调图层位置</li>
+                        <li>点击"删除"按钮可以删除当前选中的图层</li>
+                        <li>点击"清空"按钮可以清除所有图层（此操作不可撤销）</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>画布操作</h3>
+                    <ul>
+                        <li>在右侧面板可以调整画布的宽度和高度</li>
+                        <li>可以修改画布的背景颜色</li>
+                        <li>使用右下角的缩放控制可以放大或缩小画布视图</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>图片编辑</h3>
+                    <ul>
+                        <li>选中图片图层后，可以在右侧面板使用颜色编辑工具</li>
+                        <li>可以选择矩形或圆形区域，然后修改该区域的颜色</li>
+                        <li>可以指定目标颜色，然后将图片中所有该颜色替换为新颜色</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>导出作品</h3>
+                    <ul>
+                        <li>点击顶部导航栏的"导出图像"按钮可以将当前画布保存为PNG图片</li>
+                        <li>导出的图片将包含所有可见的图层内容</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取DOM元素
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            const layersList = document.getElementById('layersList');
+            const addImageLayerBtn = document.getElementById('addImageLayer');
+            const addColorLayerBtn = document.getElementById('addColorLayer');
+            const deleteLayerBtn = document.getElementById('deleteLayerBtn');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            const moveUpBtn = document.getElementById('moveUpBtn');
+            const moveDownBtn = document.getElementById('moveDownBtn');
+            const layerProperties = document.getElementById('layerProperties');
+            const layerNameInput = document.getElementById('layerName');
+            const opacitySlider = document.getElementById('opacitySlider');
+            const opacityValue = document.getElementById('opacityValue');
+            const colorPickerContainer = document.getElementById('colorPickerContainer');
+            const colorPicker = document.getElementById('colorPicker');
+            const colorHex = document.getElementById('colorHex');
+            const positionControls = document.getElementById('positionControls');
+            const layerXInput = document.getElementById('layerX');
+            const layerYInput = document.getElementById('layerY');
+            const canvasWidthInput = document.getElementById('canvasWidth');
+            const canvasHeightInput = document.getElementById('canvasHeight');
+            const resizeCanvasBtn = document.getElementById('resizeCanvasBtn');
+            const bgColorPicker = document.getElementById('bgColorPicker');
+            const bgColorHex = document.getElementById('bgColorHex');
+            const exportBtn = document.getElementById('exportBtn');
+            const helpBtn = document.getElementById('helpBtn');
+            const helpModal = document.getElementById('helpModal');
+            const closeHelpBtn = document.getElementById('closeHelpBtn');
+            const statusBar = document.getElementById('statusBar');
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const resetZoomBtn = document.getElementById('resetZoom');
+            const zoomLevel = document.getElementById('zoomLevel');
+            const canvasContainer = document.getElementById('canvasContainer');
+            const imageEditingTools = document.getElementById('imageEditingTools');
+            const selectRectangleBtn = document.getElementById('selectRectangleBtn');
+            const selectCircleBtn = document.getElementById('selectCircleBtn');
+            const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+            const selectionIndicator = document.getElementById('selectionIndicator');
+            const selectionInfo = document.getElementById('selectionInfo');
+            const selectionTypeText = document.getElementById('selectionTypeText');
+            const selectionPosition = document.getElementById('selectionPosition');
+            const selectionSize = document.getElementById('selectionSize');
+            const targetColorPicker = document.getElementById('targetColorPicker');
+            const targetColorHex = document.getElementById('targetColorHex');
+            const replaceColorPicker = document.getElementById('replaceColorPicker');
+            const replaceColorHex = document.getElementById('replaceColorHex');
+            const replaceColorBtn = document.getElementById('replaceColorBtn');
+            const replaceAreaColorBtn = document.getElementById('replaceAreaColorBtn');
+
+            // 图层数据
+            let layers = [];
+            let selectedLayerIndex = -1;
+            let zoomScale = 1.0;
+
+            // 选择区域相关变量
+            let isSelecting = false;
+            let selectionStart = { x: 0, y: 0 };
+            let selectionEnd = { x: 0, y: 0 };
+            let selectionMode = 'rectangle'; // 'rectangle' 或 'circle' - 修复变量名冲突
+            let isDraggingLayer = false;
+            let dragStartPos = { x: 0, y: 0 };
+
+            // 初始化画布
+            function initCanvas() {
+                canvas.width = 800;
+                canvas.height = 600;
+                canvasWidthInput.value = canvas.width;
+                canvasHeightInput.value = canvas.height;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                updateStatus(`画布已初始化 (${canvas.width}x${canvas.height})`);
+            }
+
+            // 更新状态栏消息
+            function updateStatus(message) {
+                statusBar.textContent = message;
+            }
+
+            // 添加图片图层
+            function addImageLayer() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+
+                input.onchange = function (e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const img = new Image();
+                        img.onload = function () {
+                            // 创建一个离屏canvas处理图片
+                            const offscreenCanvas = document.createElement('canvas');
+                            const offscreenCtx = offscreenCanvas.getContext('2d');
+                            offscreenCanvas.width = img.width;
+                            offscreenCanvas.height = img.height;
+                            offscreenCtx.drawImage(img, 0, 0);
+
+                            const layer = {
+                                id: Date.now(),
+                                name: `图层 ${layers.length + 1}`,
+                                type: 'image',
+                                image: offscreenCanvas, // 使用处理后的canvas而非原始图片
+                                originalImage: offscreenCanvas, // 保存原始图像用于重置
+                                opacity: 100,
+                                visible: true,
+                                x: 0,
+                                y: 0
+                            };
+
+                            layers.push(layer);
+                            selectedLayerIndex = layers.length - 1;
+                            renderLayers();
+                            updateLayerProperties();
+                            updateStatus(`已添加图片图层: ${layer.name}`);
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                };
+
+                input.click();
+            }
+
+            // 添加纯色图层
+            function addColorLayer() {
+                const layer = {
+                    id: Date.now(),
+                    name: `纯色图层 ${layers.length + 1}`,
+                    type: 'color',
+                    color: '#cccccc',
+                    opacity: 100,
+                    visible: true
+                };
+
+                layers.push(layer);
+                selectedLayerIndex = layers.length - 1;
+                renderLayers();
+                updateLayerProperties();
+                updateStatus(`已添加纯色图层: ${layer.name}`);
+            }
+
+            // 渲染所有图层到画布
+            function renderLayers() {
+                // 清除画布
+                ctx.fillStyle = bgColorPicker.value;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // 按顺序渲染每个图层（现在最上层的图层最先渲染，显示在最前面）
+                for (let i = layers.length - 1; i >= 0; i--) {
+                    const layer = layers[i];
+                    if (!layer.visible) continue;
+
+                    ctx.save();
+                    ctx.globalAlpha = layer.opacity / 100;
+
+                    if (layer.type === 'image') {
+                        ctx.drawImage(layer.image, layer.x, layer.y);
+                    } else if (layer.type === 'color') {
+                        ctx.fillStyle = layer.color;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
+
+                    ctx.restore();
+                }
+
+                // 如果有选择区域，绘制选择指示器
+                if (isSelecting) {
+                    drawSelectionIndicator();
+                }
+
+                // 更新图层列表UI
+                updateLayersList();
+            }
+
+            // 绘制选择指示器
+            function drawSelectionIndicator() {
+                const x = Math.min(selectionStart.x, selectionEnd.x);
+                const y = Math.min(selectionStart.y, selectionEnd.y);
+                const width = Math.abs(selectionEnd.x - selectionStart.x);
+                const height = Math.abs(selectionEnd.y - selectionStart.y);
+
+                selectionIndicator.style.left = `${x}px`;
+                selectionIndicator.style.top = `${y}px`;
+                selectionIndicator.style.width = `${width}px`;
+                selectionIndicator.style.height = `${height}px`;
+                selectionIndicator.style.display = 'block';
+
+                // 更新选择信息
+                selectionInfo.style.display = 'block';
+                selectionTypeText.textContent = selectionMode === 'rectangle' ? '矩形' : '圆形';
+                selectionPosition.textContent = `${Math.round(x)}, ${Math.round(y)}`;
+                selectionSize.textContent = `${Math.round(width)} x ${Math.round(height)}`;
+            }
+
+            // 更新图层列表UI
+            function updateLayersList() {
+                layersList.innerHTML = '';
+
+                // 反向显示图层列表，让最上层的图层显示在列表顶部
+                for (let i = layers.length - 1; i >= 0; i--) {
+                    const layer = layers[i];
+                    const layerItem = document.createElement('div');
+                    layerItem.className = `layer-item ${selectedLayerIndex === i ? 'active' : ''}`;
+                    layerItem.dataset.index = i;
+
+                    const visibilityIcon = document.createElement('span');
+                    visibilityIcon.textContent = layer.visible ? '👁️' : '🙈';
+                    visibilityIcon.style.marginRight = '0.5rem';
+                    visibilityIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleLayerVisibility(i);
+                    });
+
+                    const layerName = document.createElement('span');
+                    layerName.className = 'layer-name';
+                    layerName.textContent = layer.name;
+
+                    layerItem.appendChild(visibilityIcon);
+                    layerItem.appendChild(layerName);
+
+                    layerItem.addEventListener('click', () => selectLayer(i));
+
+                    // 使图层可拖动排序
+                    layerItem.draggable = true;
+                    layerItem.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', i);
+                        layerItem.style.opacity = '0.5';
+                    });
+
+                    layerItem.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                    });
+
+                    layerItem.addEventListener('dragenter', (e) => {
+                        e.preventDefault();
+                        layerItem.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+                    });
+
+                    layerItem.addEventListener('dragleave', () => {
+                        layerItem.style.backgroundColor = '';
+                    });
+
+                    layerItem.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                        const toIndex = parseInt(layerItem.dataset.index);
+
+                        if (fromIndex !== toIndex) {
+                            const movedLayer = layers.splice(fromIndex, 1)[0];
+                            layers.splice(toIndex, 0, movedLayer);
+                            selectedLayerIndex = toIndex;
+                            renderLayers();
+                            updateStatus(`图层已移动: ${movedLayer.name}`);
+                        }
+
+                        document.querySelectorAll('#layersList > div').forEach(item => {
+                            item.style.opacity = '';
+                            item.style.backgroundColor = '';
+                        });
+                    });
+
+                    layerItem.addEventListener('dragend', () => {
+                        document.querySelectorAll('#layersList > div').forEach(item => {
+                            item.style.opacity = '';
+                            item.style.backgroundColor = '';
+                        });
+                    });
+
+                    layersList.appendChild(layerItem);
+                }
+            }
+
+            // 选择图层
+            function selectLayer(index) {
+                if (index >= 0 && index < layers.length) {
+                    selectedLayerIndex = index;
+                    updateLayerProperties();
+                    updateLayersList();
+
+                    // 显示或隐藏图片编辑工具
+                    if (layers[index].type === 'image') {
+                        imageEditingTools.style.display = 'block';
+                    } else {
+                        imageEditingTools.style.display = 'none';
+                    }
+
+                    updateStatus(`已选中图层: ${layers[index].name}`);
+                }
+            }
+
+            // 更新图层属性面板
+            function updateLayerProperties() {
+                if (selectedLayerIndex === -1) {
+                    layerProperties.style.display = 'none';
+                    return;
+                }
+
+                const layer = layers[selectedLayerIndex];
+                layerProperties.style.display = 'block';
+                layerNameInput.value = layer.name;
+                opacitySlider.value = layer.opacity;
+                opacityValue.textContent = `${layer.opacity}%`;
+
+                // 显示位置控制（仅对图片图层）
+                if (layer.type === 'image') {
+                    positionControls.style.display = 'block';
+                    layerXInput.value = layer.x;
+                    layerYInput.value = layer.y;
+                } else {
+                    positionControls.style.display = 'none';
+                }
+
+                if (layer.type === 'color') {
+                    colorPickerContainer.style.display = 'block';
+                    colorPicker.value = layer.color;
+                    colorHex.value = layer.color.toUpperCase();
+                } else {
+                    colorPickerContainer.style.display = 'none';
+                }
+            }
+
+            // 切换图层可见性
+            function toggleLayerVisibility(index) {
+                if (index >= 0 && index < layers.length) {
+                    layers[index].visible = !layers[index].visible;
+                    renderLayers();
+                    updateStatus(`${layers[index].name} 已${layers[index].visible ? '显示' : '隐藏'}`);
+                }
+            }
+
+            // 删除选中图层
+            function deleteSelectedLayer() {
+                if (selectedLayerIndex === -1) return;
+
+                const deletedLayer = layers.splice(selectedLayerIndex, 1)[0];
+                selectedLayerIndex = -1;
+                renderLayers();
+                layerProperties.style.display = 'none';
+                imageEditingTools.style.display = 'none';
+                updateStatus(`已删除图层: ${deletedLayer.name}`);
+            }
+
+            // 清空所有图层
+            function clearAllLayers() {
+                if (layers.length === 0) return;
+
+                if (confirm('确定要清空所有图层吗？此操作不可撤销。')) {
+                    layers = [];
+                    selectedLayerIndex = -1;
+                    renderLayers();
+                    layerProperties.style.display = 'none';
+                    imageEditingTools.style.display = 'none';
+                    updateStatus('所有图层已清空');
+                }
+            }
+
+            // 移动图层
+            function moveLayer(direction) {
+                if (selectedLayerIndex === -1) return;
+
+                const newIndex = selectedLayerIndex + direction;
+                if (newIndex >= 0 && newIndex < layers.length) {
+                    [layers[selectedLayerIndex], layers[newIndex]] = [layers[newIndex], layers[selectedLayerIndex]];
+                    selectedLayerIndex = newIndex;
+                    renderLayers();
+                    updateStatus(`图层已${direction > 0 ? '下移' : '上移'}`);
+                }
+            }
+
+            // 调整画布大小
+            function resizeCanvas() {
+                const width = parseInt(canvasWidthInput.value);
+                const height = parseInt(canvasHeightInput.value);
+
+                if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+                    alert('请输入有效的画布尺寸');
+                    return;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                renderLayers();
+                updateStatus(`画布已调整为 ${width}x${height}`);
+            }
+
+            // 导出画布为图片
+            function exportCanvas() {
+                if (layers.length === 0) {
+                    alert('画布为空，无法导出');
+                    return;
+                }
+
+                const dataURL = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = '图层编辑器作品.png';
+                link.href = dataURL;
+                link.click();
+                updateStatus('图像已导出');
+            }
+
+            // 调整缩放
+            function adjustZoom(direction) {
+                zoomScale = Math.max(0.1, Math.min(5, zoomScale + direction * 0.1));
+                updateZoom();
+            }
+
+            function resetZoom() {
+                zoomScale = 1.0;
+                updateZoom();
+            }
+
+            function updateZoom() {
+                const percentage = Math.round(zoomScale * 100);
+                zoomLevel.textContent = `${percentage}%`;
+                canvasContainer.style.transform = `scale(${zoomScale})`;
+                updateStatus(`缩放: ${percentage}%`);
+            }
+
+            // 开始选择区域
+            function startSelection(e) {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / zoomScale;
+                const y = (e.clientY - rect.top) / zoomScale;
+
+                isSelecting = true;
+                selectionStart = { x, y };
+                selectionEnd = { x, y };
+                drawSelectionIndicator();
+                updateStatus(`开始${selectionMode === 'rectangle' ? '矩形' : '圆形'}选择`);
+            }
+
+            // 更新选择区域
+            function updateSelection(e) {
+                if (!isSelecting) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / zoomScale;
+                const y = (e.clientY - rect.top) / zoomScale;
+
+                selectionEnd = { x, y };
+                drawSelectionIndicator();
+            }
+
+            // 结束选择区域
+            function endSelection() {
+                if (!isSelecting) return;
+
+                isSelecting = false;
+                updateStatus(`完成${selectionMode === 'rectangle' ? '矩形' : '圆形'}选择`);
+            }
+
+            // 清除选择区域
+            function clearSelection() {
+                selectionIndicator.style.display = 'none';
+                selectionInfo.style.display = 'none';
+                isSelecting = false;
+                updateStatus('已清除选择区域');
+            }
+
+            // 替换指定颜色
+            function replaceColor() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                const targetColor = hexToRgb(targetColorPicker.value);
+                const replaceColor = hexToRgb(replaceColorPicker.value);
+
+                const layer = layers[selectedLayerIndex];
+                const imageCtx = layer.image.getContext('2d');
+                const imageData = imageCtx.getImageData(0, 0, layer.image.width, layer.image.height);
+                const data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+
+                    if (r === targetColor.r && g === targetColor.g && b === targetColor.b) {
+                        data[i] = replaceColor.r;
+                        data[i + 1] = replaceColor.g;
+                        data[i + 2] = replaceColor.b;
+                    }
+                }
+
+                imageCtx.putImageData(imageData, 0, 0);
+                renderLayers();
+                updateStatus(`已替换所有 ${targetColorPicker.value} 颜色为 ${replaceColorPicker.value}`);
+            }
+
+            // 替换区域颜色
+            function replaceAreaColor() {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+                if (selectionStart.x === selectionEnd.x && selectionStart.y === selectionEnd.y) {
+                    alert('请先选择一个区域');
+                    return;
+                }
+
+                const replaceColor = hexToRgb(replaceColorPicker.value);
+                const layer = layers[selectedLayerIndex];
+                const imageCtx = layer.image.getContext('2d');
+                const imageData = imageCtx.getImageData(0, 0, layer.image.width, layer.image.height);
+                const data = imageData.data;
+
+                // 计算选择区域（相对于图层）
+                const x1 = Math.max(0, Math.min(selectionStart.x - layer.x, selectionEnd.x - layer.x));
+                const y1 = Math.max(0, Math.min(selectionStart.y - layer.y, selectionEnd.y - layer.y));
+                const x2 = Math.min(layer.image.width, Math.max(selectionStart.x - layer.x, selectionEnd.x - layer.x));
+                const y2 = Math.min(layer.image.height, Math.max(selectionStart.y - layer.y, selectionEnd.y - layer.y));
+
+                const width = x2 - x1;
+                const height = y2 - y1;
+
+                if (selectionMode === 'rectangle') {
+                    // 矩形区域
+                    for (let y = y1; y < y2; y++) {
+                        for (let x = x1; x < x2; x++) {
+                            const index = (y * layer.image.width + x) * 4;
+                            data[index] = replaceColor.r;
+                            data[index + 1] = replaceColor.g;
+                            data[index + 2] = replaceColor.b;
+                        }
+                    }
+                } else {
+                    // 圆形区域
+                    const centerX = (x1 + x2) / 2;
+                    const centerY = (y1 + y2) / 2;
+                    const radius = Math.min(width, height) / 2;
+
+                    for (let y = y1; y < y2; y++) {
+                        for (let x = x1; x < x2; x++) {
+                            const dx = x - centerX;
+                            const dy = y - centerY;
+                            if (dx * dx + dy * dy <= radius * radius) {
+                                const index = (y * layer.image.width + x) * 4;
+                                data[index] = replaceColor.r;
+                                data[index + 1] = replaceColor.g;
+                                data[index + 2] = replaceColor.b;
+                            }
+                        }
+                    }
+                }
+
+                imageCtx.putImageData(imageData, 0, 0);
+                renderLayers();
+                updateStatus(`已替换${selectionMode === 'rectangle' ? '矩形' : '圆形'}区域颜色为 ${replaceColorPicker.value}`);
+            }
+
+            // 开始拖动图层
+            function startDraggingLayer(e) {
+                if (selectedLayerIndex === -1 || layers[selectedLayerIndex].type !== 'image') return;
+
+                isDraggingLayer = true;
+                const rect = canvas.getBoundingClientRect();
+                dragStartPos = {
+                    x: (e.clientX - rect.left) / zoomScale,
+                    y: (e.clientY - rect.top) / zoomScale
+                };
+                canvas.style.cursor = 'grabbing';
+                updateStatus('开始拖动图层');
+            }
+
+            // 拖动图层
+            function dragLayer(e) {
+                if (!isDraggingLayer) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const currentPos = {
+                    x: (e.clientX - rect.left) / zoomScale,
+                    y: (e.clientY - rect.top) / zoomScale
+                };
+
+                const dx = currentPos.x - dragStartPos.x;
+                const dy = currentPos.y - dragStartPos.y;
+
+                layers[selectedLayerIndex].x += dx;
+                layers[selectedLayerIndex].y += dy;
+
+                dragStartPos = currentPos;
+                layerXInput.value = Math.round(layers[selectedLayerIndex].x);
+                layerYInput.value = Math.round(layers[selectedLayerIndex].y);
+
+                renderLayers();
+                updateStatus(`图层位置: (${Math.round(layers[selectedLayerIndex].x)}, ${Math.round(layers[selectedLayerIndex].y)})`);
+            }
+
+            // 结束拖动图层
+            function endDraggingLayer() {
+                if (isDraggingLayer) {
+                    isDraggingLayer = false;
+                    canvas.style.cursor = 'grab';
+                    updateStatus(`图层已移动到: (${Math.round(layers[selectedLayerIndex].x)}, ${Math.round(layers[selectedLayerIndex].y)})`);
+                }
+            }
+
+            // 辅助函数：将十六进制颜色转换为RGB
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            }
+
+            // 事件监听
+            addImageLayerBtn.addEventListener('click', addImageLayer);
+            addColorLayerBtn.addEventListener('click', addColorLayer);
+            deleteLayerBtn.addEventListener('click', deleteSelectedLayer);
+            clearAllBtn.addEventListener('click', clearAllLayers);
+            moveUpBtn.addEventListener('click', () => moveLayer(-1));
+            moveDownBtn.addEventListener('click', () => moveLayer(1));
+
+            layerNameInput.addEventListener('change', () => {
+                if (selectedLayerIndex !== -1) {
+                    layers[selectedLayerIndex].name = layerNameInput.value;
+                    renderLayers();
+                    updateStatus(`图层名称已更改为: ${layerNameInput.value}`);
+                }
+            });
+
+            opacitySlider.addEventListener('input', () => {
+                if (selectedLayerIndex !== -1) {
+                    const opacity = parseInt(opacitySlider.value);
+                    layers[selectedLayerIndex].opacity = opacity;
+                    opacityValue.textContent = `${opacity}%`;
+                    renderLayers();
+                }
+            });
+
+            colorPicker.addEventListener('input', () => {
+                if (selectedLayerIndex !== -1 && layers[selectedLayerIndex].type === 'color') {
+                    layers[selectedLayerIndex].color = colorPicker.value;
+                    colorHex.value = colorPicker.value.toUpperCase();
+                    renderLayers();
+                }
+            });
+
+            colorHex.addEventListener('change', () => {
+                if (selectedLayerIndex !== -1 && layers[selectedLayerIndex].type === 'color') {
+                    const hex = colorHex.value.trim();
+                    if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                        layers[selectedLayerIndex].color = hex;
+                        colorPicker.value = hex;
+                        renderLayers();
+                    } else {
+                        alert('请输入有效的十六进制颜色值（例如 #FF0000）');
+                        colorHex.value = layers[selectedLayerIndex].color;
+                    }
+                }
+            });
+
+            // 图层位置控制
+            layerXInput.addEventListener('change', () => {
+                if (selectedLayerIndex !== -1 && layers[selectedLayerIndex].type === 'image') {
+                    layers[selectedLayerIndex].x = parseInt(layerXInput.value) || 0;
+                    renderLayers();
+                }
+            });
+
+            layerYInput.addEventListener('change', () => {
+                if (selectedLayerIndex !== -1 && layers[selectedLayerIndex].type === 'image') {
+                    layers[selectedLayerIndex].y = parseInt(layerYInput.value) || 0;
+                    renderLayers();
+                }
+            });
+
+            resizeCanvasBtn.addEventListener('click', resizeCanvas);
+
+            bgColorPicker.addEventListener('input', () => {
+                bgColorHex.value = bgColorPicker.value.toUpperCase();
+                renderLayers();
+            });
+
+            bgColorHex.addEventListener('change', () => {
+                const hex = bgColorHex.value.trim();
+                if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                    bgColorPicker.value = hex;
+                    renderLayers();
+                } else {
+                    alert('请输入有效的十六进制颜色值（例如 #FF0000）');
+                    bgColorHex.value = bgColorPicker.value;
+                }
+            });
+
+            exportBtn.addEventListener('click', exportCanvas);
+
+            helpBtn.addEventListener('click', () => {
+                helpModal.style.display = 'flex';
+            });
+
+            closeHelpBtn.addEventListener('click', () => {
+                helpModal.style.display = 'none';
+            });
+
+            helpModal.addEventListener('click', (e) => {
+                if (e.target === helpModal) {
+                    helpModal.style.display = 'none';
+                }
+            });
+
+            zoomInBtn.addEventListener('click', () => adjustZoom(1));
+            zoomOutBtn.addEventListener('click', () => adjustZoom(-1));
+            resetZoomBtn.addEventListener('click', resetZoom);
+
+            // 区域选择相关事件
+            selectRectangleBtn.addEventListener('click', () => {
+                selectionMode = 'rectangle';
+                selectRectangleBtn.style.backgroundColor = '#3b82f6';
+                selectRectangleBtn.style.color = 'white';
+                selectCircleBtn.style.backgroundColor = '#e5e7eb';
+                selectCircleBtn.style.color = '';
+                updateStatus('已选择矩形区域工具');
+            });
+
+            selectCircleBtn.addEventListener('click', () => {
+                selectionMode = 'circle';
+                selectCircleBtn.style.backgroundColor = '#3b82f6';
+                selectCircleBtn.style.color = 'white';
+                selectRectangleBtn.style.backgroundColor = '#e5e7eb';
+                selectRectangleBtn.style.color = '';
+                updateStatus('已选择圆形区域工具');
+            });
+
+            clearSelectionBtn.addEventListener('click', clearSelection);
+
+            // 颜色替换相关事件
+            targetColorPicker.addEventListener('input', () => {
+                targetColorHex.value = targetColorPicker.value.toUpperCase();
+            });
+
+            targetColorHex.addEventListener('change', () => {
+                const hex = targetColorHex.value.trim();
+                if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                    targetColorPicker.value = hex;
+                } else {
+                    alert('请输入有效的十六进制颜色值（例如 #FF0000）');
+                    targetColorHex.value = targetColorPicker.value;
+                }
+            });
+
+            replaceColorPicker.addEventListener('input', () => {
+                replaceColorHex.value = replaceColorPicker.value.toUpperCase();
+            });
+
+            replaceColorHex.addEventListener('change', () => {
+                const hex = replaceColorHex.value.trim();
+                if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                    replaceColorPicker.value = hex;
+                } else {
+                    alert('请输入有效的十六进制颜色值（例如 #FF0000）');
+                    replaceColorHex.value = replaceColorPicker.value;
+                }
+            });
+
+            replaceColorBtn.addEventListener('click', replaceColor);
+            replaceAreaColorBtn.addEventListener('click', replaceAreaColor);
+
+            // 画布鼠标事件
+            canvas.addEventListener('mousedown', (e) => {
+                // 如果没有选择区域且是图片图层，开始拖动
+                if (!isSelecting && selectedLayerIndex !== -1 && layers[selectedLayerIndex].type === 'image') {
+                    startDraggingLayer(e);
+                } else {
+                    startSelection(e);
+                }
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (isDraggingLayer) {
+                    dragLayer(e);
+                } else if (isSelecting) {
+                    updateSelection(e);
+                }
+            });
+
+            canvas.addEventListener('mouseup', endDraggingLayer);
+            canvas.addEventListener('mouseleave', endDraggingLayer);
+
+            // 初始化
+            initCanvas();
+            updateZoom();
+        });
+    </script>
+</body>
+</html>

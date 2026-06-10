@@ -1,0 +1,203 @@
+/* MainFunction 统一样式表 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 30px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+header p {
+    font-size: 1.1em;
+    opacity: 0.95;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 15px 25px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    font-size: 1.05em;
+}
+
+.search-box {
+    padding: 30px;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+#searchInput {
+    width: 80%;
+    max-width: 500px;
+    padding: 15px 25px;
+    font-size: 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 50px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#searchInput:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+}
+
+.content {
+    padding: 30px;
+}
+
+.category-section {
+    margin-bottom: 40px;
+}
+
+.category-title {
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #667eea;
+    display: inline-block;
+}
+
+.category-count {
+    font-size: 0.6em;
+    color: #999;
+    margin-left: 10px;
+    font-weight: normal;
+}
+
+.file-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.file-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 25px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.file-card:hover {
+    transform: translateY(-5px);
+    border-color: #667eea;
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+}
+
+.file-icon {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+}
+
+.file-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.file-desc {
+    color: #666;
+    font-size: 0.9em;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    background: #f8f9fa;
+    color: #666;
+    font-size: 0.95em;
+}
+
+.back-btn {
+    display: inline-block;
+    padding: 12px 25px;
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.back-btn:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    header {
+        padding: 30px 20px;
+    }
+    
+    header h1 {
+        font-size: 1.8em;
+    }
+    
+    .stats {
+        gap: 15px;
+    }
+    
+    .stat-item {
+        padding: 10px 15px;
+        font-size: 0.9em;
+    }
+    
+    .file-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .content {
+        padding: 20px;
+    }
+    
+    .category-title {
+        font-size: 1.4em;
+    }
+}

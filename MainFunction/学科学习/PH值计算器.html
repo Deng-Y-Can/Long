@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物质pH值数据库</title>
+    <!-- 使用多个CDN源提高可用性，增加备用链接 -->
+    <!-- Font Awesome - 主CDN + 备用CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+          onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css';">
+    <!-- Chart.js - 主CDN + 备用CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"
+            onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.8/chart.umd.min.js';"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        acid: '#e53e3e',      // 酸性物质颜色 - 红色系
+                        neutral: '#ecc94b',   // 中性物质颜色 - 黄色系
+                        base: '#3182ce',      // 碱性物质颜色 - 蓝色系
+                        primary: '#4a5568',   // 主要文本颜色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .pH-gradient {
+                background: linear-gradient(90deg, #e53e3e 0%, #ecc94b 50%, #3182ce 100%);
+            }
+
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+
+                .card-hover:hover {
+                    transform: translateY(-5px);
+                }
+
+            .btn-active {
+                transform: scale(1.03);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            }
+        }
+    </style>
+
+    <!-- 基础样式保障 -->
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.5;
+            color: #1f2937;
+            background-color: #f9fafb;
+        }
+
+        .container {
+            width: 100%;
+            margin-right: auto;
+            margin-left: auto;
+            padding-right: 1rem;
+            padding-left: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .container {
+                max-width: 640px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1024px;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .container {
+                max-width: 1280px;
+            }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .spinner {
+            border: 3px solid rgba(75, 85, 99, 0.1);
+            border-radius: 50%;
+            border-top-color: #4a5568;
+            animation: spin 1s ease-in-out infinite;
+            width: 2rem;
+            height: 2rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .fa:before {
+            content: attr(data-icon);
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="sticky top-0 z-50 bg-white shadow-md transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <i class="fa fa-flask text-3xl text-primary mr-3" data-icon="⚗️"></i>
+                <h1 class="text-2xl font-bold">物质pH值数据库</h1>
+            </div>
+
+            <div class="flex flex-wrap gap-2 justify-center">
+                <button id="btn-all" class="px-4 py-2 bg-primary text-white rounded-full hover:bg-opacity-90 transition-all flex items-center btn btn-active">
+                    <i class="fa fa-th-large mr-2" data-icon="☰"></i>全部物质
+                </button>
+                <button id="btn-acid" class="px-4 py-2 bg-acid text-white rounded-full hover:bg-opacity-90 transition-all flex items-center btn">
+                    <i class="fa fa-lemon-o mr-2" data-icon="🍋"></i>酸性物质
+                </button>
+                <button id="btn-neutral" class="px-4 py-2 bg-neutral text-white rounded-full hover:bg-opacity-90 transition-all flex items-center btn">
+                    <i class="fa fa-balance-scale mr-2" data-icon="⚖️"></i>中性物质
+                </button>
+                <button id="btn-base" class="px-4 py-2 bg-base text-white rounded-full hover:bg-opacity-90 transition-all flex items-center btn">
+                    <i class="fa fa-tint mr-2" data-icon="💧"></i>碱性物质
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 介绍和搜索区 -->
+        <section class="mb-10">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6 card">
+                <h2 class="text-xl font-semibold mb-3">关于pH值</h2>
+                <p class="text-gray-600 mb-4">pH值是衡量物质酸碱度的指标，范围从0到14。pH值小于7的物质为酸性，等于7为中性，大于7为碱性。本数据库收集了多种常见物质的pH值信息，帮助您更好地了解各类物质的酸碱特性。</p>
+
+                <!-- pH值范围指示器 -->
+                <div class="mt-6 mb-4">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>强酸性</span>
+                        <span>中性</span>
+                        <span>强碱性</span>
+                    </div>
+                    <div class="pH-gradient h-4 rounded-full relative">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-black bg-opacity-10"></div>
+                        <div class="absolute top-0 left-[0%] w-1 h-4 bg-black"></div>
+                        <div class="absolute top-0 left-[50%] w-1 h-4 bg-black"></div>
+                        <div class="absolute top-0 left-[100%] w-1 h-4 bg-black -ml-0.5"></div>
+                        <div class="absolute -bottom-6 left-[0%] text-xs">0</div>
+                        <div class="absolute -bottom-6 left-[50%] text-xs -ml-1.5">7</div>
+                        <div class="absolute -bottom-6 left-[100%] text-xs -ml-1.5">14</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 搜索和筛选 -->
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <div class="relative flex-grow">
+                    <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" data-icon="🔍"></i>
+                    <input type="text" id="search-input" placeholder="搜索物质名称..."
+                           class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                </div>
+
+                <div class="flex gap-4">
+                    <select id="category-filter" class="px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                        <option value="all">所有类别</option>
+                        <!-- 类别将通过JavaScript动态填充 -->
+                    </select>
+
+                    <select id="strength-filter" class="px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                        <option value="all">所有强度</option>
+                        <option value="weak">弱</option>
+                        <option value="strong">强</option>
+                        <option value="neutral">中性</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 统计概览 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-acid bg-opacity-10 rounded-xl p-6 border-l-4 border-acid card">
+                    <h3 class="text-lg font-semibold mb-2 flex items-center">
+                        <i class="fa fa-lemon-o mr-2" data-icon="🍋"></i>酸性物质
+                    </h3>
+                    <p class="text-3xl font-bold" id="acid-count">0</p>
+                    <p class="text-gray-600 text-sm mt-2">pH值小于7的物质</p>
+                </div>
+
+                <div class="bg-neutral bg-opacity-10 rounded-xl p-6 border-l-4 border-neutral card">
+                    <h3 class="text-lg font-semibold mb-2 flex items-center">
+                        <i class="fa fa-balance-scale mr-2" data-icon="⚖️"></i>中性物质
+                    </h3>
+                    <p class="text-3xl font-bold" id="neutral-count">0</p>
+                    <p class="text-gray-600 text-sm mt-2">pH值等于7的物质</p>
+                </div>
+
+                <div class="bg-base bg-opacity-10 rounded-xl p-6 border-l-4 border-base card">
+                    <h3 class="text-lg font-semibold mb-2 flex items-center">
+                        <i class="fa fa-tint mr-2" data-icon="💧"></i>碱性物质
+                    </h3>
+                    <p class="text-3xl font-bold" id="base-count">0</p>
+                    <p class="text-gray-600 text-sm mt-2">pH值大于7的物质</p>
+                </div>
+            </div>
+
+            <!-- 图表展示 -->
+            <div id="chart-container" class="bg-white rounded-xl shadow-lg p-6 mb-8 card">
+                <h3 class="text-lg font-semibold mb-4">物质类别分布</h3>
+                <div class="h-64 flex items-center justify-center">
+                    <div id="chart-loading" class="flex flex-col items-center">
+                        <div class="spinner mb-3"></div>
+                        <p class="text-gray-500">加载图表中...</p>
+                    </div>
+                    <canvas id="category-chart" class="hidden w-full h-full"></canvas>
+                    <div id="chart-fallback" class="hidden text-center p-6">
+                        <i class="fa fa-bar-chart text-5xl text-gray-300 mb-4" data-icon="📊"></i>
+                        <h4 class="text-lg font-medium mb-2">图表加载失败</h4>
+                        <p class="text-gray-500">无法加载图表组件，您仍可以查看物质列表和详细信息</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 物质列表 -->
+        <section>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">物质列表</h2>
+                <div class="text-gray-500 flex items-center">
+                    <span id="total-showing">0</span>
+                    <span class="mx-1">/</span>
+                    <span id="total-items">0</span>
+                    <span class="ml-1">种物质</span>
+                </div>
+            </div>
+
+            <!-- 加载状态 -->
+            <div id="loading" class="flex justify-center items-center py-16">
+                <div class="spinner"></div>
+                <p class="ml-3 text-gray-500">加载物质数据中...</p>
+            </div>
+
+            <!-- 错误状态 -->
+            <div id="error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">加载失败!</strong>
+                <span class="block sm:inline mt-2">
+                    无法加载pH值数据，可能的解决方法：<br>
+                    1. 检查网络连接是否正常<br>
+                    2. 刷新页面重试<br>
+                    3. 确保JSON数据文件路径正确
+                </span>
+                <button id="retry-btn" class="mt-3 bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition-colors">
+                    重试加载
+                </button>
+            </div>
+
+            <!-- 空状态 -->
+            <div id="empty" class="hidden flex flex-col items-center justify-center py-16 text-center">
+                <i class="fa fa-search text-5xl text-gray-300 mb-4" data-icon="🔍"></i>
+                <h3 class="text-xl font-semibold mb-2">未找到匹配的物质</h3>
+                <p class="text-gray-500">尝试使用不同的搜索条件或浏览全部物质</p>
+                <button id="reset-filter" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all btn">
+                    重置筛选条件
+                </button>
+            </div>
+
+            <!-- 物质卡片容器 -->
+            <div id="substances-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- 物质卡片将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 分页控件 -->
+            <div id="pagination" class="mt-10 flex justify-center items-center">
+                <button id="prev-page" class="px-4 py-2 mx-1 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed btn">
+                    <i class="fa fa-chevron-left" data-icon="←"></i>
+                </button>
+                <span id="page-info" class="mx-4">第 1 页 / 共 0 页</span>
+                <button id="next-page" class="px-4 py-2 mx-1 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed btn">
+                    <i class="fa fa-chevron-right" data-icon="→"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- 详情模态框 -->
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 id="modal-title" class="text-2xl font-bold"></h3>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-times text-xl" data-icon="✕"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div class="flex items-center mb-6">
+                    <div id="modal-ph-indicator" class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4"></div>
+                    <div>
+                        <p class="text-gray-500">pH值</p>
+                        <p id="modal-ph-value" class="text-3xl font-bold"></p>
+                        <p id="modal-type-strength" class="text-gray-600"></p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-2 flex items-center">
+                        <i class="fa fa-info-circle text-primary mr-2" data-icon="ℹ️"></i>物质特性
+                    </h4>
+                    <p id="modal-properties" class="text-gray-600"></p>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-2 flex items-center">
+                        <i class="fa fa-briefcase text-primary mr-2" data-icon="💼"></i>用途
+                    </h4>
+                    <ul id="modal-uses" class="list-disc pl-5 text-gray-600 space-y-1"></ul>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-2 flex items-center">
+                        <i class="fa fa-exclamation-triangle text-amber-500 mr-2" data-icon="⚠️"></i>潜在危害
+                    </h4>
+                    <ul id="modal-hazards" class="list-disc pl-5 text-gray-600 space-y-1"></ul>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-2 flex items-center">
+                        <i class="fa fa-shield text-primary mr-2" data-icon="🛡️"></i>安全提示
+                    </h4>
+                    <p id="modal-safety" class="text-gray-600"></p>
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                <button id="close-modal-btn" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all btn">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-10 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center">
+                        <i class="fa fa-flask text-2xl mr-2" data-icon="⚗️"></i>
+                        <h2 class="text-xl font-bold">物质pH值数据库</h2>
+                    </div>
+                    <p class="text-gray-400 mt-2">全面的物质酸碱度参考资源</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-question-circle mr-1" data-icon="?"></i>关于
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-file-text-o mr-1" data-icon="📄"></i>使用说明
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-envelope-o mr-1" data-icon="✉️"></i>联系我们
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-github mr-1" data-icon="🐙"></i>源码
+                    </a>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>© 2023 物质pH值数据库 - 仅供参考学习使用</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 全局变量 - 新增当前筛选类型变量
+        let substances = [];
+        let filteredSubstances = [];
+        let currentPage = 1;
+        const itemsPerPage = 12;
+        let categoryChart = null;
+        let currentFilterType = 'all'; // 跟踪当前筛选类型：all, acid, neutral, base
+
+        // DOM 元素
+        const substancesContainer = document.getElementById('substances-container');
+        const loadingIndicator = document.getElementById('loading');
+        const errorIndicator = document.getElementById('error');
+        const emptyIndicator = document.getElementById('empty');
+        const searchInput = document.getElementById('search-input');
+        const categoryFilter = document.getElementById('category-filter');
+        const strengthFilter = document.getElementById('strength-filter');
+        const totalShowingElement = document.getElementById('total-showing');
+        const totalItemsElement = document.getElementById('total-items');
+        const acidCountElement = document.getElementById('acid-count');
+        const neutralCountElement = document.getElementById('neutral-count');
+        const baseCountElement = document.getElementById('base-count');
+        const pageInfoElement = document.getElementById('page-info');
+        const prevPageButton = document.getElementById('prev-page');
+        const nextPageButton = document.getElementById('next-page');
+        const detailModal = document.getElementById('detail-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalPhValue = document.getElementById('modal-ph-value');
+        const modalTypeStrength = document.getElementById('modal-type-strength');
+        const modalProperties = document.getElementById('modal-properties');
+        const modalUses = document.getElementById('modal-uses');
+        const modalHazards = document.getElementById('modal-hazards');
+        const modalSafety = document.getElementById('modal-safety');
+        const modalPhIndicator = document.getElementById('modal-ph-indicator');
+        const closeModalButton = document.getElementById('close-modal');
+        const closeModalBtnElement = document.getElementById('close-modal-btn');
+        const retryButton = document.getElementById('retry-btn');
+        const resetFilterButton = document.getElementById('reset-filter');
+        const chartLoading = document.getElementById('chart-loading');
+        const categoryChartElement = document.getElementById('category-chart');
+        const chartFallback = document.getElementById('chart-fallback');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 加载数据
+            loadData();
+
+            // 事件监听
+            setupEventListeners();
+        });
+
+        // 加载数据
+        async function loadData() {
+            try {
+                // 显示加载状态
+                loadingIndicator.classList.remove('hidden');
+                errorIndicator.classList.add('hidden');
+                emptyIndicator.classList.add('hidden');
+
+                // 请将此处替换为您的ph_substances.json文件实际路径
+                const response = await fetch('PH值数据.json');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+
+                substances = await response.json();
+                filteredSubstances = [...substances];
+
+                // 处理数据
+                processData();
+
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                loadingIndicator.classList.add('hidden');
+                errorIndicator.classList.remove('hidden');
+            }
+        }
+
+        // 处理数据
+        function processData() {
+            // 填充类别过滤器
+            populateCategoryFilter();
+
+            // 更新统计数据
+            updateStatistics();
+
+            // 创建类别分布图表（带错误处理）
+            createCategoryChart().catch(err => {
+                console.error('创建图表失败:', err);
+                showChartFallback();
+            });
+
+            // 显示物质列表
+            renderSubstances();
+
+            // 隐藏加载指示器
+            loadingIndicator.classList.add('hidden');
+        }
+
+        // 填充类别过滤器
+        function populateCategoryFilter() {
+            const categories = new Set();
+            substances.forEach(substance => {
+                categories.add(substance.category);
+            });
+
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = formatCategoryName(category);
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        // 格式化类别名称
+        function formatCategoryName(category) {
+            const categoryMap = {
+                'food': '食品',
+                'personal care': '个人护理',
+                'household': '家用产品',
+                'industrial': '工业化学品',
+                'biological': '生物体液'
+            };
+            return categoryMap[category] || category.charAt(0).toUpperCase() + category.slice(1);
+        }
+
+        // 更新统计数据
+        function updateStatistics() {
+            const acidCount = substances.filter(s => s.type === 'acid').length;
+            const neutralCount = substances.filter(s => s.type === 'neutral').length;
+            const baseCount = substances.filter(s => s.type === 'base').length;
+
+            acidCountElement.textContent = acidCount;
+            neutralCountElement.textContent = neutralCount;
+            baseCountElement.textContent = baseCount;
+            totalItemsElement.textContent = substances.length;
+        }
+
+        // 创建类别分布图表
+        async function createCategoryChart() {
+            // 检查Chart是否加载成功
+            if (typeof Chart === 'undefined') {
+                // 等待一小段时间再检查，给备用CDN加载时间
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                if (typeof Chart === 'undefined') {
+                    throw new Error('Chart.js未加载成功');
+                }
+            }
+
+            // 隐藏加载状态，显示图表
+            chartLoading.classList.add('hidden');
+            categoryChartElement.classList.remove('hidden');
+
+            const ctx = categoryChartElement.getContext('2d');
+
+            // 统计每个类别的物质数量
+            const categoryCounts = {};
+            substances.forEach(substance => {
+                if (!categoryCounts[substance.category]) {
+                    categoryCounts[substance.category] = 0;
+                }
+                categoryCounts[substance.category]++;
+            });
+
+            // 准备图表数据
+            const labels = Object.keys(categoryCounts).map(formatCategoryName);
+            const data = Object.values(categoryCounts);
+            const backgroundColors = [
+                'rgba(229, 62, 62, 0.7)',   // 酸性色
+                'rgba(236, 206, 75, 0.7)',  // 中性色
+                'rgba(49, 130, 206, 0.7)',  // 碱性色
+                'rgba(66, 153, 225, 0.7)',
+                'rgba(72, 187, 120, 0.7)',
+                'rgba(160, 99, 245, 0.7)'
+            ];
+
+            // 创建图表
+            categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors.slice(0, labels.length),
+                        borderColor: backgroundColors.slice(0, labels.length).map(color =>
+                            color.replace('0.7', '1')
+                        ),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 显示图表加载失败的备用内容
+        function showChartFallback() {
+            chartLoading.classList.add('hidden');
+            chartFallback.classList.remove('hidden');
+        }
+
+        // 渲染物质列表
+        function renderSubstances() {
+            // 清空容器
+            substancesContainer.innerHTML = '';
+
+            // 计算分页
+            const totalPages = Math.ceil(filteredSubstances.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentItems = filteredSubstances.slice(startIndex, endIndex);
+
+            // 更新显示计数
+            totalShowingElement.textContent = filteredSubstances.length;
+
+            // 更新分页信息
+            pageInfoElement.textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+            prevPageButton.disabled = currentPage === 1;
+            nextPageButton.disabled = currentPage === totalPages || totalPages === 0;
+
+            // 显示空状态
+            if (filteredSubstances.length === 0) {
+                emptyIndicator.classList.remove('hidden');
+                return;
+            } else {
+                emptyIndicator.classList.add('hidden');
+            }
+
+            // 创建物质卡片
+            currentItems.forEach(substance => {
+                const card = createSubstanceCard(substance);
+                substancesContainer.appendChild(card);
+            });
+        }
+
+        // 创建物质卡片
+        function createSubstanceCard(substance) {
+            const card = document.createElement('div');
+            card.className = `bg-white rounded-xl shadow-md overflow-hidden card-hover cursor-pointer card`;
+
+            // 确定卡片颜色
+            let bgColor, textColor;
+            if (substance.type === 'acid') {
+                bgColor = 'bg-acid';
+                textColor = 'text-white';
+            } else if (substance.type === 'neutral') {
+                bgColor = 'bg-neutral';
+                textColor = 'text-gray-800';
+            } else { // base
+                bgColor = 'bg-base';
+                textColor = 'text-white';
+            }
+
+            // 设置卡片内容
+            card.innerHTML = `
+                    <div class="${bgColor} ${textColor} p-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium uppercase tracking-wide">${formatCategoryName(substance.category)}</span>
+                            <span class="bg-white bg-opacity-20 px-2 py-1 rounded-full text-sm font-bold">pH ${substance.pH}</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">${substance.name}</h3>
+                        <p class="text-gray-600 text-sm line-clamp-2 mb-3">${substance.properties.substring(0, 80)}${substance.properties.length > 80 ? '...' : ''}</p>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">${substance.strength}${substance.type !== 'neutral' ? substance.type === 'acid' ? '酸性' : '碱性' : ''}</span>
+                            <button class="text-primary hover:text-primary-dark transition-colors">
+                                查看详情 <i class="fa fa-arrow-right ml-1" data-icon="→"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+            // 添加点击事件
+            card.addEventListener('click', () => {
+                openDetailModal(substance);
+            });
+
+            return card;
+        }
+
+        // 打开详情模态框
+        function openDetailModal(substance) {
+            // 设置模态框内容
+            modalTitle.textContent = substance.name;
+            modalPhValue.textContent = substance.pH;
+
+            // 设置pH指示器样式
+            let indicatorColor;
+            if (substance.type === 'acid') {
+                indicatorColor = 'bg-acid';
+                modalTypeStrength.textContent = `强酸性物质 (pH < 7)`;
+            } else if (substance.type === 'neutral') {
+                indicatorColor = 'bg-neutral';
+                modalTypeStrength.textContent = `中性物质 (pH = 7)`;
+            } else { // base
+                indicatorColor = 'bg-base';
+                modalTypeStrength.textContent = `强碱性物质 (pH > 7)`;
+            }
+
+            modalPhIndicator.className = `${indicatorColor} w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4`;
+            modalPhIndicator.textContent = substance.pH;
+
+            modalProperties.textContent = substance.properties;
+
+            // 填充用途列表
+            modalUses.innerHTML = '';
+            substance.uses.forEach(use => {
+                const li = document.createElement('li');
+                li.textContent = use;
+                modalUses.appendChild(li);
+            });
+
+            // 填充危害列表
+            modalHazards.innerHTML = '';
+            substance.hazards.forEach(hazard => {
+                const li = document.createElement('li');
+                li.textContent = hazard;
+                modalHazards.appendChild(li);
+            });
+
+            modalSafety.textContent = substance.safety;
+
+            // 显示模态框
+            detailModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        // 关闭详情模态框
+        function closeDetailModal() {
+            detailModal.classList.add('hidden');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+
+        // 过滤物质 - 核心筛选逻辑优化
+        function filterSubstances() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const category = categoryFilter.value;
+            const strength = strengthFilter.value;
+
+            // 使用全局变量currentFilterType确保筛选类型正确
+            filteredSubstances = substances.filter(substance => {
+                // 搜索词过滤
+                const matchesSearch = substance.name.toLowerCase().includes(searchTerm) ||
+                    substance.properties.toLowerCase().includes(searchTerm);
+
+                // 类别过滤
+                const matchesCategory = category === 'all' || substance.category === category;
+
+                // 强度过滤
+                const matchesStrength = strength === 'all' || substance.strength === strength;
+
+                // 类型过滤 - 使用全局变量确保准确性
+                const matchesType = currentFilterType === 'all' || substance.type === currentFilterType;
+
+                return matchesSearch && matchesCategory && matchesStrength && matchesType;
+            });
+
+            // 重置当前页码
+            currentPage = 1;
+
+            // 重新渲染
+            renderSubstances();
+        }
+
+        // 重置筛选条件
+        function resetFilters() {
+            searchInput.value = '';
+            categoryFilter.value = 'all';
+            strengthFilter.value = 'all';
+            // 重置筛选类型并更新按钮状态
+            currentFilterType = 'all';
+            setActiveButton('btn-all');
+            filterSubstances();
+        }
+
+        // 设置事件监听器 - 增强按钮点击处理
+        function setupEventListeners() {
+            // 搜索和筛选事件
+            searchInput.addEventListener('input', filterSubstances);
+            categoryFilter.addEventListener('change', filterSubstances);
+            strengthFilter.addEventListener('change', filterSubstances);
+
+            // 类型筛选按钮 - 明确更新currentFilterType
+            document.getElementById('btn-all').addEventListener('click', () => {
+                currentFilterType = 'all';
+                setActiveButton('btn-all');
+                filterSubstances();
+            });
+
+            document.getElementById('btn-acid').addEventListener('click', () => {
+                currentFilterType = 'acid';
+                setActiveButton('btn-acid');
+                filterSubstances();
+            });
+
+            document.getElementById('btn-neutral').addEventListener('click', () => {
+                currentFilterType = 'neutral';
+                setActiveButton('btn-neutral');
+                filterSubstances();
+            });
+
+            document.getElementById('btn-base').addEventListener('click', () => {
+                currentFilterType = 'base';
+                setActiveButton('btn-base');
+                filterSubstances();
+            });
+
+            // 分页按钮
+            prevPageButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderSubstances();
+                }
+            });
+
+            nextPageButton.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredSubstances.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderSubstances();
+                }
+            });
+
+            // 模态框关闭按钮
+            closeModalButton.addEventListener('click', closeDetailModal);
+            closeModalBtnElement.addEventListener('click', closeDetailModal);
+
+            // 点击模态框背景关闭
+            detailModal.addEventListener('click', (e) => {
+                if (e.target === detailModal) {
+                    closeDetailModal();
+                }
+            });
+
+            // 重试加载按钮
+            retryButton.addEventListener('click', loadData);
+
+            // 重置筛选按钮
+            resetFilterButton.addEventListener('click', resetFilters);
+
+            // 滚动时改变导航栏样式
+            window.addEventListener('scroll', () => {
+                const header = document.querySelector('header');
+                if (window.scrollY > 10) {
+                    header.classList.add('py-2');
+                    header.classList.remove('py-4');
+                } else {
+                    header.classList.add('py-4');
+                    header.classList.remove('py-2');
+                }
+            });
+        }
+
+        // 设置活跃按钮样式 - 增强视觉反馈
+        function setActiveButton(buttonId) {
+            // 移除所有按钮的活跃状态
+            document.querySelectorAll('#btn-all, #btn-acid, #btn-neutral, #btn-base').forEach(btn => {
+                btn.classList.remove('btn-active', 'ring-2', 'ring-offset-2');
+            });
+
+            // 设置当前按钮为活跃状态
+            const activeButton = document.getElementById(buttonId);
+            activeButton.classList.add('btn-active', 'ring-2', 'ring-offset-2');
+
+            // 根据按钮类型设置不同的边框颜色
+            if (buttonId === 'btn-acid') {
+                activeButton.classList.add('ring-acid');
+            } else if (buttonId === 'btn-neutral') {
+                activeButton.classList.add('ring-neutral');
+            } else if (buttonId === 'btn-base') {
+                activeButton.classList.add('ring-base');
+            } else {
+                activeButton.classList.add('ring-primary');
+            }
+        }
+    </script>
+</body>
+</html>

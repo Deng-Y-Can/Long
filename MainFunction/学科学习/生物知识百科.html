@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生物学知识学习平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4361ee',
+                        secondary: '#3f37c9',
+                        accent: '#4895ef',
+                        light: '#f8f9fa',
+                        dark: '#212529',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            .card-hover {
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+                .card-hover:hover {
+                    transform: translateY(-8px) scale(1.02);
+                    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+                }
+
+            .fade-in {
+                animation: fadeIn 0.6s ease-out forwards;
+                opacity: 0;
+            }
+
+            .slide-up {
+                animation: slideUp 0.5s ease-out forwards;
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            .pulse {
+                animation: pulse 2s infinite;
+            }
+
+            .nav-scrolled {
+                @apply py-2 shadow-lg bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm;
+            }
+
+            .chapter-active {
+                @apply bg-primary/10 text-primary font-medium border-l-4 border-primary;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideUp {
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.05);
+                }
+
+                100% {
+                    transform: scale(1);
+                }
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <!-- 顶部导航栏 -->
+    <header id="main-header" class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 py-3">
+        <div class="container mx-auto px-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2 group">
+                <i class="fa fa-leaf text-primary text-2xl transition-transform duration-500 group-hover:rotate-12"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">生物学知识学习平台</h1>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <!-- 搜索框 -->
+                <div class="relative hidden md:block group">
+                    <input type="text" id="search-input" placeholder="搜索知识点..."
+                           class="pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all w-48 group-hover:w-64 focus:w-64">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 transition-colors group-hover:text-primary"></i>
+                </div>
+
+                <!-- 移动端搜索按钮 -->
+                <button id="mobile-search-btn" class="md:hidden text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                    <i class="fa fa-search text-xl"></i>
+                </button>
+
+                <!-- 主题切换按钮 -->
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative overflow-hidden">
+                    <i class="fa fa-moon-o dark:hidden text-xl z-10 relative"></i>
+                    <i class="fa fa-sun-o hidden dark:block text-xl z-10 relative"></i>
+                    <span class="absolute inset-0 bg-primary/10 rounded-full scale-0 transition-transform duration-300 group-hover:scale-100"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 移动端搜索框 -->
+        <div id="mobile-search-container" class="md:hidden px-4 pb-3 hidden">
+            <input type="text" id="mobile-search-input" placeholder="搜索知识点..."
+                   class="w-full pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+            <i class="fa fa-search absolute left-7 top-[4.2rem] transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 flex flex-col md:flex-row gap-6">
+        <!-- 侧边栏导航 -->
+        <aside id="sidebar" class="md:w-64 lg:w-72 shrink-0 h-[calc(100vh-6rem)] sticky top-20 overflow-y-auto scrollbar-hide bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-all duration-300 transform md:translate-x-0 -translate-x-full md:static fixed z-40 left-0 right-0 md:left-auto md:right-auto top-16 md:top-auto">
+            <div class="p-4">
+                <div class="flex justify-between items-center mb-4 md:hidden">
+                    <h2 class="text-lg font-bold">知识点导航</h2>
+                    <button id="close-sidebar" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- 学段选择 -->
+                <div class="mb-6">
+                    <h3 class="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-3">学段</h3>
+                    <div class="flex space-x-2">
+                        <button class="学段-btn active px-4 py-2 rounded-lg bg-primary text-white transition-all duration-300" data-level="middle_school">初中</button>
+                        <button class="学段-btn px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-300" data-level="high_school">高中</button>
+                    </div>
+                </div>
+
+                <!-- 章节导航 -->
+                <div>
+                    <h3 class="text-sm uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-3">章节</h3>
+                    <ul id="chapter-list" class="space-y-1">
+                        <!-- 章节列表将通过JS动态生成 -->
+                        <li class="flex justify-center p-4">
+                            <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <div class="flex-1">
+            <!-- 移动端菜单按钮 -->
+            <button id="menu-toggle" class="md:hidden mb-4 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center space-x-2">
+                <i class="fa fa-bars"></i>
+                <span>章节导航</span>
+            </button>
+
+            <!-- 章节标题 -->
+            <div class="mb-6 text-center">
+                <h2 id="chapter-title" class="text-2xl md:text-3xl font-bold text-shadow slide-up" style="animation-delay: 0.1s">请选择左侧章节开始学习</h2>
+            </div>
+
+            <!-- 知识点网格 -->
+            <div id="knowledge-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 知识点卡片将通过JS动态生成 -->
+                <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400">
+                    <i class="fa fa-book text-5xl mb-4 opacity-30 pulse"></i>
+                    <p class="text-center max-w-md slide-up" style="animation-delay: 0.2s">正在加载知识点数据，请稍候...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white dark:bg-gray-800 shadow-inner mt-12 py-6 transition-colors duration-300">
+        <div class="container mx-auto px-4 text-center text-gray-600 dark:text-gray-400">
+            <p>© 2025 生物学知识学习平台 | 让学习更高效</p>
+            <div class="flex justify-center space-x-4 mt-3">
+                <a href="#" class="hover:text-primary transition-colors duration-300"><i class="fa fa-question-circle"></i> 帮助中心</a>
+                <a href="#" class="hover:text-primary transition-colors duration-300"><i class="fa fa-envelope"></i> 联系我们</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 知识点详情模态框 -->
+    <div id="knowledge-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="modal-backdrop"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto m-4 transform transition-all scale-95 opacity-0">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 id="modal-term" class="text-xl md:text-2xl font-bold text-primary"></h3>
+                    <button id="close-modal" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <div id="modal-def" class="prose dark:prose-invert prose-lg opacity-0 transition-opacity duration-500"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 错误提示模态框 -->
+    <div id="error-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md p-6 m-4 transform transition-all scale-95 opacity-0">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 mb-4">
+                    <i class="fa fa-exclamation-triangle text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">加载失败</h3>
+                <p id="error-message" class="text-gray-600 dark:text-gray-300 mb-6">无法加载知识点数据，请稍后重试</p>
+                <button id="retry-load" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors transform hover:scale-105">
+                    重试
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量存储生物学知识数据
+        let biologyKnowledge = null;
+
+        // DOM元素
+        const chapterList = document.getElementById('chapter-list');
+        const knowledgeGrid = document.getElementById('knowledge-grid');
+        const chapterTitle = document.getElementById('chapter-title');
+        const knowledgeModal = document.getElementById('knowledge-modal');
+        const modalTerm = document.getElementById('modal-term');
+        const modalDef = document.getElementById('modal-def');
+        const closeModal = document.getElementById('close-modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const themeToggle = document.getElementById('theme-toggle');
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const searchInput = document.getElementById('search-input');
+        const mobileSearchInput = document.getElementById('mobile-search-input');
+        const mobileSearchBtn = document.getElementById('mobile-search-btn');
+        const mobileSearchContainer = document.getElementById('mobile-search-container');
+        const levelBtns = document.querySelectorAll('.学段-btn');
+        const errorModal = document.getElementById('error-modal');
+        const errorMessage = document.getElementById('error-message');
+        const retryLoad = document.getElementById('retry-load');
+        const mainHeader = document.getElementById('main-header');
+
+        // 当前选中的学段和章节
+        let currentLevel = 'middle_school';
+        let currentChapter = null;
+
+        // 初始化页面
+        function init() {
+            // 检查用户主题偏好
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // 从JSON文件加载数据
+            loadBiologyData();
+
+            // 绑定事件监听
+            bindEvents();
+
+            // 监听滚动事件，改变导航栏样式
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    mainHeader.classList.add('nav-scrolled');
+                } else {
+                    mainHeader.classList.remove('nav-scrolled');
+                }
+            });
+        }
+
+        // 从JSON文件加载生物学知识数据
+        function loadBiologyData() {
+            // 显示加载状态
+            chapterList.innerHTML = `
+            <li class="flex justify-center p-4">
+              <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+            </li>
+          `;
+
+            // 使用fetch加载JSON文件
+            fetch('生物数据.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误，状态码: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    biologyKnowledge = data;
+                    // 数据加载成功后加载章节
+                    loadChapters(currentLevel);
+                })
+                .catch(error => {
+                    console.error('加载生物学知识数据失败:', error);
+                    // 显示错误信息
+                    errorMessage.textContent = `无法加载知识点数据: ${error.message}，请稍后重试`;
+                    errorModal.classList.remove('hidden');
+                    // 触发动画
+                    setTimeout(() => {
+                        errorModal.querySelector('div:nth-child(2)').classList.add('scale-100', 'opacity-100');
+                    }, 50);
+                });
+        }
+
+        // 加载章节列表
+        function loadChapters(level) {
+            if (!biologyKnowledge) return;
+
+            currentLevel = level;
+            chapterList.innerHTML = '';
+
+            const chapters = biologyKnowledge.biology_knowledge[level];
+            const chapterNames = Object.keys(chapters);
+
+            if (chapterNames.length === 0) {
+                chapterList.innerHTML = `
+              <li class="px-3 py-2 text-gray-500 dark:text-gray-400 slide-up">
+                没有找到相关章节
+              </li>
+            `;
+                return;
+            }
+
+            // 逐个添加章节，创建顺序动画效果
+            chapterNames.forEach((chapterName, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+              <button class="chapter-btn w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      data-chapter="${chapterName}">
+                ${chapterName}
+              </button>
+            `;
+                chapterList.appendChild(li);
+
+                // 添加动画
+                setTimeout(() => {
+                    li.querySelector('.chapter-btn').classList.add('slide-up');
+                    li.querySelector('.chapter-btn').style.animationDelay = `${index * 0.05}s`;
+                }, 100);
+            });
+
+            // 为章节按钮绑定点击事件
+            document.querySelectorAll('.chapter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // 更新选中状态
+                    document.querySelectorAll('.chapter-btn').forEach(b => {
+                        b.classList.remove('chapter-active');
+                    });
+                    e.currentTarget.classList.add('chapter-active');
+
+                    const chapter = e.currentTarget.dataset.chapter;
+                    loadKnowledge(chapter);
+
+                    // 在移动设备上点击章节后关闭侧边栏
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                });
+            });
+        }
+
+        // 加载知识点
+        function loadKnowledge(chapter) {
+            if (!biologyKnowledge) return;
+
+            currentChapter = chapter;
+            const knowledgeItems = biologyKnowledge.biology_knowledge[currentLevel][chapter];
+
+            // 更新章节标题并添加动画
+            chapterTitle.textContent = chapter;
+            chapterTitle.classList.remove('slide-up');
+            void chapterTitle.offsetWidth; // 触发重绘
+            chapterTitle.classList.add('slide-up');
+
+            // 清空网格并显示加载状态
+            knowledgeGrid.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center py-16">
+              <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-4"></div>
+              <p class="text-gray-500 dark:text-gray-400 slide-up">加载知识点中...</p>
+            </div>
+          `;
+
+            // 短暂延迟模拟加载过程，提升用户体验
+            setTimeout(() => {
+                // 清空网格
+                knowledgeGrid.innerHTML = '';
+
+                // 添加知识点卡片，创建顺序动画
+                knowledgeItems.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 card-hover border border-gray-100 dark:border-gray-700';
+                    card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                  <h3 class="font-semibold text-lg text-primary">${item.term}</h3>
+                  <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded-full">
+                    ${index + 1}
+                  </span>
+                </div>
+                <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3">${item.def}</p>
+                <button class="mt-4 text-primary text-sm font-medium hover:underline flex items-center view-details group"
+                        data-term="${item.term}" data-def="${item.def}">
+                  查看详情
+                  <i class="fa fa-arrow-right ml-1 text-xs transition-transform group-hover:translate-x-1"></i>
+                </button>
+              `;
+                    knowledgeGrid.appendChild(card);
+
+                    // 添加延迟动画，使卡片依次出现
+                    setTimeout(() => {
+                        card.classList.add('fade-in');
+                    }, index * 100);
+                });
+
+                // 为查看详情按钮绑定事件
+                document.querySelectorAll('.view-details').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const term = e.currentTarget.dataset.term;
+                        const def = e.currentTarget.dataset.def;
+                        openModal(term, def);
+                    });
+                });
+            }, 500);
+        }
+
+        // 打开知识点详情模态框
+        function openModal(term, def) {
+            modalTerm.textContent = term;
+            modalDef.textContent = def;
+            modalDef.style.opacity = '0'; // 重置透明度
+
+            knowledgeModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            // 添加动画效果
+            setTimeout(() => {
+                const modalContent = knowledgeModal.querySelector('div:nth-child(2)');
+                modalContent.classList.add('scale-100', 'opacity-100');
+
+                // 内容淡入效果
+                setTimeout(() => {
+                    modalDef.style.opacity = '1';
+                }, 200);
+            }, 50);
+        }
+
+        // 关闭模态框
+        function closeModalFunc() {
+            const modalContent = knowledgeModal.querySelector('div:nth-child(2)');
+            modalDef.style.opacity = '0';
+
+            setTimeout(() => {
+                modalContent.classList.remove('scale-100', 'opacity-100');
+
+                setTimeout(() => {
+                    knowledgeModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }, 300);
+            }, 200);
+        }
+
+        // 搜索知识点
+        function searchKnowledge(query) {
+            if (!biologyKnowledge) return;
+
+            if (!query.trim()) {
+                // 如果搜索为空且有当前章节，重新加载当前章节
+                if (currentChapter) {
+                    loadKnowledge(currentChapter);
+                }
+                return;
+            }
+
+            query = query.toLowerCase();
+            const results = [];
+
+            // 遍历所有学段、章节和知识点
+            const levels = biologyKnowledge.biology_knowledge;
+            Object.keys(levels).forEach(level => {
+                const chapters = levels[level];
+                Object.keys(chapters).forEach(chapter => {
+                    chapters[chapter].forEach(item => {
+                        if (item.term.toLowerCase().includes(query) || item.def.toLowerCase().includes(query)) {
+                            results.push({
+                                ...item,
+                                level,
+                                chapter
+                            });
+                        }
+                    });
+                });
+            });
+
+            // 显示搜索结果标题并添加动画
+            chapterTitle.textContent = `搜索结果: "${query}" (${results.length}个)`;
+            chapterTitle.classList.remove('slide-up');
+            void chapterTitle.offsetWidth; // 触发重绘
+            chapterTitle.classList.add('slide-up');
+
+            // 清空网格
+            knowledgeGrid.innerHTML = '';
+
+            if (results.length === 0) {
+                knowledgeGrid.innerHTML = `
+              <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400">
+                <i class="fa fa-search text-5xl mb-4 opacity-30"></i>
+                <p class="text-center max-w-md slide-up">没有找到相关知识点，请尝试其他关键词</p>
+              </div>
+            `;
+                return;
+            }
+
+            // 渐进式显示搜索结果
+            results.forEach((item, index) => {
+                setTimeout(() => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 card-hover border border-gray-100 dark:border-gray-700 fade-in';
+                    card.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="font-semibold text-lg text-primary">${item.term}</h3>
+                  <span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded-full">
+                    ${index + 1}
+                  </span>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                  ${item.level === 'middle_school' ? '初中' : '高中'} · ${item.chapter.replace(/^\d+\. /, '')}
+                </p>
+                <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3">${item.def}</p>
+                <button class="mt-4 text-primary text-sm font-medium hover:underline flex items-center view-details group"
+                        data-term="${item.term}" data-def="${item.def}">
+                  查看详情
+                  <i class="fa fa-arrow-right ml-1 text-xs transition-transform group-hover:translate-x-1"></i>
+                </button>
+              `;
+                    knowledgeGrid.appendChild(card);
+
+                    // 为查看详情按钮绑定事件
+                    card.querySelector('.view-details').addEventListener('click', (e) => {
+                        const term = e.currentTarget.dataset.term;
+                        const def = e.currentTarget.dataset.def;
+                        openModal(term, def);
+                    });
+                }, index * 100);
+            });
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 学段切换
+            levelBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // 更新按钮样式
+                    levelBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-primary', 'text-white');
+                        b.classList.add('bg-gray-100', 'dark:bg-gray-700', 'hover:bg-gray-200', 'dark:hover:bg-gray-600');
+                    });
+                    e.currentTarget.classList.add('active', 'bg-primary', 'text-white');
+                    e.currentTarget.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'hover:bg-gray-200', 'dark:hover:bg-gray-600');
+
+                    // 加载对应学段的章节
+                    loadChapters(e.currentTarget.dataset.level);
+
+                    // 重置当前章节和内容
+                    currentChapter = null;
+                    chapterTitle.textContent = '请选择左侧章节开始学习';
+                    knowledgeGrid.innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400">
+                  <i class="fa fa-book text-5xl mb-4 opacity-30 pulse"></i>
+                  <p class="text-center max-w-md slide-up">选择左侧的章节，开始探索生物学知识的奥秘</p>
+                </div>
+              `;
+                });
+            });
+
+            // 主题切换
+            themeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.theme = 'light';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.theme = 'dark';
+                }
+            });
+
+            // 移动端菜单切换
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.remove('-translate-x-full');
+                // 添加动画
+                setTimeout(() => {
+                    sidebar.classList.add('fade-in');
+                }, 50);
+            });
+
+            closeSidebar.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+            });
+
+            // 关闭模态框
+            closeModal.addEventListener('click', closeModalFunc);
+            modalBackdrop.addEventListener('click', closeModalFunc);
+
+            // 点击ESC关闭模态框
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !knowledgeModal.classList.contains('hidden')) {
+                    closeModalFunc();
+                }
+            });
+
+            // 搜索功能
+            searchInput.addEventListener('input', (e) => {
+                // 使用防抖处理，减少搜索频率
+                clearTimeout(window.searchTimeout);
+                window.searchTimeout = setTimeout(() => {
+                    searchKnowledge(e.target.value);
+                }, 300);
+            });
+
+            mobileSearchInput.addEventListener('input', (e) => {
+                clearTimeout(window.mobileSearchTimeout);
+                window.mobileSearchTimeout = setTimeout(() => {
+                    searchKnowledge(e.target.value);
+                }, 300);
+            });
+
+            mobileSearchBtn.addEventListener('click', () => {
+                mobileSearchContainer.classList.toggle('hidden');
+                if (!mobileSearchContainer.classList.contains('hidden')) {
+                    mobileSearchInput.focus();
+                    // 添加动画
+                    mobileSearchInput.classList.add('slide-up');
+                }
+            });
+
+            // 窗口大小变化时处理侧边栏
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.remove('-translate-x-full');
+                    mobileSearchContainer.classList.add('hidden');
+                } else if (currentChapter) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+
+            // 错误重试
+            retryLoad.addEventListener('click', () => {
+                const modalContent = errorModal.querySelector('div:nth-child(2)');
+                modalContent.classList.remove('scale-100', 'opacity-100');
+
+                setTimeout(() => {
+                    errorModal.classList.add('hidden');
+                    loadBiologyData();
+                }, 300);
+            });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

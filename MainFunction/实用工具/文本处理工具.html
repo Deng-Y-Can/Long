@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级文本处理工具</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        warning: '#F59E0B',
+                        danger: '#EF4444'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .card-hover {
+                @apply hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 min-h-screen flex flex-col text-gray-800">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md sticky top-0 z-50 transition-custom">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-file-text-o text-primary text-2xl"></i>
+                <h1 class="text-[clamp(1.25rem,3vw,1.75rem)] font-bold text-dark">高级文本处理工具</h1>
+            </div>
+            <div class="hidden md:flex items-center space-x-6">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 transition-custom">
+                    <i class="fa fa-moon-o text-gray-600"></i>
+                </button>
+                <button id="about-btn" class="text-gray-600 hover:text-primary transition-custom">
+                    <i class="fa fa-info-circle mr-1"></i>关于
+                </button>
+            </div>
+            <button class="md:hidden p-2 rounded-full hover:bg-gray-100 transition-custom">
+                <i class="fa fa-bars text-gray-600"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- 输入区域 -->
+            <div class="bg-white rounded-xl shadow p-6 card-hover">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fa fa-pencil-square-o text-primary mr-2"></i>输入文本
+                </h2>
+                <div class="mb-4">
+                    <textarea 
+                        id="input-text" 
+                        class="w-full h-64 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom resize-none"
+                        placeholder="请输入需要处理的文本..."></textarea>
+                </div>
+                <div class="flex justify-between items-center">
+                    <button id="clear-input" class="text-gray-500 hover:text-danger transition-custom flex items-center">
+                        <i class="fa fa-trash-o mr-1"></i>清空
+                    </button>
+                    <span id="char-count" class="text-sm text-gray-500">字符数: 0 | 字数: 0 | 行数: 0</span>
+                </div>
+            </div>
+
+            <!-- 输出区域 -->
+            <div class="bg-white rounded-xl shadow p-6 card-hover">
+                <h2 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fa fa-file-text text-secondary mr-2"></i>处理结果
+                </h2>
+                <div class="mb-4">
+                    <textarea 
+                        id="output-text" 
+                        class="w-full h-64 p-4 border border-gray-200 rounded-lg bg-gray-50 focus:ring-2 focus:ring-secondary focus:border-secondary transition-custom resize-none"
+                        placeholder="处理后的文本将显示在这里..." readonly></textarea>
+                </div>
+                <div class="flex justify-between items-center">
+                    <button id="copy-result" class="text-gray-500 hover:text-secondary transition-custom flex items-center">
+                        <i class="fa fa-copy mr-1"></i>复制结果
+                    </button>
+                    <button id="swap-text" class="text-gray-500 hover:text-accent transition-custom flex items-center">
+                        <i class="fa fa-exchange mr-1"></i>交换内容
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能按钮区 -->
+        <div class="mt-8 grid grid-cols-1 gap-6">
+            <!-- 第一行功能区 -->
+            <div class="bg-white rounded-xl shadow p-6">
+                <h2 class="text-xl font-semibold mb-6 flex items-center">
+                    <i class="fa fa-sliders text-accent mr-2"></i>文本转换功能
+                </h2>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <!-- 大小写转换 -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-primary hover:bg-blue-50 transition-custom">
+                        <h3 class="font-medium mb-3 text-center">大小写转换</h3>
+                        <div class="flex flex-col space-y-2">
+                            <button id="to-upper" class="py-2 px-3 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-custom text-sm">
+                                <i class="fa fa-arrow-up mr-1"></i>转大写
+                            </button>
+                            <button id="to-lower" class="py-2 px-3 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-custom text-sm">
+                                <i class="fa fa-arrow-down mr-1"></i>转小写
+                            </button>
+                            <button id="to-title" class="py-2 px-3 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-custom text-sm">
+                                <i class="fa fa-header mr-1"></i>首字母大写
+                            </button>
+                            <button id="invert-case" class="py-2 px-3 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-custom text-sm">
+                                <i class="fa fa-exchange mr-1"></i>大小写反转
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 空格处理 -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-accent hover:bg-purple-50 transition-custom">
+                        <h3 class="font-medium mb-3 text-center">空格处理</h3>
+                        <div class="flex flex-col space-y-2">
+                            <button id="remove-spaces" class="py-2 px-3 bg-accent/10 text-accent rounded hover:bg-accent/20 transition-custom text-sm">
+                                <i class="fa fa-eraser mr-1"></i>去除所有空格
+                            </button>
+                            <button id="trim-text" class="py-2 px-3 bg-accent/10 text-accent rounded hover:bg-accent/20 transition-custom text-sm">
+                                <i class="fa fa-cut mr-1"></i>去除首尾空格
+                            </button>
+                            <button id="normalize-spaces" class="py-2 px-3 bg-accent/10 text-accent rounded hover:bg-accent/20 transition-custom text-sm">
+                                <i class="fa fa-compress mr-1"></i>标准化空格
+                            </button>
+                            <button id="add-space-between" class="py-2 px-3 bg-accent/10 text-accent rounded hover:bg-accent/20 transition-custom text-sm">
+                                <i class="fa fa-font mr-1"></i>字符间加空格
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 文本调整 -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-warning hover:bg-amber-50 transition-custom">
+                        <h3 class="font-medium mb-3 text-center">文本调整</h3>
+                        <div class="flex flex-col space-y-2">
+                            <button id="reverse-text" class="py-2 px-3 bg-warning/10 text-warning rounded hover:bg-warning/20 transition-custom text-sm">
+                                <i class="fa fa-rotate-right mr-1"></i>反转文本
+                            </button>
+                            <button id="reverse-lines" class="py-2 px-3 bg-warning/10 text-warning rounded hover:bg-warning/20 transition-custom text-sm">
+                                <i class="fa fa-list-ol mr-1"></i>反转行顺序
+                            </button>
+                            <button id="sort-lines" class="py-2 px-3 bg-warning/10 text-warning rounded hover:bg-warning/20 transition-custom text-sm">
+                                <i class="fa fa-sort-amount-asc mr-1"></i>行排序
+                            </button>
+                            <button id="shuffle-lines" class="py-2 px-3 bg-warning/10 text-warning rounded hover:bg-warning/20 transition-custom text-sm">
+                                <i class="fa fa-random mr-1"></i>随机打乱行
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 统计分析 -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-secondary hover:bg-green-50 transition-custom">
+                        <h3 class="font-medium mb-3 text-center">统计分析</h3>
+                        <div class="flex flex-col space-y-2">
+                            <button id="count-words" class="py-2 px-3 bg-secondary/10 text-secondary rounded hover:bg-secondary/20 transition-custom text-sm">
+                                <i class="fa fa-wordpress mr-1"></i>字数统计
+                            </button>
+                            <button id="count-chars" class="py-2 px-3 bg-secondary/10 text-secondary rounded hover:bg-secondary/20 transition-custom text-sm">
+                                <i class="fa fa-file-text-o mr-1"></i>字符统计
+                            </button>
+                            <button id="count-lines" class="py-2 px-3 bg-secondary/10 text-secondary rounded hover:bg-secondary/20 transition-custom text-sm">
+                                <i class="fa fa-list mr-1"></i>行数统计
+                            </button>
+                            <button id="char-frequency" class="py-2 px-3 bg-secondary/10 text-secondary rounded hover:bg-secondary/20 transition-custom text-sm">
+                                <i class="fa fa-bar-chart mr-1"></i>字符频率
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第二行功能区 -->
+            <div class="bg-white rounded-xl shadow p-6">
+                <h2 class="text-xl font-semibold mb-6 flex items-center">
+                    <i class="fa fa-cogs text-primary mr-2"></i>高级处理功能
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 多组替换功能 -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-primary hover:bg-blue-50 transition-custom">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-medium">多组替换</h3>
+                            <button id="add-replace-rule" class="text-xs bg-primary/10 text-primary px-2 py-1 rounded hover:bg-primary/20 transition-custom">
+                                <i class="fa fa-plus mr-1"></i>添加规则
+                            </button>
+                        </div>
+                        
+                        <div id="replace-rules-container" class="space-y-3 mb-3">
+                            <div class="replace-rule flex space-x-2 items-center">
+                                <input type="text" class="replace-from flex-1 px-3 py-2 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="查找">
+                                <span class="text-gray-400">→</span>
+                                <input type="text" class="replace-to flex-1 px-3 py-2 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="替换为">
+                                <button class="remove-rule text-gray-400 hover:text-danger p-2" disabled>
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button id="replace-all-btn" class="flex-1 py-2 px-3 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-custom text-sm">
+                                <i class="fa fa-exchange mr-1"></i>执行全部替换
+                            </button>
+                            <button id="clear-rules-btn" class="py-2 px-3 bg-gray-200 text-gray-600 rounded hover:bg-gray-300 transition-custom text-sm">
+                                <i class="fa fa-trash-o mr-1"></i>清空规则
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 编码解码与特殊处理 -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-accent hover:bg-purple-50 transition-custom">
+                        <h3 class="font-medium mb-3">编码/解码与过滤</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="encode-html" class="py-2 px-3 bg-accent/10 text-accent rounded hover:bg-accent/20 transition-custom text-sm">
+                                <i class="fa fa-code mr-1"></i>HTML编码
+                            </button>
+                            <button id="decode-html" class="py-2 px-3 bg-accent/10 text-accent rounded hover:bg-accent/20 transition-custom text-sm">
+                                <i class="fa fa-decode mr-1"></i>HTML解码
+                            </button>
+                            <button id="encode-base64" class="py-2 px-3 bg-accent/10 text-accent rounded hover:bg-accent/20 transition-custom text-sm">
+                                <i class="fa fa-lock mr-1"></i>Base64编码
+                            </button>
+                            <button id="decode-base64" class="py-2 px-3 bg-accent/10 text-accent rounded hover:bg-accent/20 transition-custom text-sm">
+                                <i class="fa fa-unlock mr-1"></i>Base64解码
+                            </button>
+                            <button id="remove-non-ascii" class="py-2 px-3 bg-warning/10 text-warning rounded hover:bg-warning/20 transition-custom text-sm">
+                                <i class="fa fa-filter mr-1"></i>移除非ASCII字符
+                            </button>
+                            <button id="remove-duplicates" class="py-2 px-3 bg-warning/10 text-warning rounded hover:bg-warning/20 transition-custom text-sm">
+                                <i class="fa fa-clone mr-1"></i>去重行
+                            </button>
+                            <button id="remove-empty-lines" class="py-2 px-3 bg-danger/10 text-danger rounded hover:bg-danger/20 transition-custom text-sm">
+                                <i class="fa fa-minus-square-o mr-1"></i>移除空行
+                            </button>
+                            <button id="keep-unique-chars" class="py-2 px-3 bg-danger/10 text-danger rounded hover:bg-danger/20 transition-custom text-sm">
+                                <i class="fa fa-diamond mr-1"></i>保留唯一字符
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 关于模态框 -->
+    <div id="about-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-dark">关于高级文本处理工具</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="text-gray-600 space-y-3">
+                <p>这是一个功能全面的文本处理工具，可以帮助您快速处理各种文本内容。</p>
+                <p>主要功能包括：</p>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li>大小写转换（大写、小写、首字母大写、大小写反转）</li>
+                    <li>多组字符替换（同时设置多组替换规则）</li>
+                    <li>空格处理（去除所有空格、去除首尾空格、标准化空格等）</li>
+                    <li>文本调整（反转文本、反转行顺序、行排序、随机打乱行）</li>
+                    <li>统计分析（字数统计、字符统计、行数统计、字符频率分析）</li>
+                    <li>编码解码（HTML编码/解码、Base64编码/解码）</li>
+                    <li>特殊处理（去重行、移除空行、保留唯一字符等）</li>
+                </ul>
+                <p class="text-sm text-gray-500 mt-4">© 2023 高级文本处理工具 - 简洁高效的文本处理解决方案</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 字符频率分析模态框 -->
+    <div id="frequency-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 max-w-lg w-full mx-4 transform transition-all scale-95 opacity-0 max-h-[80vh] overflow-y-auto" id="frequency-modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-dark">字符频率分析</h3>
+                <button id="close-frequency-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="text-gray-600 space-y-4" id="frequency-results">
+                <!-- 字符频率结果将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="notification" class="fixed bottom-4 right-4 bg-dark text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center z-50">
+        <i class="fa fa-check-circle mr-2"></i>
+        <span id="notification-text">操作成功</span>
+    </div>
+
+    <!-- JavaScript 代码 -->
+    <script>
+        // 获取DOM元素 - 修复了变量名错误
+        const inputText = document.getElementById('input-text');
+        const outputText = document.getElementById('output-text');
+        const charCountElement = document.getElementById('char-count'); // 修复了变量名
+        const clearInputBtn = document.getElementById('clear-input');
+        const copyResultBtn = document.getElementById('copy-result');
+        const swapTextBtn = document.getElementById('swap-text');
+        
+        // 大小写转换按钮
+        const toUpperBtn = document.getElementById('to-upper');
+        const toLowerBtn = document.getElementById('to-lower');
+        const toTitleBtn = document.getElementById('to-title');
+        const invertCaseBtn = document.getElementById('invert-case');
+        
+        // 多组替换功能
+        const replaceRulesContainer = document.getElementById('replace-rules-container');
+        const addReplaceRuleBtn = document.getElementById('add-replace-rule');
+        const replaceAllBtn = document.getElementById('replace-all-btn');
+        const clearRulesBtn = document.getElementById('clear-rules-btn');
+        
+        // 空格处理
+        const removeSpacesBtn = document.getElementById('remove-spaces');
+        const trimTextBtn = document.getElementById('trim-text');
+        const normalizeSpacesBtn = document.getElementById('normalize-spaces');
+        const addSpaceBetweenBtn = document.getElementById('add-space-between');
+        
+        // 文本调整
+        const reverseTextBtn = document.getElementById('reverse-text');
+        const reverseLinesBtn = document.getElementById('reverse-lines');
+        const sortLinesBtn = document.getElementById('sort-lines');
+        const shuffleLinesBtn = document.getElementById('shuffle-lines');
+        
+        // 统计分析
+        const countWordsBtn = document.getElementById('count-words');
+        const countCharsBtn = document.getElementById('count-chars');
+        const countLinesBtn = document.getElementById('count-lines');
+        const charFrequencyBtn = document.getElementById('char-frequency');
+        
+        // 编码解码与过滤
+        const encodeHtmlBtn = document.getElementById('encode-html');
+        const decodeHtmlBtn = document.getElementById('decode-html');
+        const encodeBase64Btn = document.getElementById('encode-base64');
+        const decodeBase64Btn = document.getElementById('decode-base64');
+        const removeNonAsciiBtn = document.getElementById('remove-non-ascii');
+        const removeDuplicatesBtn = document.getElementById('remove-duplicates');
+        const removeEmptyLinesBtn = document.getElementById('remove-empty-lines');
+        const keepUniqueCharsBtn = document.getElementById('keep-unique-chars');
+        
+        // 模态框相关
+        const aboutBtn = document.getElementById('about-btn');
+        const aboutModal = document.getElementById('about-modal');
+        const modalContent = document.getElementById('modal-content');
+        const closeModalBtn = document.getElementById('close-modal');
+        
+        // 字符频率模态框
+        const frequencyModal = document.getElementById('frequency-modal');
+        const frequencyModalContent = document.getElementById('frequency-modal-content');
+        const frequencyResults = document.getElementById('frequency-results');
+        const closeFrequencyModalBtn = document.getElementById('close-frequency-modal');
+        
+        // 通知相关
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notification-text');
+        
+        // 主题切换
+        const themeToggle = document.getElementById('theme-toggle');
+        let isDarkMode = false;
+        
+        // 更新字符计数 - 修复了统计异常问题
+        inputText.addEventListener('input', updateTextStats);
+        // 添加了初始加载和焦点事件，确保统计正确
+        window.addEventListener('load', updateTextStats);
+        inputText.addEventListener('focus', updateTextStats);
+        inputText.addEventListener('blur', updateTextStats);
+        
+        function updateTextStats() {
+            try {
+                const text = inputText.value || ''; // 确保处理空值
+                const charCount = text.length;
+                
+                // 优化字数统计逻辑，处理各种空白字符
+                const trimmedText = text.trim();
+                const wordCount = trimmedText === '' 
+                    ? 0 
+                    : trimmedText.split(/\s+/).filter(word => word.length > 0).length;
+                
+                // 优化行数统计逻辑
+                const lines = text.split('\n');
+                const lineCount = lines.length;
+                
+                // 更新显示，添加防抖动处理
+                charCountElement.textContent = `字符数: ${charCount} | 字数: ${wordCount} | 行数: ${lineCount}`;
+            } catch (error) {
+                console.error('更新文本统计失败:', error);
+                charCountElement.textContent = '统计出错，请重试';
+            }
+        }
+        
+        // 清空输入 - 添加异常处理
+        clearInputBtn.addEventListener('click', () => {
+            try {
+                inputText.value = '';
+                updateTextStats();
+                showNotification('已清空输入');
+            } catch (error) {
+                console.error('清空输入失败:', error);
+                showNotification('清空输入失败，请重试', 'error');
+            }
+        });
+        
+        // 复制结果 - 增强异常处理
+        copyResultBtn.addEventListener('click', () => {
+            try {
+                if (outputText.value) {
+                    // 现代剪贴板API，失败时回退到传统方法
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(outputText.value)
+                            .then(() => {
+                                showNotification('结果已复制到剪贴板');
+                            })
+                            .catch(err => {
+                                console.error('剪贴板API失败，使用传统方法:', err);
+                                fallbackCopyText();
+                            });
+                    } else {
+                        fallbackCopyText();
+                    }
+                } else {
+                    showNotification('没有可复制的内容', 'warning');
+                }
+            } catch (error) {
+                console.error('复制失败:', error);
+                showNotification('复制失败，请手动复制', 'error');
+            }
+        });
+        
+        // 复制文本的传统方法，作为剪贴板API的 fallback
+        function fallbackCopyText() {
+            outputText.select();
+            outputText.setSelectionRange(0, 99999); // 适配移动设备
+            document.execCommand('copy');
+            showNotification('结果已复制到剪贴板');
+        }
+        
+        // 交换输入输出内容 - 添加异常处理
+        swapTextBtn.addEventListener('click', () => {
+            try {
+                const temp = inputText.value;
+                inputText.value = outputText.value;
+                outputText.value = temp;
+                updateTextStats();
+                showNotification('已交换内容');
+            } catch (error) {
+                console.error('交换内容失败:', error);
+                showNotification('交换内容失败，请重试', 'error');
+            }
+        });
+        
+        // 大小写转换 - 统一使用带异常处理的处理函数
+        toUpperBtn.addEventListener('click', () => {
+            processText(input => input.toUpperCase(), '已转换为大写');
+        });
+        
+        toLowerBtn.addEventListener('click', () => {
+            processText(input => input.toLowerCase(), '已转换为小写');
+        });
+        
+        toTitleBtn.addEventListener('click', () => {
+            processText(input => input.replace(/\b\w/g, c => c.toUpperCase()), '已转换为首字母大写');
+        });
+        
+        invertCaseBtn.addEventListener('click', () => {
+            processText(input => 
+                input.split('').map(char => 
+                    char === char.toUpperCase() ? char.toLowerCase() : char.toUpperCase()
+                ).join(''), '已反转大小写');
+        });
+        
+        // 多组替换功能 - 增强异常处理
+        addReplaceRuleBtn.addEventListener('click', addReplaceRule);
+        
+        function addReplaceRule() {
+            try {
+                const ruleDiv = document.createElement('div');
+                ruleDiv.className = 'replace-rule flex space-x-2 items-center';
+                ruleDiv.innerHTML = `
+                    <input type="text" class="replace-from flex-1 px-3 py-2 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="查找">
+                    <span class="text-gray-400">→</span>
+                    <input type="text" class="replace-to flex-1 px-3 py-2 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="替换为">
+                    <button class="remove-rule text-gray-400 hover:text-danger p-2">
+                        <i class="fa fa-times"></i>
+                    </button>
+                `;
+                
+                replaceRulesContainer.appendChild(ruleDiv);
+                
+                // 添加删除规则事件
+                const removeBtn = ruleDiv.querySelector('.remove-rule');
+                removeBtn.addEventListener('click', () => {
+                    ruleDiv.remove();
+                    updateRemoveButtons();
+                });
+                
+                updateRemoveButtons();
+            } catch (error) {
+                console.error('添加替换规则失败:', error);
+                showNotification('添加替换规则失败，请重试', 'error');
+            }
+        }
+        
+        function updateRemoveButtons() {
+            try {
+                const rules = document.querySelectorAll('.replace-rule');
+                const removeBtns = document.querySelectorAll('.remove-rule');
+                
+                removeBtns.forEach((btn, index) => {
+                    // 如果只有一条规则，禁用删除按钮
+                    if (rules.length <= 1) {
+                        btn.disabled = true;
+                        btn.classList.add('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                });
+            } catch (error) {
+                console.error('更新删除按钮状态失败:', error);
+            }
+        }
+        
+        // 执行全部替换 - 增强异常处理
+        replaceAllBtn.addEventListener('click', () => {
+            try {
+                const rules = document.querySelectorAll('.replace-rule');
+                let hasValidRule = false;
+                
+                // 检查是否有有效的替换规则
+                rules.forEach(rule => {
+                    const from = rule.querySelector('.replace-from').value.trim();
+                    if (from) hasValidRule = true;
+                });
+                
+                if (!hasValidRule) {
+                    showNotification('请至少设置一个有效的替换规则', 'warning');
+                    return;
+                }
+                
+                if (!inputText.value.trim()) {
+                    showNotification('请先输入需要处理的文本', 'warning');
+                    return;
+                }
+                
+                processText(input => {
+                    let result = input;
+                    rules.forEach(rule => {
+                        const from = rule.querySelector('.replace-from').value;
+                        const to = rule.querySelector('.replace-to').value;
+                        
+                        if (from) {
+                            // 转义特殊字符以安全地用于正则表达式
+                            const escapedFrom = from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const regex = new RegExp(escapedFrom, 'g');
+                            result = result.replace(regex, to);
+                        }
+                    });
+                    return result;
+                }, `已应用 ${rules.length} 条替换规则`);
+            } catch (error) {
+                console.error('执行替换失败:', error);
+                showNotification('替换失败，请检查规则并重试', 'error');
+            }
+        });
+        
+        // 清空替换规则 - 添加异常处理
+        clearRulesBtn.addEventListener('click', () => {
+            try {
+                // 保留一个空规则
+                while (replaceRulesContainer.children.length > 1) {
+                    replaceRulesContainer.removeChild(replaceRulesContainer.lastChild);
+                }
+                
+                // 清空保留的规则
+                const remainingRule = replaceRulesContainer.querySelector('.replace-rule');
+                remainingRule.querySelector('.replace-from').value = '';
+                remainingRule.querySelector('.replace-to').value = '';
+                
+                updateRemoveButtons();
+                showNotification('已清空替换规则');
+            } catch (error) {
+                console.error('清空替换规则失败:', error);
+                showNotification('清空替换规则失败，请重试', 'error');
+            }
+        });
+        
+        // 空格处理
+        removeSpacesBtn.addEventListener('click', () => {
+            processText(input => input.replace(/\s+/g, ''), '已去除所有空格');
+        });
+        
+        trimTextBtn.addEventListener('click', () => {
+            processText(input => input.trim(), '已去除首尾空格');
+        });
+        
+        normalizeSpacesBtn.addEventListener('click', () => {
+            processText(input => input.replace(/\s+/g, ' ').trim(), '已标准化空格');
+        });
+        
+        addSpaceBetweenBtn.addEventListener('click', () => {
+            processText(input => input.split('').join(' '), '已在字符间添加空格');
+        });
+        
+        // 文本调整
+        reverseTextBtn.addEventListener('click', () => {
+            processText(input => input.split('').reverse().join(''), '已反转文本');
+        });
+        
+        reverseLinesBtn.addEventListener('click', () => {
+            processText(input => input.split('\n').reverse().join('\n'), '已反转行顺序');
+        });
+        
+        sortLinesBtn.addEventListener('click', () => {
+            processText(input => {
+                return input.split('\n')
+                    .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+                    .join('\n');
+            }, '已按字母顺序排序行');
+        });
+        
+        shuffleLinesBtn.addEventListener('click', () => {
+            processText(input => {
+                const lines = input.split('\n');
+                // Fisher-Yates 洗牌算法
+                for (let i = lines.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [lines[i], lines[j]] = [lines[j], lines[i]];
+                }
+                return lines.join('\n');
+            }, '已随机打乱行顺序');
+        });
+        
+        // 统计分析
+        countWordsBtn.addEventListener('click', () => {
+            try {
+                if (!inputText.value.trim()) {
+                    showNotification('请输入文本后再进行统计', 'warning');
+                    return;
+                }
+                
+                const words = inputText.value.trim().split(/\s+/).filter(word => word.length > 0);
+                showNotification(`字数统计: ${words.length} 个单词`);
+            } catch (error) {
+                console.error('字数统计失败:', error);
+                showNotification('字数统计失败，请重试', 'error');
+            }
+        });
+        
+        countCharsBtn.addEventListener('click', () => {
+            try {
+                if (!inputText.value) {
+                    showNotification('请输入文本后再进行统计', 'warning');
+                    return;
+                }
+                
+                const withSpaces = inputText.value.length;
+                const withoutSpaces = inputText.value.replace(/\s+/g, '').length;
+                showNotification(`字符统计: 含空格 ${withSpaces} 个，不含空格 ${withoutSpaces} 个`);
+            } catch (error) {
+                console.error('字符统计失败:', error);
+                showNotification('字符统计失败，请重试', 'error');
+            }
+        });
+        
+        countLinesBtn.addEventListener('click', () => {
+            try {
+                if (!inputText.value) {
+                    showNotification('请输入文本后再进行统计', 'warning');
+                    return;
+                }
+                
+                const lines = inputText.value.split('\n');
+                const nonEmptyLines = lines.filter(line => line.trim().length > 0).length;
+                showNotification(`行数统计: 共 ${lines.length} 行，非空行 ${nonEmptyLines} 行`);
+            } catch (error) {
+                console.error('行数统计失败:', error);
+                showNotification('行数统计失败，请重试', 'error');
+            }
+        });
+        
+        charFrequencyBtn.addEventListener('click', () => {
+            try {
+                if (!inputText.value.trim()) {
+                    showNotification('请输入文本后再进行分析', 'warning');
+                    return;
+                }
+                
+                // 计算字符频率
+                const frequency = {};
+                const text = inputText.value;
+                
+                for (const char of text) {
+                    frequency[char] = (frequency[char] || 0) + 1;
+                }
+                
+                // 转换为数组并排序
+                const sortedFrequency = Object.entries(frequency)
+                    .sort((a, b) => b[1] - a[1]);
+                
+                // 显示结果
+                displayFrequencyResults(sortedFrequency, text.length);
+                
+                // 显示模态框
+                frequencyModal.classList.remove('hidden');
+                setTimeout(() => {
+                    frequencyModalContent.classList.remove('scale-95', 'opacity-0');
+                    frequencyModalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            } catch (error) {
+                console.error('字符频率分析失败:', error);
+                showNotification('字符频率分析失败，请重试', 'error');
+            }
+        });
+        
+        function displayFrequencyResults(results, total) {
+            try {
+                frequencyResults.innerHTML = `
+                    <p>总字符数: ${total}</p>
+                    <p>不同字符数: ${results.length}</p>
+                    <div class="overflow-x-auto mt-4">
+                        <table class="min-w-full bg-white">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="py-2 px-4 text-left text-sm font-medium">字符</th>
+                                    <th class="py-2 px-4 text-left text-sm font-medium">出现次数</th>
+                                    <th class="py-2 px-4 text-left text-sm font-medium">占比</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${results.map(([char, count]) => {
+                                    const percentage = ((count / total) * 100).toFixed(2);
+                                    // 特殊字符显示处理
+                                    const displayChar = char === ' ' ? '空格' : 
+                                                      char === '\n' ? '换行' : 
+                                                      char === '\t' ? '制表符' : char;
+                                    return `
+                                        <tr class="border-b border-gray-200">
+                                            <td class="py-2 px-4 text-sm">${displayChar}</td>
+                                            <td class="py-2 px-4 text-sm">${count}</td>
+                                            <td class="py-2 px-4 text-sm">${percentage}%</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('显示频率结果失败:', error);
+                frequencyResults.innerHTML = `<p class="text-danger">显示分析结果失败，请重试</p>`;
+            }
+        }
+        
+        // 编码解码与过滤
+        encodeHtmlBtn.addEventListener('click', () => {
+            processText(input => {
+                const el = document.createElement('div');
+                el.textContent = input;
+                return el.innerHTML;
+            }, '已完成HTML编码');
+        });
+        
+        decodeHtmlBtn.addEventListener('click', () => {
+            processText(input => {
+                const el = document.createElement('div');
+                el.innerHTML = input;
+                return el.textContent;
+            }, '已完成HTML解码');
+        });
+        
+        encodeBase64Btn.addEventListener('click', () => {
+            processText(input => {
+                try {
+                    return btoa(unescape(encodeURIComponent(input)));
+                } catch (e) {
+                    throw new Error('Base64编码失败: ' + e.message);
+                }
+            }, '已完成Base64编码');
+        });
+        
+        decodeBase64Btn.addEventListener('click', () => {
+            processText(input => {
+                try {
+                    return decodeURIComponent(escape(atob(input)));
+                } catch (e) {
+                    throw new Error('Base64解码失败，输入可能不是有效的Base64字符串');
+                }
+            }, '已完成Base64解码');
+        });
+        
+        removeNonAsciiBtn.addEventListener('click', () => {
+            processText(input => input.replace(/[^\x00-\x7F]/g, ''), '已移除非ASCII字符');
+        });
+        
+        removeDuplicatesBtn.addEventListener('click', () => {
+            processText(input => {
+                const lines = input.split('\n');
+                const uniqueLines = [...new Set(lines)];
+                return uniqueLines.join('\n');
+            }, '已去除重复行');
+        });
+        
+        removeEmptyLinesBtn.addEventListener('click', () => {
+            processText(input => {
+                return input.split('\n')
+                    .filter(line => line.trim().length > 0)
+                    .join('\n');
+            }, '已移除空行');
+        });
+        
+        keepUniqueCharsBtn.addEventListener('click', () => {
+            processText(input => {
+                const chars = new Set(input.split(''));
+                return Array.from(chars).join('');
+            }, '已保留唯一字符');
+        });
+        
+        // 模态框控制
+        aboutBtn.addEventListener('click', () => {
+            try {
+                aboutModal.classList.remove('hidden');
+                // 触发动画
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            } catch (error) {
+                console.error('打开关于模态框失败:', error);
+                showNotification('打开关于信息失败，请重试', 'error');
+            }
+        });
+        
+        closeModalBtn.addEventListener('click', closeModal);
+        
+        aboutModal.addEventListener('click', (e) => {
+            if (e.target === aboutModal) {
+                closeModal();
+            }
+        });
+        
+        function closeModal() {
+            try {
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    aboutModal.classList.add('hidden');
+                }, 300);
+            } catch (error) {
+                console.error('关闭模态框失败:', error);
+            }
+        }
+        
+        // 字符频率模态框控制
+        closeFrequencyModalBtn.addEventListener('click', closeFrequencyModal);
+        
+        frequencyModal.addEventListener('click', (e) => {
+            if (e.target === frequencyModal) {
+                closeFrequencyModal();
+            }
+        });
+        
+        function closeFrequencyModal() {
+            try {
+                frequencyModalContent.classList.remove('scale-100', 'opacity-100');
+                frequencyModalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    frequencyModal.classList.add('hidden');
+                }, 300);
+            } catch (error) {
+                console.error('关闭频率分析模态框失败:', error);
+            }
+        }
+        
+        // 显示通知
+        function showNotification(message, type = 'success') {
+            try {
+                notificationText.textContent = message;
+                
+                // 设置通知类型样式
+                notification.className = 'fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center z-50';
+                
+                if (type === 'success') {
+                    notification.classList.add('bg-green-500', 'text-white');
+                    notification.innerHTML = `<i class="fa fa-check-circle mr-2"></i><span>${message}</span>`;
+                } else if (type === 'warning') {
+                    notification.classList.add('bg-amber-500', 'text-white');
+                    notification.innerHTML = `<i class="fa fa-exclamation-circle mr-2"></i><span>${message}</span>`;
+                } else if (type === 'error') {
+                    notification.classList.add('bg-red-500', 'text-white');
+                    notification.innerHTML = `<i class="fa fa-times-circle mr-2"></i><span>${message}</span>`;
+                }
+                
+                // 显示通知
+                setTimeout(() => {
+                    notification.classList.remove('translate-y-20', 'opacity-0');
+                }, 10);
+                
+                // 3秒后隐藏通知
+                setTimeout(() => {
+                    notification.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            } catch (error) {
+                console.error('显示通知失败:', error);
+                // 降级显示
+                alert(message);
+            }
+        }
+        
+        // 主题切换功能 - 增强异常处理
+        themeToggle.addEventListener('click', () => {
+            try {
+                isDarkMode = !isDarkMode;
+                const icon = themeToggle.querySelector('i');
+                
+                if (isDarkMode) {
+                    document.body.classList.add('bg-gray-900', 'text-white');
+                    document.body.classList.remove('bg-gray-50', 'text-gray-800');
+                    icon.classList.remove('fa-moon-o');
+                    icon.classList.add('fa-sun-o');
+                    // 更新其他元素的暗色模式样式
+                    updateDarkModeStyles(true);
+                    showNotification('已切换到暗色模式');
+                } else {
+                    document.body.classList.remove('bg-gray-900', 'text-white');
+                    document.body.classList.add('bg-gray-50', 'text-gray-800');
+                    icon.classList.remove('fa-sun-o');
+                    icon.classList.add('fa-moon-o');
+                    // 恢复亮色模式样式
+                    updateDarkModeStyles(false);
+                    showNotification('已切换到亮色模式');
+                }
+            } catch (error) {
+                console.error('切换主题失败:', error);
+                showNotification('切换主题失败，请重试', 'error');
+            }
+        });
+        
+        function updateDarkModeStyles(isDark) {
+            try {
+                const elements = {
+                    bgWhite: document.querySelectorAll('header, footer, .bg-white'),
+                    bgGray50: document.querySelectorAll('.bg-gray-50'),
+                    textDark: document.querySelectorAll('.text-dark'),
+                    textAreaGray50: document.querySelectorAll('textarea.bg-gray-50')
+                };
+                
+                if (isDark) {
+                    elements.bgWhite.forEach(el => {
+                        el.classList.remove('bg-white');
+                        el.classList.add('bg-gray-800');
+                    });
+                    elements.bgGray50.forEach(el => {
+                        el.classList.remove('bg-gray-50');
+                        el.classList.add('bg-gray-700');
+                    });
+                    elements.textDark.forEach(el => {
+                        el.classList.remove('text-dark');
+                        el.classList.add('text-white');
+                    });
+                    elements.textAreaGray50.forEach(el => {
+                        el.classList.remove('bg-gray-50');
+                        el.classList.add('bg-gray-700');
+                    });
+                } else {
+                    elements.bgWhite.forEach(el => {
+                        el.classList.remove('bg-gray-800');
+                        el.classList.add('bg-white');
+                    });
+                    elements.bgGray50.forEach(el => {
+                        el.classList.remove('bg-gray-700');
+                        el.classList.add('bg-gray-50');
+                    });
+                    elements.textDark.forEach(el => {
+                        el.classList.remove('text-white');
+                        el.classList.add('text-dark');
+                    });
+                    elements.textAreaGray50.forEach(el => {
+                        el.classList.remove('bg-gray-700');
+                        el.classList.add('bg-gray-50');
+                    });
+                }
+            } catch (error) {
+                console.error('更新主题样式失败:', error);
+            }
+        }
+        
+        // 文本处理通用函数 - 增强异常处理
+        function processText(processor, successMessage) {
+            try {
+                if (!inputText.value) {
+                    showNotification('请先输入文本', 'warning');
+                    return;
+                }
+                
+                const result = processor(inputText.value);
+                // 验证处理结果
+                if (typeof result !== 'string') {
+                    throw new Error('处理结果不是有效的文本');
+                }
+                
+                outputText.value = result;
+                showNotification(successMessage);
+            } catch (error) {
+                console.error('文本处理失败:', error);
+                showNotification(`处理失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 添加键盘快捷键支持 - 增强异常处理
+        document.addEventListener('keydown', (e) => {
+            try {
+                // 避免在输入框中时触发快捷键
+                if (document.activeElement.tagName === 'INPUT' || 
+                    document.activeElement.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                // Ctrl+U 转大写
+                if (e.ctrlKey && e.key === 'u' && !e.metaKey) {
+                    e.preventDefault();
+                    toUpperBtn.click();
+                }
+                // Ctrl+L 转小写
+                if (e.ctrlKey && e.key === 'l' && !e.metaKey) {
+                    e.preventDefault();
+                    toLowerBtn.click();
+                }
+                // Ctrl+S 交换内容
+                if (e.ctrlKey && e.key === 's' && !e.metaKey) {
+                    e.preventDefault();
+                    swapTextBtn.click();
+                }
+            } catch (error) {
+                console.error('快捷键处理失败:', error);
+            }
+        });
+        
+        // 初始化
+        try {
+            updateRemoveButtons();
+            updateTextStats();
+        } catch (error) {
+            console.error('初始化失败:', error);
+            showNotification('工具初始化失败，请刷新页面重试', 'error');
+        }
+    </script>
+</body>
+</html>

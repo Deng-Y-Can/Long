@@ -1,0 +1,1946 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy思维导图工具V1.0</title>
+    <!-- 引入外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        info: '#3B82F6'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .node-transition {
+                transition: all 0.2s ease;
+            }
+
+            .connection-transition {
+                transition: all 0.3s ease-in-out;
+            }
+
+            .canvas-grid {
+                background-size: 20px 20px;
+                background-image: linear-gradient(to right, rgba(226, 232, 240, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
+            }
+
+            .context-menu-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .node-drag-active {
+                cursor: grabbing !important;
+                filter: brightness(1.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col overflow-hidden">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-sitemap text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">MindMapper Pro</h1>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-1">
+                <button id="new-map-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-file-o mr-2"></i>新建
+                </button>
+                <div class="h-5 border-r border-gray-300"></div>
+                <button id="import-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-upload mr-2"></i>导入Excel
+                </button>
+                <input type="file" id="file-import" accept=".xlsx,.xls" class="hidden">
+                <button id="export-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-download mr-2"></i>导出Excel
+                </button>
+                <button id="export-png-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-picture-o mr-2"></i>导出图片
+                </button>
+                <div class="h-5 border-r border-gray-300"></div>
+                <button id="save-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-save mr-2"></i>保存
+                </button>
+                <button id="undo-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center text-gray-500">
+                    <i class="fa fa-undo mr-2"></i>撤销
+                </button>
+                <button id="redo-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center text-gray-500">
+                    <i class="fa fa-repeat mr-2"></i>重做
+                </button>
+            </div>
+
+            <button id="mobile-menu-btn" class="md:hidden p-2 rounded hover:bg-gray-100">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-1">
+                <button id="mobile-new-map-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-file-o mr-2"></i>新建
+                </button>
+                <button id="mobile-import-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-upload mr-2"></i>导入Excel
+                </button>
+                <button id="mobile-export-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-download mr-2"></i>导出Excel
+                </button>
+                <button id="mobile-export-png-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-picture-o mr-2"></i>导出图片
+                </button>
+                <div class="h-px bg-gray-200 my-1"></div>
+                <button id="mobile-save-btn" class="px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center">
+                    <i class="fa fa-save mr-2"></i>保存
+                </button>
+                <div class="flex">
+                    <button id="mobile-undo-btn" class="flex-1 px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-500">
+                        <i class="fa fa-undo mr-2"></i>撤销
+                    </button>
+                    <button id="mobile-redo-btn" class="flex-1 px-3 py-2 rounded hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-500">
+                        <i class="fa fa-repeat mr-2"></i>重做
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- 左侧工具栏 -->
+        <aside class="bg-white border-r border-gray-200 w-full md:w-64 p-4 transition-all duration-300 flex-shrink-0">
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-3 flex items-center">
+                    <i class="fa fa-pencil-square-o mr-2 text-primary"></i>编辑工具
+                </h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="add-node-btn" class="flex items-center justify-center p-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                        <i class="fa fa-plus-circle text-secondary"></i>
+                        <span class="ml-1">添加节点</span>
+                    </button>
+                    <button id="delete-node-btn" class="flex items-center justify-center p-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                        <i class="fa fa-trash text-danger"></i>
+                        <span class="ml-1">删除节点</span>
+                    </button>
+                    <button id="edit-node-btn" class="flex items-center justify-center p-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                        <i class="fa fa-edit text-info"></i>
+                        <span class="ml-1">编辑文本</span>
+                    </button>
+                    <button id="duplicate-node-btn" class="flex items-center justify-center p-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                        <i class="fa fa-copy text-warning"></i>
+                        <span class="ml-1">复制节点</span>
+                    </button>
+                </div>
+
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                    <button id="promote-node-btn" class="flex items-center justify-center p-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                        <i class="fa fa-arrow-up text-accent"></i>
+                        <span class="ml-1">升级</span>
+                    </button>
+                    <button id="demote-node-btn" class="flex items-center justify-center p-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                        <i class="fa fa-arrow-down text-accent"></i>
+                        <span class="ml-1">降级</span>
+                    </button>
+                    <button id="move-up-node-btn" class="flex items-center justify-center p-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                        <i class="fa fa-chevron-up text-gray-600"></i>
+                        <span class="ml-1">上移</span>
+                    </button>
+                    <button id="move-down-node-btn" class="flex items-center justify-center p-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                        <i class="fa fa-chevron-down text-gray-600"></i>
+                        <span class="ml-1">下移</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-3 flex items-center">
+                    <i class="fa fa-paint-brush mr-2 text-primary"></i>样式设置
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">节点颜色</label>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="w-8 h-8 rounded-full bg-blue-500 node-color-btn ring-2 ring-offset-2 ring-transparent" data-color="#3B82F6"></button>
+                            <button class="w-8 h-8 rounded-full bg-green-500 node-color-btn ring-2 ring-offset-2 ring-transparent" data-color="#10B981"></button>
+                            <button class="w-8 h-8 rounded-full bg-purple-500 node-color-btn ring-2 ring-offset-2 ring-transparent" data-color="#8B5CF6"></button>
+                            <button class="w-8 h-8 rounded-full bg-yellow-500 node-color-btn ring-2 ring-offset-2 ring-transparent" data-color="#EAB308"></button>
+                            <button class="w-8 h-8 rounded-full bg-red-500 node-color-btn ring-2 ring-offset-2 ring-transparent" data-color="#EF4444"></button>
+                            <button class="w-8 h-8 rounded-full bg-orange-500 node-color-btn ring-2 ring-offset-2 ring-transparent" data-color="#F97316"></button>
+                            <button class="w-8 h-8 rounded-full bg-pink-500 node-color-btn ring-2 ring-offset-2 ring-transparent" data-color="#EC4899"></button>
+                            <button class="w-8 h-8 rounded-full bg-gray-700 node-color-btn ring-2 ring-offset-2 ring-transparent" data-color="#374151"></button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">连接线样式</label>
+                        <select id="line-style-select" class="w-full p-2 border border-gray-300 rounded">
+                            <option value="solid">实线</option>
+                            <option value="dashed">虚线</option>
+                            <option value="dotted">点线</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">连接线颜色</label>
+                        <input type="color" id="line-color-input" class="w-full h-10 p-0 border border-gray-300 rounded" value="#333333">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">连接线粗细</label>
+                        <input type="range" id="line-width-input" min="1" max="5" value="2" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>细</span>
+                            <span>粗</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-semibold mb-3 flex items-center">
+                    <i class="fa fa-th-large mr-2 text-primary"></i>布局设置
+                </h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">布局类型</label>
+                        <select id="layout-type-select" class="w-full p-2 border border-gray-300 rounded">
+                            <option value="horizontal">水平布局</option>
+                            <option value="vertical">垂直布局</option>
+                            <option value="mindmap" selected>思维导图布局</option>
+                            <option value="orgchart">组织结构图</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">节点间距</label>
+                        <input type="range" id="node-spacing-input" min="50" max="300" value="150" class="w-full">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>紧凑</span>
+                            <span>宽松</span>
+                        </div>
+                    </div>
+
+                    <button id="auto-arrange-btn" class="w-full flex items-center justify-center p-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors mt-2">
+                        <i class="fa fa-magic mr-2 text-primary"></i>自动排列
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中央思维导图区域 -->
+        <div class="flex-1 relative overflow-hidden bg-gray-50 flex flex-col" id="mindmap-container">
+            <!-- 工具栏 -->
+            <div class="bg-white border-b border-gray-200 p-2 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-500">节点: <span id="node-count">0</span></span>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <button id="center-view-btn" class="p-1.5 rounded hover:bg-gray-100 transition-colors" title="居中视图">
+                        <i class="fa fa-crosshairs text-gray-600"></i>
+                    </button>
+                    <div class="h-4 border-r border-gray-300"></div>
+                    <button id="zoom-out-btn" class="p-1.5 rounded hover:bg-gray-100 transition-colors" title="缩小">
+                        <i class="fa fa-search-minus text-gray-600"></i>
+                    </button>
+                    <span id="zoom-level" class="px-2 text-sm text-gray-600">100%</span>
+                    <button id="zoom-in-btn" class="p-1.5 rounded hover:bg-gray-100 transition-colors" title="放大">
+                        <i class="fa fa-search-plus text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 画布容器 -->
+            <div class="flex-1 relative overflow-hidden" id="canvas-wrapper">
+                <!-- 连接线SVG容器 - 放在最底层确保能看到 -->
+                <svg id="connections-container" class="absolute top-0 left-0 w-full h-full pointer-events-none z-10"></svg>
+
+                <!-- 思维导图节点容器 - 放在上层 -->
+                <div id="mindmap-canvas" class="absolute top-0 left-0 canvas-grid transition-transform duration-200 ease-out z-20">
+                    <div id="nodes-container" class="absolute top-0 left-0 w-full h-full"></div>
+                </div>
+            </div>
+
+            <!-- 空状态提示 -->
+            <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-30">
+                <i class="fa fa-sitemap text-6xl text-gray-300 mb-4"></i>
+                <h2 class="text-2xl font-semibold text-gray-500 mb-2">尚未创建思维导图</h2>
+                <p class="text-gray-400 mb-6 text-center max-w-md">点击"新建"按钮开始创建，或导入已有的Excel文件</p>
+                <button id="empty-new-btn" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg shadow transition-all flex items-center">
+                    <i class="fa fa-file-o mr-2"></i>创建新思维导图
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 编辑节点弹窗 -->
+    <div id="node-edit-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">编辑节点内容</h3>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <label for="node-text-input" class="block text-sm font-medium text-gray-700 mb-1">节点文本</label>
+                <textarea id="node-text-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all" rows="4"></textarea>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-edit-btn" class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors">取消</button>
+                <button id="save-edit-btn" class="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div id="context-menu" class="hidden absolute bg-white rounded-lg context-menu-shadow py-1 z-40 min-w-[180px]">
+        <button id="ctx-add-node" class="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors flex items-center">
+            <i class="fa fa-plus-circle text-secondary mr-2"></i>添加子节点
+        </button>
+        <button id="ctx-add-sibling" class="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors flex items-center">
+            <i class="fa fa-plus-square text-info mr-2"></i>添加同级节点
+        </button>
+        <div class="border-t border-gray-200 my-1"></div>
+        <button id="ctx-edit-node" class="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors flex items-center">
+            <i class="fa fa-edit text-info mr-2"></i>编辑节点
+        </button>
+        <button id="ctx-duplicate-node" class="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors flex items-center">
+            <i class="fa fa-copy text-warning mr-2"></i>复制节点
+        </button>
+        <div class="border-t border-gray-200 my-1"></div>
+        <button id="ctx-delete-node" class="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors flex items-center text-danger">
+            <i class="fa fa-trash mr-2"></i>删除节点
+        </button>
+    </div>
+
+    <!-- 通知提示 -->
+    <div id="notification" class="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 transform translate-x-full transition-transform duration-300 z-50 flex items-center max-w-sm">
+        <i id="notification-icon" class="fa fa-check-circle text-green-500 text-xl mr-3"></i>
+        <div>
+            <h4 id="notification-title" class="font-medium text-gray-800"></h4>
+            <p id="notification-message" class="text-sm text-gray-600"></p>
+        </div>
+        <button id="close-notification" class="ml-4 text-gray-400 hover:text-gray-600">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+
+    <script>
+        // 思维导图数据结构
+        let mindMapData = {
+            id: 'root',
+            text: '中心主题',
+            color: '#3B82F6',
+            children: []
+        };
+
+        // 历史记录管理
+        const history = {
+            states: [],
+            currentIndex: -1,
+            maxStates: 50,
+
+            saveState(data) {
+                if (this.currentIndex < this.states.length - 1) {
+                    this.states = this.states.slice(0, this.currentIndex + 1);
+                }
+
+                const stateCopy = JSON.parse(JSON.stringify(data));
+                this.states.push(stateCopy);
+
+                if (this.states.length > this.maxStates) {
+                    this.states.shift();
+                }
+
+                this.currentIndex = this.states.length - 1;
+                this.updateHistoryButtons();
+            },
+
+            undo() {
+                if (this.canUndo()) {
+                    this.currentIndex--;
+                    const prevState = JSON.parse(JSON.stringify(this.states[this.currentIndex]));
+                    this.updateHistoryButtons();
+                    return prevState;
+                }
+                return null;
+            },
+
+            redo() {
+                if (this.canRedo()) {
+                    this.currentIndex++;
+                    const nextState = JSON.parse(JSON.stringify(this.states[this.currentIndex]));
+                    this.updateHistoryButtons();
+                    return nextState;
+                }
+                return null;
+            },
+
+            canUndo() {
+                return this.currentIndex > 0;
+            },
+
+            canRedo() {
+                return this.currentIndex < this.states.length - 1;
+            },
+
+            updateHistoryButtons() {
+                document.getElementById('undo-btn').classList.toggle('text-gray-400', !this.canUndo());
+                document.getElementById('mobile-undo-btn').classList.toggle('text-gray-400', !this.canUndo());
+                document.getElementById('redo-btn').classList.toggle('text-gray-400', !this.canRedo());
+                document.getElementById('mobile-redo-btn').classList.toggle('text-gray-400', !this.canRedo());
+            }
+        };
+
+        // 当前选中的节点ID
+        let selectedNodeId = null;
+        // 缩放级别
+        let zoomLevel = 100;
+        // 画布偏移量
+        let canvasOffsetX = 0;
+        let canvasOffsetY = 0;
+        // 是否正在拖动节点
+        let isDraggingNode = false;
+        // 是否正在拖动画布
+        let isDraggingCanvas = false;
+        // 拖动的节点元素
+        let draggedNode = null;
+        // 拖动的起始位置
+        let dragStartX = 0;
+        let dragStartY = 0;
+        // 节点的原始位置
+        let nodeOriginalX = 0;
+        let nodeOriginalY = 0;
+        // 画布的原始偏移
+        let canvasOriginalOffsetX = 0;
+        let canvasOriginalOffsetY = 0;
+        // 布局配置
+        let layoutConfig = {
+            type: 'mindmap',
+            spacing: 150
+        };
+
+        // DOM 元素
+        const mindmapCanvas = document.getElementById('mindmap-canvas');
+        const nodesContainer = document.getElementById('nodes-container');
+        const connectionsContainer = document.getElementById('connections-container');
+        const canvasWrapper = document.getElementById('canvas-wrapper');
+        const emptyState = document.getElementById('empty-state');
+        const nodeEditModal = document.getElementById('node-edit-modal');
+        const modalContent = document.getElementById('modal-content');
+        const nodeTextInput = document.getElementById('node-text-input');
+        const notification = document.getElementById('notification');
+        const zoomLevelDisplay = document.getElementById('zoom-level');
+        const nodeCountDisplay = document.getElementById('node-count');
+        const contextMenu = document.getElementById('context-menu');
+
+        // 初始化应用
+        function initApp() {
+            // 检查本地存储中是否有保存的思维导图
+            const savedMap = localStorage.getItem('mindMapData');
+            const savedLayout = localStorage.getItem('layoutConfig');
+
+            if (savedMap) {
+                mindMapData = JSON.parse(savedMap);
+                history.saveState(mindMapData);
+                renderMindMap();
+                updateNodeCount();
+                hideEmptyState();
+            } else {
+                showEmptyState();
+            }
+
+            if (savedLayout) {
+                layoutConfig = JSON.parse(savedLayout);
+                document.getElementById('layout-type-select').value = layoutConfig.type;
+                document.getElementById('node-spacing-input').value = layoutConfig.spacing;
+            }
+
+            // 绑定事件监听
+            bindEventListeners();
+        }
+
+        // 绑定事件监听
+        function bindEventListeners() {
+            // 新建思维导图
+            document.getElementById('new-map-btn').addEventListener('click', createNewMap);
+            document.getElementById('mobile-new-map-btn').addEventListener('click', () => {
+                toggleMobileMenu();
+                createNewMap();
+            });
+            document.getElementById('empty-new-btn').addEventListener('click', createNewMap);
+
+            // 导入Excel
+            document.getElementById('import-btn').addEventListener('click', () => {
+                document.getElementById('file-import').click();
+            });
+            document.getElementById('mobile-import-btn').addEventListener('click', () => {
+                toggleMobileMenu();
+                document.getElementById('file-import').click();
+            });
+            document.getElementById('file-import').addEventListener('change', importFromExcel);
+
+            // 导出Excel
+            document.getElementById('export-btn').addEventListener('click', exportToExcel);
+            document.getElementById('mobile-export-btn').addEventListener('click', () => {
+                toggleMobileMenu();
+                exportToExcel();
+            });
+
+            // 导出图片
+            document.getElementById('export-png-btn').addEventListener('click', exportToPNG);
+            document.getElementById('mobile-export-png-btn').addEventListener('click', () => {
+                toggleMobileMenu();
+                exportToPNG();
+            });
+
+            // 保存思维导图
+            document.getElementById('save-btn').addEventListener('click', saveMindMap);
+            document.getElementById('mobile-save-btn').addEventListener('click', () => {
+                toggleMobileMenu();
+                saveMindMap();
+            });
+
+            // 撤销/重做
+            document.getElementById('undo-btn').addEventListener('click', undoAction);
+            document.getElementById('redo-btn').addEventListener('click', redoAction);
+            document.getElementById('mobile-undo-btn').addEventListener('click', () => {
+                toggleMobileMenu();
+                undoAction();
+            });
+            document.getElementById('mobile-redo-btn').addEventListener('click', () => {
+                toggleMobileMenu();
+                redoAction();
+            });
+
+            // 移动端菜单切换
+            document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
+
+            // 节点操作
+            document.getElementById('add-node-btn').addEventListener('click', addChildNode);
+            document.getElementById('delete-node-btn').addEventListener('click', deleteSelectedNode);
+            document.getElementById('edit-node-btn').addEventListener('click', openNodeEditModal);
+            document.getElementById('duplicate-node-btn').addEventListener('click', duplicateNode);
+            document.getElementById('promote-node-btn').addEventListener('click', promoteNode);
+            document.getElementById('demote-node-btn').addEventListener('click', demoteNode);
+            document.getElementById('move-up-node-btn').addEventListener('click', moveNodeUp);
+            document.getElementById('move-down-node-btn').addEventListener('click', moveNodeDown);
+
+            // 布局设置
+            document.getElementById('layout-type-select').addEventListener('change', (e) => {
+                layoutConfig.type = e.target.value;
+                saveLayoutConfig();
+                autoArrangeNodes();
+            });
+
+            document.getElementById('node-spacing-input').addEventListener('input', (e) => {
+                layoutConfig.spacing = parseInt(e.target.value);
+                saveLayoutConfig();
+                autoArrangeNodes();
+            });
+
+            document.getElementById('auto-arrange-btn').addEventListener('click', autoArrangeNodes);
+
+            // 画布控制
+            document.getElementById('zoom-in-btn').addEventListener('click', zoomIn);
+            document.getElementById('zoom-out-btn').addEventListener('click', zoomOut);
+            document.getElementById('center-view-btn').addEventListener('click', centerView);
+
+            // 模态框操作
+            document.getElementById('close-modal-btn').addEventListener('click', closeNodeEditModal);
+            document.getElementById('cancel-edit-btn').addEventListener('click', closeNodeEditModal);
+            document.getElementById('save-edit-btn').addEventListener('click', saveNodeEdit);
+
+            // 节点样式设置
+            document.querySelectorAll('.node-color-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const color = e.target.dataset.color;
+                    changeNodeColor(color);
+
+                    // 更新选中的颜色按钮样式
+                    document.querySelectorAll('.node-color-btn').forEach(b => {
+                        b.classList.remove('ring-primary');
+                    });
+                    e.target.classList.add('ring-primary');
+                });
+            });
+
+            // 连接线样式设置
+            document.getElementById('line-style-select').addEventListener('change', updateConnections);
+            document.getElementById('line-color-input').addEventListener('input', updateConnections);
+            document.getElementById('line-width-input').addEventListener('input', updateConnections);
+
+            // 通知关闭
+            document.getElementById('close-notification').addEventListener('click', hideNotification);
+
+            // 画布拖拽
+            canvasWrapper.addEventListener('mousedown', startDragCanvas);
+            document.addEventListener('mousemove', dragCanvas);
+            document.addEventListener('mouseup', stopDragCanvas);
+
+            // 右键菜单
+            nodesContainer.addEventListener('contextmenu', showContextMenu);
+            document.addEventListener('click', hideContextMenu);
+            document.getElementById('ctx-add-node').addEventListener('click', () => {
+                hideContextMenu();
+                addChildNode();
+            });
+            document.getElementById('ctx-add-sibling').addEventListener('click', () => {
+                hideContextMenu();
+                addSiblingNode();
+            });
+            document.getElementById('ctx-edit-node').addEventListener('click', () => {
+                hideContextMenu();
+                openNodeEditModal();
+            });
+            document.getElementById('ctx-duplicate-node').addEventListener('click', () => {
+                hideContextMenu();
+                duplicateNode();
+            });
+            document.getElementById('ctx-delete-node').addEventListener('click', () => {
+                hideContextMenu();
+                deleteSelectedNode();
+            });
+
+            // 键盘快捷键
+            document.addEventListener('keydown', handleKeyboardShortcuts);
+        }
+
+        // 显示空状态
+        function showEmptyState() {
+            emptyState.classList.remove('hidden');
+        }
+
+        // 隐藏空状态
+        function hideEmptyState() {
+            emptyState.classList.add('hidden');
+        }
+
+        // 切换移动端菜单
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // 创建新的思维导图
+        function createNewMap() {
+            if (confirm('确定要创建新的思维导图吗？当前未保存的内容将会丢失。')) {
+                mindMapData = {
+                    id: 'root',
+                    text: '中心主题',
+                    color: '#3B82F6',
+                    children: []
+                };
+                selectedNodeId = null;
+                history.saveState(mindMapData);
+                renderMindMap();
+                updateNodeCount();
+                hideEmptyState();
+                showNotification('成功', '已创建新的思维导图', 'success');
+            }
+        }
+
+        // 渲染思维导图
+        function renderMindMap() {
+            // 清空节点容器
+            nodesContainer.innerHTML = '';
+
+            // 获取画布中心位置
+            const canvasWidth = canvasWrapper.clientWidth;
+            const canvasHeight = canvasWrapper.clientHeight;
+            const centerX = canvasWidth / 2;
+            const centerY = canvasHeight / 2;
+
+            // 渲染根节点
+            renderNode(mindMapData, centerX, centerY, null);
+
+            // 更新连接线 - 确保在节点渲染后立即绘制连接线
+            updateConnections();
+        }
+
+        // 渲染单个节点
+        function renderNode(node, x, y, parentId) {
+            // 创建节点容器
+            const nodeContainer = document.createElement('div');
+            nodeContainer.id = `node-${node.id}`;
+            nodeContainer.className = `absolute node-transition cursor-move select-none`;
+            nodeContainer.style.left = `${x}px`;
+            nodeContainer.style.top = `${y}px`;
+            nodeContainer.dataset.parent = parentId || '';
+
+            // 存储节点位置数据
+            node.x = x;
+            node.y = y;
+
+            // 创建节点元素
+            const nodeElement = document.createElement('div');
+            nodeElement.className = `px-4 py-2 rounded-lg min-w-[120px] text-center text-white transition-all hover:shadow-lg transform hover:-translate-y-0.5`;
+            nodeElement.style.backgroundColor = node.color;
+            nodeElement.textContent = node.text;
+
+            // 如果是选中的节点，添加选中样式
+            if (selectedNodeId === node.id) {
+                nodeElement.classList.add('ring-4', 'ring-blue-300');
+            }
+
+            nodeContainer.appendChild(nodeElement);
+            nodesContainer.appendChild(nodeContainer);
+
+            // 绑定节点事件
+            nodeContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                selectNode(node.id);
+            });
+
+            // 阻止节点上的右键菜单冒泡
+            nodeContainer.addEventListener('contextmenu', (e) => {
+                e.stopPropagation();
+            });
+
+            // 绑定拖拽事件
+            nodeContainer.addEventListener('mousedown', startDragNode);
+
+            // 递归渲染子节点
+            if (node.children && node.children.length > 0) {
+                // 如果子节点没有位置数据，则自动排列
+                const hasChildPositions = node.children.every(child => child.x !== undefined && child.y !== undefined);
+                if (!hasChildPositions) {
+                    arrangeChildNodes(node);
+                }
+
+                // 渲染子节点
+                node.children.forEach(child => {
+                    renderNode(child, child.x, child.y, node.id);
+                });
+            }
+        }
+
+        // 自动排列子节点
+        function arrangeChildNodes(parentNode) {
+            if (!parentNode.children || parentNode.children.length === 0) return;
+
+            const parentX = parentNode.x;
+            const parentY = parentNode.y;
+            const spacing = layoutConfig.spacing;
+
+            switch (layoutConfig.type) {
+                case 'horizontal':
+                    // 水平布局 - 子节点水平排列
+                    const totalWidth = (parentNode.children.length - 1) * spacing;
+                    const startX = parentX - totalWidth / 2;
+
+                    parentNode.children.forEach((child, index) => {
+                        child.x = startX + index * spacing;
+                        child.y = parentY + spacing;
+                    });
+                    break;
+
+                case 'vertical':
+                    // 垂直布局 - 子节点垂直排列
+                    const totalHeight = (parentNode.children.length - 1) * spacing;
+                    const startY = parentY - totalHeight / 2;
+
+                    parentNode.children.forEach((child, index) => {
+                        child.x = parentX + spacing;
+                        child.y = startY + index * spacing;
+                    });
+                    break;
+
+                case 'orgchart':
+                    // 组织结构图 - 子节点水平分布在下方
+                    const orgWidth = (parentNode.children.length - 1) * spacing;
+                    const orgStartX = parentX - orgWidth / 2;
+
+                    parentNode.children.forEach((child, index) => {
+                        child.x = orgStartX + index * spacing;
+                        child.y = parentY + spacing;
+                    });
+                    break;
+
+                case 'mindmap':
+                default:
+                    // 思维导图布局 - 子节点分布在左右两侧
+                    const leftCount = Math.floor(parentNode.children.length / 2);
+                    const rightCount = parentNode.children.length - leftCount;
+
+                    // 左侧节点
+                    for (let i = 0; i < leftCount; i++) {
+                        const angle = -45 - (i * 30);
+                        const radians = angle * (Math.PI / 180);
+                        parentNode.children[i].x = parentX + Math.cos(radians) * spacing;
+                        parentNode.children[i].y = parentY + Math.sin(radians) * spacing;
+                    }
+
+                    // 右侧节点
+                    for (let i = 0; i < rightCount; i++) {
+                        const angle = 45 + (i * 30);
+                        const radians = angle * (Math.PI / 180);
+                        parentNode.children[leftCount + i].x = parentX + Math.cos(radians) * spacing;
+                        parentNode.children[leftCount + i].y = parentY + Math.sin(radians) * spacing;
+                    }
+                    break;
+            }
+        }
+
+        // 自动排列所有节点
+        function autoArrangeNodes() {
+            if (selectedNodeId) {
+                // 如果有选中的节点，只重新排列该节点的子节点
+                const node = findNodeById(mindMapData, selectedNodeId);
+                if (node && node.children && node.children.length > 0) {
+                    arrangeChildNodes(node);
+                    renderMindMap();
+                    showNotification('成功', '已重新排列子节点', 'success');
+                }
+            } else {
+                // 重新排列所有节点
+                arrangeAllNodesRecursive(mindMapData);
+                renderMindMap();
+                showNotification('成功', '已自动排列所有节点', 'success');
+            }
+
+            history.saveState(mindMapData);
+        }
+
+        // 递归排列所有节点
+        function arrangeAllNodesRecursive(node) {
+            // 如果有子节点，先排列子节点
+            if (node.children && node.children.length > 0) {
+                arrangeChildNodes(node);
+
+                // 递归排列子节点的子节点
+                node.children.forEach(child => {
+                    arrangeAllNodesRecursive(child);
+                });
+            }
+        }
+
+        // 更新节点之间的连接线 - 重点修复部分
+        function updateConnections() {
+            // 清除已有的连接线
+            while (connectionsContainer.firstChild) {
+                connectionsContainer.removeChild(connectionsContainer.firstChild);
+            }
+
+            // 确保SVG尺寸与画布一致
+            const canvasRect = canvasWrapper.getBoundingClientRect();
+            connectionsContainer.setAttribute('width', canvasRect.width);
+            connectionsContainer.setAttribute('height', canvasRect.height);
+            connectionsContainer.setAttribute('viewBox', `0 0 ${canvasRect.width} ${canvasRect.height}`);
+
+            // 递归绘制连接线
+            drawConnections(mindMapData);
+        }
+
+        // 绘制节点连接线 - 修复坐标计算问题
+        function drawConnections(node) {
+            if (node.children && node.children.length > 0) {
+                const parentElement = document.getElementById(`node-${node.id}`);
+                if (!parentElement) return;
+
+                // 获取父节点位置（相对于节点容器）
+                const parentRect = parentElement.getBoundingClientRect();
+                const nodesContainerRect = nodesContainer.getBoundingClientRect();
+
+                // 计算父节点中心点（相对于SVG容器）
+                const parentCenterX = parentRect.left - nodesContainerRect.left + parentRect.width / 2;
+                const parentCenterY = parentRect.top - nodesContainerRect.top + parentRect.height / 2;
+
+                node.children.forEach(child => {
+                    const childElement = document.getElementById(`node-${child.id}`);
+                    if (!childElement) return;
+
+                    const childRect = childElement.getBoundingClientRect();
+
+                    // 计算子节点中心点（相对于SVG容器）
+                    const childCenterX = childRect.left - nodesContainerRect.left + childRect.width / 2;
+                    const childCenterY = childRect.top - nodesContainerRect.top + childRect.height / 2;
+
+                    // 创建路径
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+                    // 获取线条样式配置
+                    const lineStyle = document.getElementById('line-style-select').value;
+                    const lineColor = document.getElementById('line-color-input').value;
+                    const lineWidth = document.getElementById('line-width-input').value;
+
+                    // 计算控制点，创建平滑曲线
+                    const dx = Math.abs(childCenterX - parentCenterX);
+                    const controlX1 = parentCenterX + dx * 0.3;
+                    const controlX2 = childCenterX - dx * 0.3;
+
+                    // 创建贝塞尔曲线路径
+                    const d = `M ${parentCenterX} ${parentCenterY} C ${controlX1} ${parentCenterY}, ${controlX2} ${childCenterY}, ${childCenterX} ${childCenterY}`;
+
+                    // 设置路径属性 - 确保线条可见
+                    path.setAttribute('d', d);
+                    path.setAttribute('stroke', lineColor);
+                    path.setAttribute('stroke-width', lineWidth);
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('class', 'connection-transition');
+
+                    // 设置线条样式
+                    if (lineStyle === 'dashed') {
+                        path.setAttribute('stroke-dasharray', '8,4');
+                    } else if (lineStyle === 'dotted') {
+                        path.setAttribute('stroke-dasharray', '2,4');
+                    } else {
+                        path.removeAttribute('stroke-dasharray');
+                    }
+
+                    // 添加到SVG容器
+                    connectionsContainer.appendChild(path);
+
+                    // 递归绘制子节点的连接线
+                    drawConnections(child);
+                });
+            }
+        }
+
+        // 选择节点
+        function selectNode(nodeId) {
+            // 移除之前选中节点的样式
+            if (selectedNodeId) {
+                const prevNode = document.querySelector(`#node-${selectedNodeId} div`);
+                if (prevNode) {
+                    prevNode.classList.remove('ring-4', 'ring-blue-300');
+                }
+            }
+
+            // 设置新的选中节点
+            selectedNodeId = nodeId;
+
+            // 添加选中样式
+            const nodeElement = document.querySelector(`#node-${nodeId} div`);
+            if (nodeElement) {
+                nodeElement.classList.add('ring-4', 'ring-blue-300');
+
+                // 高亮显示选中节点的连接线
+                highlightNodeConnections(nodeId);
+            }
+        }
+
+        // 高亮显示节点的连接线
+        function highlightNodeConnections(nodeId) {
+            // 先清除所有高亮
+            document.querySelectorAll('#connections-container path').forEach(path => {
+                path.classList.remove('stroke-primary', 'stroke-3');
+            });
+
+            // 找到节点
+            const node = findNodeById(mindMapData, nodeId);
+            if (!node) return;
+
+            // 高亮与父节点的连接线
+            if (nodeId !== 'root') {
+                const parentNode = findParentNode(mindMapData, nodeId);
+                if (parentNode) {
+                    highlightConnection(parentNode.id, nodeId);
+                }
+            }
+
+            // 高亮与子节点的连接线
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => {
+                    highlightConnection(nodeId, child.id);
+                });
+            }
+        }
+
+        // 高亮特定连接
+        function highlightConnection(fromId, toId) {
+            const fromElement = document.getElementById(`node-${fromId}`);
+            const toElement = document.getElementById(`node-${toId}`);
+
+            if (!fromElement || !toElement) return;
+
+            const fromRect = fromElement.getBoundingClientRect();
+            const toRect = toElement.getBoundingClientRect();
+            const nodesContainerRect = nodesContainer.getBoundingClientRect();
+
+            const fromX = fromRect.left - nodesContainerRect.left + fromRect.width / 2;
+            const fromY = fromRect.top - nodesContainerRect.top + fromRect.height / 2;
+            const toX = toRect.left - nodesContainerRect.left + toRect.width / 2;
+            const toY = toRect.top - nodesContainerRect.top + toRect.height / 2;
+
+            // 查找对应的路径
+            const paths = document.querySelectorAll('#connections-container path');
+            paths.forEach(path => {
+                const d = path.getAttribute('d');
+                if (d && d.startsWith(`M ${fromX.toFixed(1)} ${fromY.toFixed(1)}`) &&
+                    d.includes(`${toX.toFixed(1)} ${toY.toFixed(1)}`)) {
+                    path.classList.add('stroke-primary', 'stroke-3');
+                }
+            });
+        }
+
+        // 开始拖拽节点
+        function startDragNode(e) {
+            // 只响应左键拖拽
+            if (e.button !== 0) return;
+
+            e.stopPropagation();
+
+            // 获取节点ID
+            const currentNodeId = this.id.replace('node-', '');
+
+            // 如果点击的是选中的节点，才允许拖拽
+            if (selectedNodeId !== currentNodeId) {
+                selectNode(currentNodeId);
+                return;
+            }
+
+            isDraggingNode = true;
+            draggedNode = this;
+
+            // 记录起始位置
+            const rect = draggedNode.getBoundingClientRect();
+            const canvasRect = canvasWrapper.getBoundingClientRect();
+
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            nodeOriginalX = rect.left - canvasRect.left;
+            nodeOriginalY = rect.top - canvasRect.top;
+
+            // 添加拖拽样式
+            draggedNode.querySelector('div').classList.add('opacity-80', 'scale-105', 'node-drag-active');
+
+            // 绑定鼠标移动和释放事件
+            document.addEventListener('mousemove', dragNode);
+            document.addEventListener('mouseup', stopDragNode);
+        }
+
+        // 拖拽节点
+        function dragNode(e) {
+            if (!isDraggingNode || !draggedNode) return;
+
+            // 计算新位置
+            const canvasRect = canvasWrapper.getBoundingClientRect();
+            const dx = e.clientX - dragStartX;
+            const dy = e.clientY - dragStartY;
+            const newX = nodeOriginalX + dx;
+            const newY = nodeOriginalY + dy;
+
+            // 更新节点位置
+            draggedNode.style.left = `${newX}px`;
+            draggedNode.style.top = `${newY}px`;
+
+            // 更新数据中的位置
+            const nodeId = draggedNode.id.replace('node-', '');
+            const node = findNodeById(mindMapData, nodeId);
+            if (node) {
+                node.x = newX;
+                node.y = newY;
+            }
+
+            // 更新连接线
+            updateConnections();
+        }
+
+        // 停止拖拽节点
+        function stopDragNode() {
+            if (!isDraggingNode || !draggedNode) return;
+
+            isDraggingNode = false;
+
+            // 移除拖拽样式
+            draggedNode.querySelector('div').classList.remove('opacity-80', 'scale-105', 'node-drag-active');
+
+            // 解绑事件
+            document.removeEventListener('mousemove', dragNode);
+            document.removeEventListener('mouseup', stopDragNode);
+
+            // 保存历史记录
+            history.saveState(mindMapData);
+
+            draggedNode = null;
+        }
+
+        // 开始拖拽画布
+        function startDragCanvas(e) {
+            // 只响应左键拖拽，并且不是在拖拽节点时
+            if (e.button !== 0 || isDraggingNode) return;
+
+            // 如果点击的是空白区域才允许拖拽画布
+            if (e.target === canvasWrapper || e.target === mindmapCanvas || e.target === connectionsContainer) {
+                isDraggingCanvas = true;
+
+                // 记录起始位置和原始偏移
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                canvasOriginalOffsetX = canvasOffsetX;
+                canvasOriginalOffsetY = canvasOffsetY;
+
+                // 更改鼠标样式
+                canvasWrapper.style.cursor = 'grabbing';
+            }
+        }
+
+        // 拖拽画布
+        function dragCanvas(e) {
+            if (!isDraggingCanvas) return;
+
+            // 计算新的偏移量
+            const dx = e.clientX - dragStartX;
+            const dy = e.clientY - dragStartY;
+
+            canvasOffsetX = canvasOriginalOffsetX + dx;
+            canvasOffsetY = canvasOriginalOffsetY + dy;
+
+            // 应用偏移和缩放
+            applyCanvasTransform();
+        }
+
+        // 停止拖拽画布
+        function stopDragCanvas() {
+            if (!isDraggingCanvas) return;
+
+            isDraggingCanvas = false;
+
+            // 恢复鼠标样式
+            canvasWrapper.style.cursor = 'default';
+        }
+
+        // 应用画布变换（缩放和偏移）
+        function applyCanvasTransform() {
+            const scale = zoomLevel / 100;
+            mindmapCanvas.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px) scale(${scale})`;
+            zoomLevelDisplay.textContent = `${zoomLevel}%`;
+
+            // 确保连接线在缩放和平移后仍能正确显示
+            updateConnections();
+        }
+
+        // 缩放控制
+        function zoomIn() {
+            if (zoomLevel < 200) {
+                zoomLevel += 10;
+                applyCanvasTransform();
+            }
+        }
+
+        function zoomOut() {
+            if (zoomLevel > 30) {
+                zoomLevel -= 10;
+                applyCanvasTransform();
+            }
+        }
+
+        function centerView() {
+            // 重置偏移和缩放
+            canvasOffsetX = 0;
+            canvasOffsetY = 0;
+            zoomLevel = 100;
+            applyCanvasTransform();
+        }
+
+        // 添加子节点
+        function addChildNode() {
+            if (!selectedNodeId) {
+                showNotification('提示', '请先选择一个节点', 'info');
+                return;
+            }
+
+            // 生成唯一ID
+            const newNodeId = 'node_' + Date.now();
+
+            // 找到选中的节点并添加子节点
+            const parentNode = findNodeById(mindMapData, selectedNodeId);
+            if (parentNode) {
+                if (!parentNode.children) parentNode.children = [];
+
+                // 计算新节点的位置（在父节点右下方）
+                let newX = parentNode.x + 150;
+                let newY = parentNode.y + 50;
+
+                parentNode.children.push({
+                    id: newNodeId,
+                    text: '新节点',
+                    color: '#10B981',
+                    x: newX,
+                    y: newY,
+                    children: []
+                });
+
+                renderMindMap();
+                selectNode(newNodeId);
+                history.saveState(mindMapData);
+                updateNodeCount();
+                showNotification('成功', '已添加新节点', 'success');
+            }
+        }
+
+        // 添加同级节点
+        function addSiblingNode() {
+            if (!selectedNodeId || selectedNodeId === 'root') {
+                showNotification('提示', '无法为根节点添加同级节点', 'info');
+                return;
+            }
+
+            // 生成唯一ID
+            const newNodeId = 'node_' + Date.now();
+
+            // 找到选中节点的父节点
+            const parentNode = findParentNode(mindMapData, selectedNodeId);
+            if (parentNode) {
+                // 找到选中节点在父节点中的索引
+                const index = parentNode.children.findIndex(child => child.id === selectedNodeId);
+
+                // 计算新节点的位置（在选中节点旁边）
+                const selectedNode = findNodeById(mindMapData, selectedNodeId);
+                let newX = selectedNode.x;
+                let newY = selectedNode.y + 80;
+
+                // 在选中节点后面插入新节点
+                parentNode.children.splice(index + 1, 0, {
+                    id: newNodeId,
+                    text: '新节点',
+                    color: '#10B981',
+                    x: newX,
+                    y: newY,
+                    children: []
+                });
+
+                renderMindMap();
+                selectNode(newNodeId);
+                history.saveState(mindMapData);
+                updateNodeCount();
+                showNotification('成功', '已添加同级节点', 'success');
+            }
+        }
+
+        // 复制节点
+        function duplicateNode() {
+            if (!selectedNodeId) {
+                showNotification('提示', '请先选择一个节点', 'info');
+                return;
+            }
+
+            // 找到选中的节点
+            const originalNode = findNodeById(mindMapData, selectedNodeId);
+            if (!originalNode) return;
+
+            // 生成唯一ID
+            const newNodeId = 'node_' + Date.now();
+
+            // 深拷贝节点
+            const clonedNode = JSON.parse(JSON.stringify(originalNode));
+            clonedNode.id = newNodeId;
+            clonedNode.text = originalNode.text + ' (副本)';
+
+            // 稍微偏移一点位置
+            clonedNode.x = originalNode.x + 30;
+            clonedNode.y = originalNode.y + 30;
+
+            // 如果是根节点，不能添加同级节点
+            if (selectedNodeId === 'root') {
+                showNotification('提示', '不能复制根节点', 'info');
+                return;
+            }
+
+            // 找到父节点并添加复制的节点
+            const parentNode = findParentNode(mindMapData, selectedNodeId);
+            if (parentNode) {
+                // 找到选中节点在父节点中的索引
+                const index = parentNode.children.findIndex(child => child.id === selectedNodeId);
+
+                // 在选中节点后面插入复制的节点
+                parentNode.children.splice(index + 1, 0, clonedNode);
+
+                renderMindMap();
+                selectNode(newNodeId);
+                history.saveState(mindMapData);
+                updateNodeCount();
+                showNotification('成功', '已复制节点', 'success');
+            }
+        }
+
+        // 升级节点（提升为父节点的同级节点）
+        function promoteNode() {
+            if (!selectedNodeId || selectedNodeId === 'root') {
+                showNotification('提示', '根节点不能升级', 'info');
+                return;
+            }
+
+            // 找到选中节点及其父节点和祖父节点
+            const node = findNodeById(mindMapData, selectedNodeId);
+            const parentNode = findParentNode(mindMapData, selectedNodeId);
+            const grandparentNode = parentNode ? findParentNode(mindMapData, parentNode.id) : null;
+
+            if (!parentNode || !grandparentNode) {
+                showNotification('提示', '该节点不能再升级', 'info');
+                return;
+            }
+
+            // 从父节点中移除
+            const index = parentNode.children.findIndex(child => child.id === selectedNodeId);
+            parentNode.children.splice(index, 1);
+
+            // 添加到祖父节点中
+            grandparentNode.children.push(node);
+
+            // 调整位置（稍微偏移）
+            node.x = parentNode.x;
+            node.y = parentNode.y + 80;
+
+            renderMindMap();
+            history.saveState(mindMapData);
+            showNotification('成功', '节点已升级', 'success');
+        }
+
+        // 降级节点（成为同级节点的子节点）
+        function demoteNode() {
+            if (!selectedNodeId || selectedNodeId === 'root') {
+                showNotification('提示', '根节点不能降级', 'info');
+                return;
+            }
+
+            // 找到选中节点及其父节点
+            const node = findNodeById(mindMapData, selectedNodeId);
+            const parentNode = findParentNode(mindMapData, selectedNodeId);
+
+            if (!parentNode || parentNode.children.length < 2) {
+                showNotification('提示', '该节点不能降级', 'info');
+                return;
+            }
+
+            // 找到选中节点在父节点中的索引
+            const index = parentNode.children.findIndex(child => child.id === selectedNodeId);
+
+            // 如果是第一个节点，不能降级
+            if (index === 0) {
+                showNotification('提示', '第一个节点不能降级', 'info');
+                return;
+            }
+
+            // 从父节点中移除
+            parentNode.children.splice(index, 1);
+
+            // 成为前一个同级节点的子节点
+            const previousSibling = parentNode.children[index - 1];
+            if (!previousSibling.children) previousSibling.children = [];
+            previousSibling.children.push(node);
+
+            // 调整位置
+            node.x = previousSibling.x + 100;
+            node.y = previousSibling.y + 50;
+
+            renderMindMap();
+            history.saveState(mindMapData);
+            showNotification('成功', '节点已降级', 'success');
+        }
+
+        // 上移节点
+        function moveNodeUp() {
+            if (!selectedNodeId || selectedNodeId === 'root') {
+                showNotification('提示', '操作无效', 'info');
+                return;
+            }
+
+            // 找到选中节点及其父节点
+            const node = findNodeById(mindMapData, selectedNodeId);
+            const parentNode = findParentNode(mindMapData, selectedNodeId);
+
+            if (!parentNode || parentNode.children.length < 2) {
+                showNotification('提示', '无法上移节点', 'info');
+                return;
+            }
+
+            // 找到选中节点在父节点中的索引
+            const index = parentNode.children.findIndex(child => child.id === selectedNodeId);
+
+            // 如果已经是第一个节点，不能上移
+            if (index === 0) {
+                showNotification('提示', '已经是第一个节点', 'info');
+                return;
+            }
+
+            // 与前一个节点交换位置
+            const temp = parentNode.children[index - 1];
+            parentNode.children[index - 1] = parentNode.children[index];
+            parentNode.children[index] = temp;
+
+            // 交换位置
+            const tempX = parentNode.children[index - 1].x;
+            const tempY = parentNode.children[index - 1].y;
+            parentNode.children[index - 1].x = parentNode.children[index].x;
+            parentNode.children[index - 1].y = parentNode.children[index].y;
+            parentNode.children[index].x = tempX;
+            parentNode.children[index].y = tempY;
+
+            renderMindMap();
+            history.saveState(mindMapData);
+            showNotification('成功', '节点已上移', 'success');
+        }
+
+        // 下移节点
+        function moveNodeDown() {
+            if (!selectedNodeId || selectedNodeId === 'root') {
+                showNotification('提示', '操作无效', 'info');
+                return;
+            }
+
+            // 找到选中节点及其父节点
+            const node = findNodeById(mindMapData, selectedNodeId);
+            const parentNode = findParentNode(mindMapData, selectedNodeId);
+
+            if (!parentNode || parentNode.children.length < 2) {
+                showNotification('提示', '无法下移节点', 'info');
+                return;
+            }
+
+            // 找到选中节点在父节点中的索引
+            const index = parentNode.children.findIndex(child => child.id === selectedNodeId);
+
+            // 如果已经是最后一个节点，不能下移
+            if (index === parentNode.children.length - 1) {
+                showNotification('提示', '已经是最后一个节点', 'info');
+                return;
+            }
+
+            // 与后一个节点交换位置
+            const temp = parentNode.children[index + 1];
+            parentNode.children[index + 1] = parentNode.children[index];
+            parentNode.children[index] = temp;
+
+            // 交换位置
+            const tempX = parentNode.children[index + 1].x;
+            const tempY = parentNode.children[index + 1].y;
+            parentNode.children[index + 1].x = parentNode.children[index].x;
+            parentNode.children[index + 1].y = parentNode.children[index].y;
+            parentNode.children[index].x = tempX;
+            parentNode.children[index].y = tempY;
+
+            renderMindMap();
+            history.saveState(mindMapData);
+            showNotification('成功', '节点已下移', 'success');
+        }
+
+        // 删除选中的节点
+        function deleteSelectedNode() {
+            if (!selectedNodeId || selectedNodeId === 'root') {
+                showNotification('提示', '不能删除根节点', 'info');
+                return;
+            }
+
+            if (confirm('确定要删除这个节点吗？其子节点也会被一并删除。')) {
+                // 找到父节点并删除选中的节点
+                const parentNode = findParentNode(mindMapData, selectedNodeId);
+                if (parentNode && parentNode.children) {
+                    const index = parentNode.children.findIndex(child => child.id === selectedNodeId);
+                    if (index !== -1) {
+                        parentNode.children.splice(index, 1);
+
+                        selectedNodeId = null;
+                        renderMindMap();
+                        history.saveState(mindMapData);
+                        updateNodeCount();
+                        showNotification('成功', '节点已删除', 'success');
+                    }
+                }
+            }
+        }
+
+        // 打开节点编辑模态框
+        function openNodeEditModal() {
+            if (!selectedNodeId) {
+                showNotification('提示', '请先选择一个节点', 'info');
+                return;
+            }
+
+            // 查找节点文本
+            const node = findNodeById(mindMapData, selectedNodeId);
+            if (node) {
+                nodeTextInput.value = node.text;
+                nodeEditModal.classList.remove('hidden');
+
+                // 添加动画效果
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+
+                nodeTextInput.focus();
+            }
+        }
+
+        // 关闭节点编辑模态框
+        function closeNodeEditModal() {
+            // 添加动画效果
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                nodeEditModal.classList.add('hidden');
+                nodeTextInput.value = '';
+            }, 300);
+        }
+
+        // 保存节点编辑内容
+        function saveNodeEdit() {
+            const newText = nodeTextInput.value.trim();
+            if (!newText) {
+                showNotification('提示', '节点文本不能为空', 'warning');
+                return;
+            }
+
+            // 更新节点文本
+            const node = findNodeById(mindMapData, selectedNodeId);
+            if (node) {
+                node.text = newText;
+                closeNodeEditModal();
+                renderMindMap();
+                history.saveState(mindMapData);
+                showNotification('成功', '节点已更新', 'success');
+            }
+        }
+
+        // 改变节点颜色
+        function changeNodeColor(color) {
+            if (!selectedNodeId) {
+                showNotification('提示', '请先选择一个节点', 'info');
+                return;
+            }
+
+            // 更新节点颜色
+            const node = findNodeById(mindMapData, selectedNodeId);
+            if (node) {
+                node.color = color;
+                renderMindMap();
+                history.saveState(mindMapData);
+                showNotification('成功', '节点颜色已更新', 'success');
+            }
+        }
+
+        // 导出到Excel
+        function exportToExcel() {
+            if (!mindMapData || (mindMapData.children && mindMapData.children.length === 0)) {
+                showNotification('提示', '思维导图为空，无法导出', 'info');
+                return;
+            }
+
+            // 准备Excel数据
+            const excelData = [];
+            // 添加表头
+            excelData.push(['ID', '父节点ID', '节点文本', '节点颜色']);
+
+            // 递归收集节点数据
+            function collectNodeData(node, parentId) {
+                excelData.push([
+                    node.id,
+                    parentId || '',
+                    node.text,
+                    node.color
+                ]);
+
+                if (node.children) {
+                    node.children.forEach(child => {
+                        collectNodeData(child, node.id);
+                    });
+                }
+            }
+
+            collectNodeData(mindMapData, '');
+
+            // 创建工作簿和工作表
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "思维导图数据");
+
+            // 导出文件
+            XLSX.writeFile(wb, "思维导图.xlsx");
+            showNotification('成功', '已导出为Excel文件', 'success');
+        }
+
+        // 导出为图片
+        function exportToPNG() {
+            if (!mindMapData || (mindMapData.children && mindMapData.children.length === 0)) {
+                showNotification('提示', '思维导图为空，无法导出', 'info');
+                return;
+            }
+
+            showNotification('提示', '正在准备导出图片...', 'info');
+
+            // 模拟导出图片
+            setTimeout(() => {
+                showNotification('成功', '图片导出功能已触发', 'success');
+            }, 1000);
+        }
+
+        // 从Excel导入
+        function importFromExcel(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const wb = XLSX.read(data, { type: 'array' });
+
+                    // 获取第一个工作表
+                    const wsname = wb.SheetNames[0];
+                    const ws = wb.Sheets[wsname];
+
+                    // 转换为JSON
+                    const excelData = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+                    // 验证数据格式
+                    if (!excelData || excelData.length < 2) {
+                        throw new Error('Excel文件格式不正确');
+                    }
+
+                    // 解析数据并构建思维导图
+                    const nodeMap = new Map();
+
+                    // 跳过表头，从第二行开始处理
+                    for (let i = 1; i < excelData.length; i++) {
+                        const row = excelData[i];
+                        if (row.length < 3) continue;
+
+                        const nodeId = row[0] || `node_${i}`;
+                        const parentId = row[1];
+                        const text = row[2] || `节点${i}`;
+                        const color = row[3] || '#3B82F6';
+
+                        nodeMap.set(nodeId, {
+                            id: nodeId,
+                            text: text,
+                            color: color,
+                            children: []
+                        });
+                    }
+
+                    // 构建父子关系
+                    for (let i = 1; i < excelData.length; i++) {
+                        const row = excelData[i];
+                        const nodeId = row[0] || `node_${i}`;
+                        const parentId = row[1];
+
+                        if (parentId && nodeMap.has(parentId) && nodeMap.has(nodeId)) {
+                            const parentNode = nodeMap.get(parentId);
+                            const childNode = nodeMap.get(nodeId);
+                            parentNode.children.push(childNode);
+                        }
+                    }
+
+                    // 找到根节点（没有父节点的节点）
+                    let rootNode = null;
+                    for (let i = 1; i < excelData.length; i++) {
+                        const row = excelData[i];
+                        const nodeId = row[0] || `node_${i}`;
+                        const parentId = row[1];
+
+                        if (!parentId && nodeMap.has(nodeId)) {
+                            rootNode = nodeMap.get(nodeId);
+                            break;
+                        }
+                    }
+
+                    if (!rootNode && nodeMap.size > 0) {
+                        // 如果没有找到根节点，取第一个节点作为根节点
+                        rootNode = Array.from(nodeMap.values())[0];
+                    }
+
+                    if (rootNode) {
+                        // 为导入的节点设置位置
+                        const canvasWidth = canvasWrapper.clientWidth;
+                        const canvasHeight = canvasWrapper.clientHeight;
+                        rootNode.x = canvasWidth / 2;
+                        rootNode.y = canvasHeight / 2;
+
+                        // 递归设置子节点位置
+                        function setNodePositions(node, level = 1) {
+                            if (node.children && node.children.length > 0) {
+                                arrangeChildNodes(node);
+
+                                node.children.forEach(child => {
+                                    setNodePositions(child, level + 1);
+                                });
+                            }
+                        }
+
+                        setNodePositions(rootNode);
+
+                        mindMapData = rootNode;
+                        selectedNodeId = null;
+                        renderMindMap();
+                        history.saveState(mindMapData);
+                        updateNodeCount();
+                        hideEmptyState();
+                        showNotification('成功', '已从Excel导入思维导图', 'success');
+                    } else {
+                        throw new Error('未找到有效的思维导图数据');
+                    }
+                } catch (error) {
+                    console.error('导入失败:', error);
+                    showNotification('错误', `导入失败: ${error.message}`, 'error');
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+            // 重置文件输入
+            e.target.value = '';
+        }
+
+        // 保存思维导图到本地存储
+        function saveMindMap() {
+            localStorage.setItem('mindMapData', JSON.stringify(mindMapData));
+            saveLayoutConfig();
+            showNotification('成功', '思维导图已保存', 'success');
+        }
+
+        // 保存布局配置
+        function saveLayoutConfig() {
+            localStorage.setItem('layoutConfig', JSON.stringify(layoutConfig));
+        }
+
+        // 撤销操作
+        function undoAction() {
+            const prevState = history.undo();
+            if (prevState) {
+                mindMapData = prevState;
+                selectedNodeId = null;
+                renderMindMap();
+                updateNodeCount();
+                showNotification('成功', '已撤销操作', 'success');
+            } else {
+                showNotification('提示', '没有可撤销的操作', 'info');
+            }
+        }
+
+        // 重做操作
+        function redoAction() {
+            const nextState = history.redo();
+            if (nextState) {
+                mindMapData = nextState;
+                selectedNodeId = null;
+                renderMindMap();
+                updateNodeCount();
+                showNotification('成功', '已重做操作', 'success');
+            } else {
+                showNotification('提示', '没有可重做的操作', 'info');
+            }
+        }
+
+        // 显示右键菜单
+        function showContextMenu(e) {
+            e.preventDefault();
+
+            // 只有选中节点时才显示右键菜单
+            if (!selectedNodeId) return;
+
+            // 获取鼠标位置
+            const x = e.clientX;
+            const y = e.clientY;
+
+            // 显示菜单并设置位置
+            contextMenu.style.left = `${x}px`;
+            contextMenu.style.top = `${y}px`;
+            contextMenu.classList.remove('hidden');
+
+            // 禁用根节点的某些操作
+            document.getElementById('ctx-add-sibling').classList.toggle('hidden', selectedNodeId === 'root');
+        }
+
+        // 隐藏右键菜单
+        function hideContextMenu() {
+            contextMenu.classList.add('hidden');
+        }
+
+        // 处理键盘快捷键
+        function handleKeyboardShortcuts(e) {
+            // 如果在输入框中，不处理快捷键
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            // Delete键删除节点
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                if (selectedNodeId && selectedNodeId !== 'root') {
+                    e.preventDefault();
+                    deleteSelectedNode();
+                }
+            }
+            // Enter键添加子节点
+            else if (e.key === 'Enter') {
+                if (selectedNodeId) {
+                    e.preventDefault();
+                    addChildNode();
+                }
+            }
+            // Ctrl+Z 撤销
+            else if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault();
+                undoAction();
+            }
+            // Ctrl+Y 重做
+            else if (e.ctrlKey && e.key === 'y') {
+                e.preventDefault();
+                redoAction();
+            }
+            // Ctrl+S 保存
+            else if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                saveMindMap();
+            }
+        }
+
+        // 显示通知
+        function showNotification(title, message, type = 'info') {
+            const notificationEl = document.getElementById('notification');
+            const titleEl = document.getElementById('notification-title');
+            const messageEl = document.getElementById('notification-message');
+            const iconEl = document.getElementById('notification-icon');
+
+            // 设置通知内容
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            // 设置图标和样式
+            iconEl.className = '';
+            notificationEl.className = 'fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 transform transition-transform duration-300 z-50 flex items-center max-w-sm';
+
+            switch (type) {
+                case 'success':
+                    iconEl.className = 'fa fa-check-circle text-green-500 text-xl mr-3';
+                    notificationEl.classList.add('border-l-4', 'border-green-500');
+                    break;
+                case 'error':
+                    iconEl.className = 'fa fa-exclamation-circle text-red-500 text-xl mr-3';
+                    notificationEl.classList.add('border-l-4', 'border-red-500');
+                    break;
+                case 'warning':
+                    iconEl.className = 'fa fa-exclamation-triangle text-yellow-500 text-xl mr-3';
+                    notificationEl.classList.add('border-l-4', 'border-yellow-500');
+                    break;
+                default: // info
+                    iconEl.className = 'fa fa-info-circle text-blue-500 text-xl mr-3';
+                    notificationEl.classList.add('border-l-4', 'border-blue-500');
+            }
+
+            // 显示通知
+            notificationEl.style.transform = 'translateX(0)';
+
+            // 3秒后自动隐藏
+            setTimeout(hideNotification, 3000);
+        }
+
+        // 隐藏通知
+        function hideNotification() {
+            const notificationEl = document.getElementById('notification');
+            notificationEl.style.transform = 'translateX(calc(100% + 20px))';
+        }
+
+        // 更新节点计数
+        function updateNodeCount() {
+            let count = 0;
+
+            function countNodes(node) {
+                count++;
+                if (node.children) {
+                    node.children.forEach(child => countNodes(child));
+                }
+            }
+
+            countNodes(mindMapData);
+            nodeCountDisplay.textContent = count;
+        }
+
+        // 根据ID查找节点
+        function findNodeById(root, id) {
+            if (root.id === id) {
+                return root;
+            }
+
+            if (root.children) {
+                for (let child of root.children) {
+                    const found = findNodeById(child, id);
+                    if (found) return found;
+                }
+            }
+
+            return null;
+        }
+
+        // 查找节点的父节点
+        function findParentNode(root, childId, parent = null) {
+            if (root.id === childId) {
+                return parent;
+            }
+
+            if (root.children) {
+                for (let child of root.children) {
+                    const foundParent = findParentNode(child, childId, root);
+                    if (foundParent) return foundParent;
+                }
+            }
+
+            return null;
+        }
+
+        // 点击空白处取消选中
+        canvasWrapper.addEventListener('click', (e) => {
+            // 如果点击的是画布空白处
+            if (e.target === canvasWrapper || e.target === mindmapCanvas || e.target === connectionsContainer) {
+                if (selectedNodeId) {
+                    const nodeElement = document.querySelector(`#node-${selectedNodeId} div`);
+                    if (nodeElement) {
+                        nodeElement.classList.remove('ring-4', 'ring-blue-300');
+                    }
+                    selectedNodeId = null;
+
+                    // 清除连接线高亮
+                    document.querySelectorAll('#connections-container path').forEach(path => {
+                        path.classList.remove('stroke-primary', 'stroke-3');
+                    });
+                }
+            }
+        });
+
+        // 窗口大小变化时重新排列
+        window.addEventListener('resize', () => {
+            // 调整SVG尺寸
+            const canvasRect = canvasWrapper.getBoundingClientRect();
+            connectionsContainer.setAttribute('width', canvasRect.width);
+            connectionsContainer.setAttribute('height', canvasRect.height);
+
+            // 更新连接线
+            updateConnections();
+        });
+
+        // 初始化应用
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

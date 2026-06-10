@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MainFunction - 功能导航中心</title>
+    <link rel="stylesheet" href="样式.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 功能导航中心</h1>
+            <p>一站式管理您的学习、工具、游戏和更多功能</p>
+            <div class="stats">
+                <div class="stat-item">📊 功能总数: 55</div>
+                <div class="stat-item">📁 分类数: 6</div>
+                <div class="stat-item">🕒 更新时间: 最新</div>
+            </div>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="输入功能名称搜索..." oninput="searchFiles()">
+        </div>
+
+        <div class="content">
+            <!-- 学习工具 -->
+            <div class="category-section">
+                <h2 class="category-title">📖 学习工具<span class="category-count">(15个)</span></h2>
+                <div class="file-grid">
+                    <a href="学习工具/分组管理工具.html" class="file-card">
+                        <div class="file-icon">👥</div>
+                        <div class="file-title">分组管理工具</div>
+                        <div class="file-desc">管理和组织学习小组</div>
+                    </a>
+                    <a href="学习工具/分组数据管理.html" class="file-card">
+                        <div class="file-icon">📋</div>
+                        <div class="file-title">分组数据管理</div>
+                        <div class="file-desc">分组数据的高级管理</div>
+                    </a>
+                    <a href="学习工具/单词轮播展示.html" class="file-card">
+                        <div class="file-icon">🔤</div>
+                        <div class="file-title">单词轮播展示</div>
+                        <div class="file-desc">单词学习轮播展示</div>
+                    </a>
+                    <a href="学习工具/单词轮播管理.html" class="file-card">
+                        <div class="file-icon">📝</div>
+                        <div class="file-title">单词轮播管理</div>
+                        <div class="file-desc">管理单词库内容</div>
+                    </a>
+                    <a href="学习工具/地区旅游信息.html" class="file-card">
+                        <div class="file-icon">🗺️</div>
+                        <div class="file-title">地区旅游信息</div>
+                        <div class="file-desc">查看地区和旅游景点</div>
+                    </a>
+                    <a href="学习工具/地区景点详情.html" class="file-card">
+                        <div class="file-icon">🏛️</div>
+                        <div class="file-title">地区景点详情</div>
+                        <div class="file-desc">景点详细信息查询</div>
+                    </a>
+                    <a href="学习工具/地区旅游指南.html" class="file-card">
+                        <div class="file-icon">📖</div>
+                        <div class="file-title">地区旅游指南</div>
+                        <div class="file-desc">完整的旅游指南</div>
+                    </a>
+                    <a href="学习工具/学习指南首页.html" class="file-card">
+                        <div class="file-icon">🏠</div>
+                        <div class="file-title">学习指南首页</div>
+                        <div class="file-desc">学习资源总入口</div>
+                    </a>
+                    <a href="学习工具/学习方法指南.html" class="file-card">
+                        <div class="file-icon">🎯</div>
+                        <div class="file-title">学习方法指南</div>
+                        <div class="file-desc">高效学习方法介绍</div>
+                    </a>
+                    <a href="学习工具/学习计划指南.html" class="file-card">
+                        <div class="file-icon">📅</div>
+                        <div class="file-title">学习计划指南</div>
+                        <div class="file-desc">制定学习计划</div>
+                    </a>
+                    <a href="学习工具/学习资源指南.html" class="file-card">
+                        <div class="file-icon">📚</div>
+                        <div class="file-title">学习资源指南</div>
+                        <div class="file-desc">学习资源合集</div>
+                    </a>
+                    <a href="学习工具/学习技巧指南.html" class="file-card">
+                        <div class="file-icon">💡</div>
+                        <div class="file-title">学习技巧指南</div>
+                        <div class="file-desc">实用学习技巧</div>
+                    </a>
+                    <a href="学习工具/学习总结指南.html" class="file-card">
+                        <div class="file-icon">✍️</div>
+                        <div class="file-title">学习总结指南</div>
+                        <div class="file-desc">学习总结方法</div>
+                    </a>
+                    <a href="学习工具/学习资料.xlsx" class="file-card">
+                        <div class="file-icon">📊</div>
+                        <div class="file-title">学习资料</div>
+                        <div class="file-desc">Excel学习资料下载</div>
+                    </a>
+                    <a href="学习工具/地区数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">地区数据</div>
+                        <div class="file-desc">地区信息数据文件</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 学科学习 -->
+            <div class="category-section">
+                <h2 class="category-title">🎓 学科学习<span class="category-count">(20个)</span></h2>
+                <div class="file-grid">
+                    <a href="学科学习/学科学习导航.html" class="file-card">
+                        <div class="file-icon">🧭</div>
+                        <div class="file-title">学科学习导航</div>
+                        <div class="file-desc">各学科学习入口</div>
+                    </a>
+                    <a href="学科学习/化学元素周期表.html" class="file-card">
+                        <div class="file-icon">⚗️</div>
+                        <div class="file-title">化学元素周期表</div>
+                        <div class="file-desc">元素周期表查询</div>
+                    </a>
+                    <a href="学科学习/化学反应方程式.html" class="file-card">
+                        <div class="file-icon">🧪</div>
+                        <div class="file-title">化学反应方程式</div>
+                        <div class="file-desc">化学方程式查询</div>
+                    </a>
+                    <a href="学科学习/化学计算工具.html" class="file-card">
+                        <div class="file-icon">🔢</div>
+                        <div class="file-title">化学计算工具</div>
+                        <div class="file-desc">化学计算辅助工具</div>
+                    </a>
+                    <a href="学科学习/PH值计算器.html" class="file-card">
+                        <div class="file-icon">🧫</div>
+                        <div class="file-title">PH值计算器</div>
+                        <div class="file-desc">酸碱PH值计算</div>
+                    </a>
+                    <a href="学科学习/物质性质查询.html" class="file-card">
+                        <div class="file-icon">🔬</div>
+                        <div class="file-title">物质性质查询</div>
+                        <div class="file-desc">化学物质性质</div>
+                    </a>
+                    <a href="学科学习/历史事件年表.html" class="file-card">
+                        <div class="file-icon">📜</div>
+                        <div class="file-title">历史事件年表</div>
+                        <div class="file-desc">历史大事年表</div>
+                    </a>
+                    <a href="学科学习/地理知识查询.html" class="file-card">
+                        <div class="file-icon">🌍</div>
+                        <div class="file-title">地理知识查询</div>
+                        <div class="file-desc">地理知识百科</div>
+                    </a>
+                    <a href="学科学习/数学公式大全.html" class="file-card">
+                        <div class="file-icon">📐</div>
+                        <div class="file-title">数学公式大全</div>
+                        <div class="file-desc">数学公式查询</div>
+                    </a>
+                    <a href="学科学习/物理公式大全.html" class="file-card">
+                        <div class="file-icon">⚡</div>
+                        <div class="file-title">物理公式大全</div>
+                        <div class="file-desc">物理公式查询</div>
+                    </a>
+                    <a href="学科学习/生物知识百科.html" class="file-card">
+                        <div class="file-icon">🧬</div>
+                        <div class="file-title">生物知识百科</div>
+                        <div class="file-desc">生物知识查询</div>
+                    </a>
+                    <a href="学科学习/化学数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">化学数据</div>
+                        <div class="file-desc">化学数据文件</div>
+                    </a>
+                    <a href="学科学习/化学计算数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">化学计算数据</div>
+                        <div class="file-desc">计算数据文件</div>
+                    </a>
+                    <a href="学科学习/PH值数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">PH值数据</div>
+                        <div class="file-desc">PH数据文件</div>
+                    </a>
+                    <a href="学科学习/物质性质数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">物质性质数据</div>
+                        <div class="file-desc">物质数据文件</div>
+                    </a>
+                    <a href="学科学习/历史数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">历史数据</div>
+                        <div class="file-desc">历史数据文件</div>
+                    </a>
+                    <a href="学科学习/地理数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">地理数据</div>
+                        <div class="file-desc">地理数据文件</div>
+                    </a>
+                    <a href="学科学习/数学数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">数学数据</div>
+                        <div class="file-desc">数学数据文件</div>
+                    </a>
+                    <a href="学科学习/物理数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">物理数据</div>
+                        <div class="file-desc">物理数据文件</div>
+                    </a>
+                    <a href="学科学习/生物数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">生物数据</div>
+                        <div class="file-desc">生物数据文件</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 实用工具 -->
+            <div class="category-section">
+                <h2 class="category-title">🛠️ 实用工具<span class="category-count">(14个)</span></h2>
+                <div class="file-grid">
+                    <a href="实用工具/科学计算器.html" class="file-card">
+                        <div class="file-icon">🧮</div>
+                        <div class="file-title">科学计算器</div>
+                        <div class="file-desc">多功能科学计算器</div>
+                    </a>
+                    <a href="实用工具/二进制查看器.html" class="file-card">
+                        <div class="file-icon">💻</div>
+                        <div class="file-title">二进制查看器</div>
+                        <div class="file-desc">查看二进制数据</div>
+                    </a>
+                    <a href="实用工具/图层编辑器.html" class="file-card">
+                        <div class="file-icon">🎨</div>
+                        <div class="file-title">图层编辑器</div>
+                        <div class="file-desc">图像图层编辑工具</div>
+                    </a>
+                    <a href="实用工具/图层编辑高级模式.html" class="file-card">
+                        <div class="file-icon">🖼️</div>
+                        <div class="file-title">图层编辑高级模式</div>
+                        <div class="file-desc">高级图层编辑功能</div>
+                    </a>
+                    <a href="实用工具/思维导图工具.html" class="file-card">
+                        <div class="file-icon">🧠</div>
+                        <div class="file-title">思维导图工具</div>
+                        <div class="file-desc">创建思维导图</div>
+                    </a>
+                    <a href="实用工具/摩斯密码编解码.html" class="file-card">
+                        <div class="file-icon">📡</div>
+                        <div class="file-title">摩斯密码编解码</div>
+                        <div class="file-desc">摩斯密码转换工具</div>
+                    </a>
+                    <a href="实用工具/文本处理工具.html" class="file-card">
+                        <div class="file-icon">📄</div>
+                        <div class="file-title">文本处理工具</div>
+                        <div class="file-desc">文本格式处理</div>
+                    </a>
+                    <a href="实用工具/时钟显示工具.html" class="file-card">
+                        <div class="file-icon">⏰</div>
+                        <div class="file-title">时钟显示工具</div>
+                        <div class="file-desc">精美时钟展示</div>
+                    </a>
+                    <a href="实用工具/测量工具.html" class="file-card">
+                        <div class="file-icon">📏</div>
+                        <div class="file-title">测量工具</div>
+                        <div class="file-desc">在线测量工具</div>
+                    </a>
+                    <a href="实用工具/测量工具高级版.html" class="file-card">
+                        <div class="file-icon">📐</div>
+                        <div class="file-title">测量工具高级版</div>
+                        <div class="file-desc">高级测量功能</div>
+                    </a>
+                    <a href="实用工具/笔记宝.html" class="file-card">
+                        <div class="file-icon">📓</div>
+                        <div class="file-title">笔记宝</div>
+                        <div class="file-desc">笔记管理工具</div>
+                    </a>
+                    <a href="实用工具/符号与特殊字符大全.html" class="file-card">
+                        <div class="file-icon">🔣</div>
+                        <div class="file-title">符号与特殊字符大全</div>
+                        <div class="file-desc">特殊字符查询</div>
+                    </a>
+                    <a href="实用工具/系统监控仪表板.html" class="file-card">
+                        <div class="file-icon">📊</div>
+                        <div class="file-title">系统监控仪表板</div>
+                        <div class="file-desc">系统状态监控</div>
+                    </a>
+                    <a href="实用工具/虚拟钢琴.html" class="file-card">
+                        <div class="file-icon">🎹</div>
+                        <div class="file-title">虚拟钢琴</div>
+                        <div class="file-desc">在线钢琴演奏</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 游戏娱乐 -->
+            <div class="category-section">
+                <h2 class="category-title">🎮 游戏娱乐<span class="category-count">(8个)</span></h2>
+                <div class="file-grid">
+                    <a href="游戏娱乐/五子棋.html" class="file-card">
+                        <div class="file-icon">⚫</div>
+                        <div class="file-title">五子棋</div>
+                        <div class="file-desc">经典五子棋游戏</div>
+                    </a>
+                    <a href="游戏娱乐/俄罗斯方块.html" class="file-card">
+                        <div class="file-icon">🧱</div>
+                        <div class="file-title">俄罗斯方块</div>
+                        <div class="file-desc">经典俄罗斯方块</div>
+                    </a>
+                    <a href="游戏娱乐/围棋.html" class="file-card">
+                        <div class="file-icon">⚪</div>
+                        <div class="file-title">围棋</div>
+                        <div class="file-desc">围棋对弈</div>
+                    </a>
+                    <a href="游戏娱乐/小转盘.html" class="file-card">
+                        <div class="file-icon">🎡</div>
+                        <div class="file-title">小转盘</div>
+                        <div class="file-desc">随机抽奖转盘</div>
+                    </a>
+                    <a href="游戏娱乐/扫雷.html" class="file-card">
+                        <div class="file-icon">💣</div>
+                        <div class="file-title">扫雷</div>
+                        <div class="file-desc">经典扫雷游戏</div>
+                    </a>
+                    <a href="游戏娱乐/数独.html" class="file-card">
+                        <div class="file-icon">🔢</div>
+                        <div class="file-title">数独</div>
+                        <div class="file-desc">数独解谜游戏</div>
+                    </a>
+                    <a href="游戏娱乐/汉诺塔.html" class="file-card">
+                        <div class="file-icon">🗼</div>
+                        <div class="file-title">汉诺塔</div>
+                        <div class="file-desc">汉诺塔益智游戏</div>
+                    </a>
+                    <a href="游戏娱乐/跳跳板大冒险.html" class="file-card">
+                        <div class="file-icon">🏃</div>
+                        <div class="file-title">跳跳板大冒险</div>
+                        <div class="file-desc">跳跃冒险游戏</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 安全防护 -->
+            <div class="category-section">
+                <h2 class="category-title">🛡️ 安全防护<span class="category-count">(3个)</span></h2>
+                <div class="file-grid">
+                    <a href="安全防护/安全知识指南.html" class="file-card">
+                        <div class="file-icon">📖</div>
+                        <div class="file-title">安全知识指南</div>
+                        <div class="file-desc">安全知识学习</div>
+                    </a>
+                    <a href="安全防护/紧急联系方式.html" class="file-card">
+                        <div class="file-icon">📞</div>
+                        <div class="file-title">紧急联系方式</div>
+                        <div class="file-desc">紧急电话查询</div>
+                    </a>
+                    <a href="安全防护/安全数据.json" class="file-card">
+                        <div class="file-icon">📁</div>
+                        <div class="file-title">安全数据</div>
+                        <div class="file-desc">安全信息数据</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 生日纪念 -->
+            <div class="category-section">
+                <h2 class="category-title">🎂 生日纪念<span class="category-count">(2个)</span></h2>
+                <div class="file-grid">
+                    <a href="生日纪念/爸爸生日.html" class="file-card">
+                        <div class="file-icon">🎁</div>
+                        <div class="file-title">爸爸生日</div>
+                        <div class="file-desc">生日祝福页面</div>
+                    </a>
+                    <a href="生日纪念/生日祝福.txt" class="file-card">
+                        <div class="file-icon">📝</div>
+                        <div class="file-title">生日祝福</div>
+                        <div class="file-desc">祝福语文本</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <a href="../index.html" class="back-btn">← 返回主页</a>
+            <p style="margin-top: 15px;">© 2025 MainFunction 功能导航中心 - 整理自 Page 目录所有功能</p>
+        </footer>
+    </div>
+
+    <script>
+        function searchFiles() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.file-card');
+            
+            cards.forEach(card => {
+                const title = card.querySelector('.file-title').textContent.toLowerCase();
+                const desc = card.querySelector('.file-desc').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

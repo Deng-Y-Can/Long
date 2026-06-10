@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉诺塔 - 经典益智游戏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .tower-base {
+                @apply bg-gradient-to-r from-gray-600 to-gray-800 rounded-full mx-auto shadow-md;
+            }
+            .tower-rod {
+                @apply bg-gradient-to-b from-gray-600 to-gray-800 mx-auto rounded-b-full shadow-inner;
+            }
+            .disk {
+                @apply rounded-full absolute cursor-pointer transition-all duration-300 ease-in-out shadow-md z-10;
+            }
+            .disk-selected {
+                @apply scale-105 shadow-lg ring-2 ring-accent -translate-y-3;
+            }
+            .peg-hover {
+                @apply bg-primary/10 transition-colors duration-200;
+            }
+            .floating {
+                animation: float 3s ease-in-out infinite;
+            }
+            @keyframes float {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+                100% { transform: translateY(0px); }
+            }
+            .shake {
+                animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            }
+            @keyframes shake {
+                10%, 90% { transform: translateX(-1px); }
+                20%, 80% { transform: translateX(2px); }
+                30%, 50%, 70% { transform: translateX(-3px); }
+                40%, 60% { transform: translateX(3px); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans text-dark flex flex-col items-center p-4 md:p-8">
+    <header class="w-full max-w-5xl mb-8 text-center">
+        <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-primary mb-3 tracking-tight">
+            <i class="fa fa-cubes mr-3 text-accent"></i>汉诺塔
+        </h1>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto">挑战你的逻辑思维 - 按规则移动所有圆盘</p>
+    </header>
+
+    <main class="w-full max-w-5xl flex flex-col items-center flex-grow">
+        <!-- 游戏信息和控制区 -->
+        <div class="w-full flex flex-col sm:flex-row justify-between items-center mb-6 bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-gray-100">
+            <div class="flex items-center gap-6 mb-4 sm:mb-0">
+                <div class="flex items-center bg-gray-50 px-4 py-2 rounded-lg shadow-sm">
+                    <i class="fa fa-refresh text-primary mr-2"></i>
+                    <span id="moves" class="font-semibold">步数: 0</span>
+                </div>
+                <div class="flex items-center bg-gray-50 px-4 py-2 rounded-lg shadow-sm">
+                    <i class="fa fa-clock-o text-primary mr-2"></i>
+                    <span id="timer" class="font-semibold">时间: 00:00</span>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-3 justify-center">
+                <button id="reset-btn" class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg flex items-center transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    <i class="fa fa-refresh mr-2"></i>重置
+                </button>
+                <div class="flex items-center bg-gray-50 rounded-lg p-1 shadow-sm">
+                    <span class="px-2 text-sm text-gray-600">难度:</span>
+                    <button class="disk-count-btn px-3 py-1.5 rounded-md bg-primary text-white text-sm transition-all" data-count="3">3</button>
+                    <button class="disk-count-btn px-3 py-1.5 rounded-md hover:bg-gray-200 text-sm transition-all" data-count="4">4</button>
+                    <button class="disk-count-btn px-3 py-1.5 rounded-md hover:bg-gray-200 text-sm transition-all" data-count="5">5</button>
+                    <button class="disk-count-btn px-3 py-1.5 rounded-md hover:bg-gray-200 text-sm transition-all" data-count="6">6</button>
+                </div>
+                <button id="solve-btn" class="bg-accent hover:bg-accent/90 text-white px-5 py-2.5 rounded-lg flex items-center transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    <i class="fa fa-lightbulb-o mr-2"></i>自动求解
+                </button>
+            </div>
+        </div>
+
+        <!-- 汉诺塔游戏区域 -->
+        <div id="game-container" class="w-full aspect-[3/1] md:aspect-[4/1] relative bg-white/80 backdrop-blur-sm rounded-xl shadow-xl p-4 md:p-8 mb-8 border border-gray-100">
+            <!-- 桌子底部 -->
+            <div class="absolute bottom-4 left-4 right-4 h-6 bg-gradient-to-r from-amber-200 to-amber-400 rounded-t-full shadow-md z-0"></div>
+            
+            <!-- 柱子容器 - 现在圆盘从底部开始堆叠，符合直觉 -->
+            <div class="h-full w-full flex justify-around items-end relative pt-6">
+                <!-- 柱子1 -->
+                <div class="peg w-1/3 h-full flex flex-col items-center justify-end relative rounded-lg transition-all duration-300" data-peg="1">
+                    <div class="tower-rod w-3 h-[80%]"></div>
+                    <div class="tower-base w-full h-4"></div>
+                    <div class="disks-container w-full h-[80%] relative"></div>
+                </div>
+                
+                <!-- 柱子2 -->
+                <div class="peg w-1/3 h-full flex flex-col items-center justify-end relative rounded-lg transition-all duration-300" data-peg="2">
+                    <div class="tower-rod w-3 h-[80%]"></div>
+                    <div class="tower-base w-full h-4"></div>
+                    <div class="disks-container w-full h-[80%] relative"></div>
+                </div>
+                
+                <!-- 柱子3 -->
+                <div class="peg w-1/3 h-full flex flex-col items-center justify-end relative rounded-lg transition-all duration-300" data-peg="3">
+                    <div class="tower-rod w-3 h-[80%]"></div>
+                    <div class="tower-base w-full h-4"></div>
+                    <div class="disks-container w-full h-[80%] relative"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏说明 -->
+        <div class="w-full bg-white/90 backdrop-blur-sm p-5 rounded-xl shadow-lg border border-gray-100">
+            <h2 class="text-xl font-bold mb-3 text-primary flex items-center">
+                <i class="fa fa-info-circle mr-2"></i>游戏规则
+            </h2>
+            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                <li>每次只能移动一个圆盘</li>
+                <li>大盘不能放在小盘上面</li>
+                <li>将所有圆盘从最左边的柱子移动到最右边的柱子即可获胜</li>
+                <li>操作方式: 点击一个圆盘选中它，然后点击目标柱子移动它</li>
+            </ul>
+        </div>
+    </main>
+
+    <footer class="w-full max-w-5xl mt-8 text-center text-gray-500 text-sm">
+        <p>© 2023 汉诺塔游戏 | 经典益智挑战</p>
+    </footer>
+
+    <!-- 胜利提示弹窗 -->
+    <div id="win-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all scale-95 opacity-0" id="modal-content">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary/20 text-secondary mb-4 floating">
+                    <i class="fa fa-trophy text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">恭喜你胜利了！</h2>
+                <p class="text-gray-600 mb-6">你成功完成了汉诺塔挑战</p>
+                <div class="grid grid-cols-2 gap-4 mb-6 text-left">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-gray-500 text-sm">总步数</p>
+                        <p id="final-moves" class="font-bold text-lg">0</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="text-gray-500 text-sm">用时</p>
+                        <p id="final-time" class="font-bold text-lg">00:00</p>
+                    </div>
+                </div>
+                <button id="play-again-btn" class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    再玩一次
+                </button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 游戏状态变量
+            let numDisks = 3;
+            let moves = 0;
+            let gameTime = 0;
+            let timerInterval = null;
+            let selectedDisk = null;
+            let isSolving = false;
+            let solutionTimeout = null;
+            let pegs = {
+                1: [],
+                2: [],
+                3: []
+            };
+            
+            // DOM 元素
+            const movesElement = document.getElementById('moves');
+            const timerElement = document.getElementById('timer');
+            const resetButton = document.getElementById('reset-btn');
+            const solveButton = document.getElementById('solve-btn');
+            const playAgainButton = document.getElementById('play-again-btn');
+            const winModal = document.getElementById('win-modal');
+            const modalContent = document.getElementById('modal-content');
+            const finalMovesElement = document.getElementById('final-moves');
+            const finalTimeElement = document.getElementById('final-time');
+            const diskCountButtons = document.querySelectorAll('.disk-count-btn');
+            const pegsElements = document.querySelectorAll('.peg');
+            
+            // 初始化游戏
+            initGame();
+            
+            // 初始化游戏函数
+            function initGame() {
+                // 重置游戏状态
+                moves = 0;
+                gameTime = 0;
+                selectedDisk = null;
+                isSolving = false;
+                
+                // 清除任何正在运行的自动求解
+                if (solutionTimeout) {
+                    clearTimeout(solutionTimeout);
+                    solutionTimeout = null;
+                }
+                
+                // 更新UI
+                movesElement.textContent = `步数: ${moves}`;
+                timerElement.textContent = `时间: 00:00`;
+                
+                // 清除计时器
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                
+                // 重置柱子状态
+                pegs = {
+                    1: [],
+                    2: [],
+                    3: []
+                };
+                
+                // 清空所有柱子的圆盘
+                document.querySelectorAll('.disks-container').forEach(container => {
+                    container.innerHTML = '';
+                });
+                
+                // 创建圆盘并添加到第一个柱子
+                createDisks();
+                
+                // 隐藏胜利弹窗
+                winModal.classList.add('hidden');
+                setTimeout(() => {
+                    winModal.style.opacity = '0';
+                    modalContent.style.transform = 'scale(95)';
+                    modalContent.style.opacity = '0';
+                }, 300);
+            }
+            
+            // 创建圆盘函数
+            function createDisks() {
+                // 圆盘渐变色方案
+                const diskGradients = [
+                    'from-blue-400 to-blue-600',
+                    'from-green-400 to-green-600',
+                    'from-yellow-400 to-yellow-600',
+                    'from-red-400 to-red-600',
+                    'from-purple-400 to-purple-600',
+                    'from-pink-400 to-pink-600'
+                ];
+                
+                const firstPeg = document.querySelector('[data-peg="1"] .disks-container');
+                if (!firstPeg) {
+                    console.error('找不到第一个柱子容器');
+                    return;
+                }
+                
+                const diskHeight = 25;
+                const baseWidth = firstPeg.offsetWidth;
+                const containerHeight = firstPeg.offsetHeight;
+                
+                // 从大到小创建圆盘，现在从底部开始堆叠
+                for (let i = numDisks; i >= 1; i--) {
+                    const disk = document.createElement('div');
+                    const diskWidth = (i / numDisks) * baseWidth * 0.8; // 最大圆盘占80%宽度
+                    
+                    disk.classList.add('disk', 'bg-gradient-to-r');
+                    disk.classList.add(...diskGradients[i % diskGradients.length].split(' '));
+                    disk.style.width = `${diskWidth}px`;
+                    disk.style.height = `${diskHeight}px`;
+                    disk.dataset.size = i;
+                    
+                    // 计算位置（从底部开始堆叠，符合直觉）
+                    const bottomPosition = (i - 1) * diskHeight;
+                    disk.style.bottom = `${bottomPosition}px`;
+                    
+                    // 添加到第一个柱子
+                    firstPeg.appendChild(disk);
+                    pegs[1].push(i);
+                    
+                    // 添加点击事件
+                    disk.addEventListener('click', (e) => {
+                        e.stopPropagation(); // 防止事件冒泡到柱子
+                        selectDisk(disk);
+                    });
+                }
+            }
+            
+            // 选择圆盘函数
+            function selectDisk(disk) {
+                if (isSolving) return;
+                
+                // 如果已经选中了这个圆盘，则取消选中
+                if (selectedDisk === disk) {
+                    disk.classList.remove('disk-selected');
+                    selectedDisk = null;
+                    return;
+                }
+                
+                // 如果已经选中了其他圆盘，则先取消选中
+                if (selectedDisk) {
+                    selectedDisk.classList.remove('disk-selected');
+                }
+                
+                // 检查是否是最顶部的圆盘
+                const peg = disk.closest('.peg');
+                if (!peg) return;
+                
+                const pegNum = peg.dataset.peg;
+                const topDiskSize = pegs[pegNum].length > 0 ? pegs[pegNum][pegs[pegNum].length - 1] : null;
+                
+                // 只有最顶部的圆盘可以被选中
+                if (topDiskSize !== null && parseInt(disk.dataset.size) === topDiskSize) {
+                    // 选中当前圆盘
+                    disk.classList.add('disk-selected');
+                    selectedDisk = disk;
+                    
+                    // 开始计时（如果还没开始）
+                    if (!timerInterval) {
+                        startTimer();
+                    }
+                } else {
+                    // 尝试选中非顶部圆盘时的反馈
+                    disk.classList.add('shake');
+                    setTimeout(() => {
+                        disk.classList.remove('shake');
+                    }, 500);
+                }
+            }
+            
+            // 移动圆盘函数
+            function moveDisk(fromPeg, toPeg, isAutoMove = false) {
+                if (isSolving && !isAutoMove) return;
+                if (!selectedDisk && !isAutoMove) return;
+                
+                // 对于自动移动，获取要移动的圆盘
+                let diskToMove = selectedDisk;
+                if (isAutoMove && !diskToMove) {
+                    const fromPegElement = document.querySelector(`[data-peg="${fromPeg}"]`);
+                    const disks = fromPegElement.querySelectorAll('.disk');
+                    diskToMove = disks[disks.length - 1]; // 最顶部的圆盘
+                    
+                    if (diskToMove) {
+                        // 选中圆盘
+                        if (selectedDisk) {
+                            selectedDisk.classList.remove('disk-selected');
+                        }
+                        diskToMove.classList.add('disk-selected');
+                        selectedDisk = diskToMove;
+                    } else {
+                        return; // 没有可移动的圆盘
+                    }
+                }
+                
+                // 检查目标柱子是否可以放置
+                const diskSize = parseInt(diskToMove.dataset.size);
+                const targetTopDisk = pegs[toPeg].length > 0 ? pegs[toPeg][pegs[toPeg].length - 1] : null;
+                
+                // 检查是否可以移动（目标柱子为空或顶部圆盘更大）
+                if (targetTopDisk === null || diskSize < targetTopDisk) {
+                    // 添加移动动画效果 - 先上移
+                    diskToMove.style.transition = 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    diskToMove.style.transform = 'scale(1.05) translateY(-60px)';
+                    
+                    // 延迟后移动到目标柱子
+                    setTimeout(() => {
+                        // 更新柱子数据
+                        pegs[fromPeg].pop();
+                        pegs[toPeg].push(diskSize);
+                        
+                        // 获取目标容器并移动圆盘
+                        const targetContainer = document.querySelector(`[data-peg="${toPeg}"] .disks-container`);
+                        if (targetContainer) {
+                            targetContainer.appendChild(diskToMove);
+                            
+                            // 计算新位置（从底部开始计算）
+                            const diskHeight = 25;
+                            const bottomPosition = (pegs[toPeg].length - 1) * diskHeight;
+                            
+                            // 移动到目标位置的动画
+                            diskToMove.style.bottom = `${bottomPosition}px`;
+                            diskToMove.style.transform = 'scale(1) translateY(0)';
+                            
+                            // 完成移动后清理状态
+                            setTimeout(() => {
+                                diskToMove.classList.remove('disk-selected');
+                                selectedDisk = null;
+                                
+                                // 更新步数
+                                moves++;
+                                movesElement.textContent = `步数: ${moves}`;
+                                
+                                // 检查是否胜利
+                                checkWin();
+                            }, 300);
+                        }
+                    }, 300);
+                    
+                    return true; // 移动成功
+                } else {
+                    // 无效移动时的反馈动画
+                    diskToMove.classList.add('shake');
+                    setTimeout(() => {
+                        diskToMove.classList.remove('shake', 'disk-selected');
+                        selectedDisk = null;
+                    }, 500);
+                    
+                    return false; // 移动失败
+                }
+            }
+            
+            // 检查胜利函数
+            function checkWin() {
+                // 如果第三个柱子包含所有圆盘，则胜利
+                if (pegs[3].length === numDisks) {
+                    // 停止计时
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                    
+                    // 更新胜利弹窗信息
+                    finalMovesElement.textContent = moves;
+                    
+                    // 格式化时间
+                    const minutes = Math.floor(gameTime / 60);
+                    const seconds = gameTime % 60;
+                    finalTimeElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // 显示胜利弹窗，添加动画效果
+                    winModal.classList.remove('hidden');
+                    setTimeout(() => {
+                        winModal.style.opacity = '1';
+                        modalContent.style.transform = 'scale(1)';
+                        modalContent.style.opacity = '1';
+                    }, 10);
+                }
+            }
+            
+            // 开始计时器函数
+            function startTimer() {
+                timerInterval = setInterval(() => {
+                    gameTime++;
+                    const minutes = Math.floor(gameTime / 60);
+                    const seconds = gameTime % 60;
+                    timerElement.textContent = `时间: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+            
+            // 汉诺塔递归求解算法
+            function solveHanoi(n, from, to, aux) {
+                if (n === 1) {
+                    return [{ from, to }];
+                }
+                
+                const moves = [];
+                moves.push(...solveHanoi(n - 1, from, aux, to));
+                moves.push({ from, to });
+                moves.push(...solveHanoi(n - 1, aux, to, from));
+                
+                return moves;
+            }
+            
+            // 执行自动求解的递归函数
+            function executeSolutionStep(solution, index) {
+                if (index >= solution.length) {
+                    isSolving = false;
+                    return;
+                }
+                
+                const { from, to } = solution[index];
+                const moveSuccess = moveDisk(from, to, true);
+                
+                // 无论移动是否成功，继续下一步（在正确的算法中应该总是成功）
+                solutionTimeout = setTimeout(() => {
+                    executeSolutionStep(solution, index + 1);
+                }, 1200); // 每步之间的延迟
+            }
+            
+            // 启动自动求解
+            function startAutoSolve() {
+                if (isSolving) return;
+                
+                isSolving = true;
+                
+                // 如果有选中的圆盘，取消选中
+                if (selectedDisk) {
+                    selectedDisk.classList.remove('disk-selected');
+                    selectedDisk = null;
+                }
+                
+                // 开始计时（如果还没开始）
+                if (!timerInterval) {
+                    startTimer();
+                }
+                
+                // 获取解决方案
+                const solution = solveHanoi(numDisks, 1, 3, 2);
+                
+                // 开始执行解决方案的第一步
+                executeSolutionStep(solution, 0);
+            }
+            
+            // 事件监听 - 柱子点击
+            pegsElements.forEach(peg => {
+                peg.addEventListener('click', () => {
+                    // 如果有选中的圆盘，则尝试移动
+                    if (selectedDisk && !isSolving) {
+                        const fromPeg = selectedDisk.closest('.peg').dataset.peg;
+                        const toPeg = peg.dataset.peg;
+                        
+                        // 不能移动到同一个柱子
+                        if (fromPeg !== toPeg) {
+                            moveDisk(fromPeg, toPeg);
+                        }
+                    }
+                });
+                
+                // 添加悬停效果
+                peg.addEventListener('mouseenter', () => {
+                    if (selectedDisk && !isSolving) {
+                        peg.classList.add('peg-hover');
+                    }
+                });
+                
+                peg.addEventListener('mouseleave', () => {
+                    peg.classList.remove('peg-hover');
+                });
+            });
+            
+            // 事件监听 - 重置按钮
+            resetButton.addEventListener('click', initGame);
+            
+            // 事件监听 - 自动求解按钮
+            solveButton.addEventListener('click', startAutoSolve);
+            
+            // 事件监听 - 再玩一次按钮
+            playAgainButton.addEventListener('click', initGame);
+            
+            // 事件监听 - 难度选择按钮
+            diskCountButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // 更新选中状态
+                    diskCountButtons.forEach(btn => {
+                        btn.classList.remove('bg-primary', 'text-white');
+                        btn.classList.add('hover:bg-gray-200');
+                    });
+                    
+                    button.classList.add('bg-primary', 'text-white');
+                    button.classList.remove('hover:bg-gray-200');
+                    
+                    // 更新圆盘数量并重新初始化游戏
+                    numDisks = parseInt(button.dataset.count);
+                    initGame();
+                });
+            });
+
+            // 键盘支持
+            document.addEventListener('keydown', (e) => {
+                if (isSolving) return;
+                
+                // 1, 2, 3 键选择柱子
+                if (['1', '2', '3'].includes(e.key)) {
+                    const pegNum = e.key;
+                    const peg = document.querySelector(`[data-peg="${pegNum}"]`);
+                    
+                    if (selectedDisk) {
+                        // 如果已有选中的圆盘，则移动到目标柱子
+                        const fromPeg = selectedDisk.closest('.peg').dataset.peg;
+                        if (fromPeg !== pegNum) {
+                            moveDisk(fromPeg, pegNum);
+                        }
+                    } else {
+                        // 如果没有选中的圆盘，则尝试选中该柱子上的最顶部圆盘
+                        const disks = peg.querySelectorAll('.disk');
+                        if (disks.length > 0) {
+                            const topDisk = disks[disks.length - 1];
+                            selectDisk(topDisk);
+                        }
+                    }
+                } else if (e.key === 'Escape') {
+                    // 取消选择
+                    if (selectedDisk) {
+                        selectedDisk.classList.remove('disk-selected');
+                        selectedDisk = null;
+                    }
+                } else if (e.key === 'r' || e.key === 'R') {
+                    // 重置游戏
+                    initGame();
+                } else if (e.key === 's' || e.key === 'S') {
+                    // 自动求解
+                    startAutoSolve();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

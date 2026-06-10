@@ -1,0 +1,4779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>紧急电话查询 - 安全助手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 配置Tailwind主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#FF7D00',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        info: '#86909C'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        'card-hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+                    }
+                },
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
+            }
+
+            .emergency-card {
+                @apply bg-white rounded-xl shadow-card p-6 card-hover border-l-4;
+            }
+
+            .phone-number {
+                @apply text-3xl font-bold my-3 tracking-wider;
+            }
+
+            .search-input {
+                @apply w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all;
+            }
+
+            .filter-tag {
+                @apply px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all;
+            }
+
+            .badge {
+                @apply text-xs font-semibold px-2.5 py-0.5 rounded;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-phone-square text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">紧急电话查询</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="#all" class="text-gray-700 hover:text-primary transition-colors">全部电话</a>
+                <a href="#common" class="text-gray-700 hover:text-primary transition-colors">常用电话</a>
+                <a href="#special" class="text-gray-700 hover:text-primary transition-colors">特殊服务</a>
+                <a href="#tips" class="text-gray-700 hover:text-primary transition-colors">拨打技巧</a>
+            </nav>
+            <button class="md:hidden text-gray-700 focus:outline-none" id="menu-toggle">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <!-- 移动端菜单 -->
+        <div class="md:hidden hidden bg-white w-full border-t" id="mobile-menu">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#all" class="py-2 text-gray-700 hover:text-primary transition-colors">全部电话</a>
+                <a href="#common" class="py-2 text-gray-700 hover:text-primary transition-colors">常用电话</a>
+                <a href="#special" class="py-2 text-gray-700 hover:text-primary transition-colors">特殊服务</a>
+                <a href="#tips" class="py-2 text-gray-700 hover:text-primary transition-colors">拨打技巧</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="bg-gradient-to-r from-primary to-primary/80 text-white py-16 md:py-24">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-[clamp(2rem,5vw,3.5rem)] font-bold mb-4">紧急情况，快速响应</h2>
+            <p class="text-lg md:text-xl max-w-2xl mx-auto opacity-90">了解何时以及如何拨打紧急电话，保护自己和他人的安全</p>
+
+            <!-- 搜索框（全局） -->
+            <div class="mt-10 max-w-2xl mx-auto relative">
+                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text"
+                       id="global-search"
+                       placeholder="搜索服务类型、电话号码或使用场景..."
+                       class="search-input bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/60">
+                <div class="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg p-2 z-50 hidden" id="search-results">
+                    <!-- 搜索结果将动态生成 -->
+                    <div class="text-center text-gray-500 py-4" id="search-empty">
+                        输入关键词开始搜索
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 主要内容区域 -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- 紧急提示 -->
+        <div class="bg-warning/10 border-l-4 border-warning p-4 mb-10 rounded-r-lg">
+            <div class="flex items-start">
+                <i class="fa fa-exclamation-triangle text-warning text-xl mr-3 mt-0.5"></i>
+                <div>
+                    <h3 class="font-bold text-warning">重要提示</h3>
+                    <p class="text-gray-700">紧急电话在任何情况下都应保持畅通。请勿恶意拨打紧急电话，否则可能面临法律责任。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 全部紧急电话 -->
+        <section id="all" class="mb-16">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+                <h2 class="text-2xl md:text-3xl font-bold flex items-center">
+                    <i class="fa fa-list-ul text-primary mr-3"></i>
+                    全部紧急电话
+                </h2>
+                <span class="text-gray-500 mt-2 md:mt-0" id="total-count">共 <span class="font-semibold text-primary">254</span> 条记录</span>
+            </div>
+
+            <!-- 筛选工具栏 -->
+            <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center gap-4">
+                    <!-- 本地搜索框 -->
+                    <div class="relative flex-1">
+                        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text"
+                               id="local-search"
+                               placeholder="搜索服务类型、电话号码..."
+                               class="search-input">
+                    </div>
+
+                    <!-- 分类筛选 -->
+                    <div class="flex flex-wrap gap-2">
+                        <span class="filter-tag bg-primary/10 text-primary" data-filter="all">全部</span>
+                        <span class="filter-tag bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="common">常用电话</span>
+                        <span class="filter-tag bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="special">特殊服务</span>
+                    </div>
+                </div>
+
+                <!-- 颜色分类筛选 -->
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="text-sm text-gray-500 mr-2">按类型筛选：</span>
+                    <span class="filter-tag bg-primary/10 text-primary" data-color="all">全部类型</span>
+                    <span class="filter-tag bg-primary/10 text-primary" data-color="primary">紧急服务</span>
+                    <span class="filter-tag bg-danger/10 text-danger" data-color="danger">危险警示</span>
+                    <span class="filter-tag bg-warning/10 text-warning" data-color="warning">警告提示</span>
+                    <span class="filter-tag bg-info/10 text-info" data-color="info">信息咨询</span>
+                    <span class="filter-tag bg-success/10 text-success" data-color="success">服务保障</span>
+                </div>
+            </div>
+
+            <!-- 加载状态 -->
+            <div class="text-center py-12 hidden" id="loading-state">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+                <p class="text-gray-500">正在加载数据...</p>
+            </div>
+
+            <!-- 无结果状态 -->
+            <div class="text-center py-12 hidden" id="empty-state">
+                <i class="fa fa-search-minus text-gray-300 text-5xl mb-4"></i>
+                <p class="text-gray-500">未找到匹配的紧急电话，请尝试其他搜索条件</p>
+            </div>
+
+            <!-- 卡片容器 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="emergency-cards-container">
+                <!-- 卡片将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 分页控件 -->
+            <div class="mt-10 flex justify-center" id="pagination-container">
+                <nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+                    <button class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50" id="prev-page">
+                        <span class="sr-only">上一页</span>
+                        <i class="fa fa-chevron-left"></i>
+                    </button>
+                    <div class="flex items-center border-t border-b border-gray-300" id="page-numbers">
+                        <!-- 页码将动态生成 -->
+                    </div>
+                    <button class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50" id="next-page">
+                        <span class="sr-only">下一页</span>
+                        <i class="fa fa-chevron-right"></i>
+                    </button>
+                </nav>
+            </div>
+        </section>
+
+        <!-- 常用紧急电话 -->
+        <section id="common" class="mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center">
+                <i class="fa fa-star text-secondary mr-3"></i>
+                常用紧急电话
+            </h2>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="common-phones-container">
+                <!-- 常用电话卡片将通过JavaScript动态生成 -->
+            </div>
+        </section>
+
+        <!-- 特殊服务电话 -->
+        <section id="special" class="mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center">
+                <i class="fa fa-ambulance text-info mr-3"></i>
+                特殊服务电话
+            </h2>
+
+            <div class="overflow-x-auto">
+                <div class="relative mb-4">
+                    <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text"
+                           id="special-search"
+                           placeholder="搜索特殊服务类型..."
+                           class="search-input pl-10">
+                </div>
+                <table class="min-w-full bg-white rounded-lg overflow-hidden shadow-md">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="py-3 px-4 text-left">服务类型</th>
+                            <th class="py-3 px-4 text-center">电话号码</th>
+                            <th class="py-3 px-4 text-left">使用场景</th>
+                            <th class="py-3 px-4 text-center">类型</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200" id="special-phones-container">
+                        <!-- 特殊服务电话将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 拨打紧急电话技巧 -->
+        <section id="tips" class="mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center">
+                <i class="fa fa-lightbulb-o text-secondary mr-3"></i>
+                紧急电话拨打技巧
+            </h2>
+
+            <div class="bg-white rounded-xl shadow-md p-6 md:p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-primary">拨打紧急电话前</h3>
+                        <ul class="space-y-3">
+                            <li class="flex">
+                                <i class="fa fa-check-circle text-success mt-1 mr-3 flex-shrink-0"></i>
+                                <p>保持冷静，快速评估情况</p>
+                            </li>
+                            <li class="flex">
+                                <i class="fa fa-check-circle text-success mt-1 mr-3 flex-shrink-0"></i>
+                                <p>确定您的准确位置（地址、地标等）</p>
+                            </li>
+                            <li class="flex">
+                                <i class="fa fa-check-circle text-success mt-1 mr-3 flex-shrink-0"></i>
+                                <p>准备好描述事件的关键信息</p>
+                            </li>
+                            <li class="flex">
+                                <i class="fa fa-check-circle text-success mt-1 mr-3 flex-shrink-0"></i>
+                                <p>确保电话信号良好</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-primary">通话中注意事项</h3>
+                        <ul class="space-y-3">
+                            <li class="flex">
+                                <i class="fa fa-check-circle text-success mt-1 mr-3 flex-shrink-0"></i>
+                                <p>清晰、准确地回答调度员的问题</p>
+                            </li>
+                            <li class="flex">
+                                <i class="fa fa-check-circle text-success mt-1 mr-3 flex-shrink-0"></i>
+                                <p>不要挂断电话，除非对方指示</p>
+                            </li>
+                            <li class="flex">
+                                <i class="fa fa-check-circle text-success mt-1 mr-3 flex-shrink-0"></i>
+                                <p>遵循调度员的指导进行必要的急救措施</p>
+                            </li>
+                            <li class="flex">
+                                <i class="fa fa-check-circle text-success mt-1 mr-3 flex-shrink-0"></i>
+                                <p>如果可能，让其他人去迎接救援人员</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-warning/10 p-4 rounded-lg">
+                    <h3 class="text-lg font-bold mb-2 text-warning flex items-center">
+                        <i class="fa fa-exclamation-triangle mr-2"></i>
+                        重要提醒
+                    </h3>
+                    <p class="text-gray-700">紧急电话在任何情况下都应保持畅通。请不要恶意拨打或骚扰紧急电话线路，这可能导致真正需要帮助的人无法接通，同时您也可能面临法律责任。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 紧急情况应对指南 -->
+        <section class="mb-16">
+            <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center">
+                <i class="fa fa-book text-primary mr-3"></i>
+                紧急情况应对指南
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                    <img src="https://picsum.photos/id/1011/600/300" alt="火灾应对" class="w-full h-48 object-cover">
+                    <div class="p-5">
+                        <h3 class="text-lg font-bold mb-2">火灾应对指南</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>保持冷静，立即拨打119</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>用湿毛巾捂住口鼻低姿前行</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>切勿乘坐电梯</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>关闭房门减缓火势蔓延</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                    <img src="https://picsum.photos/id/1000/600/300" alt="医疗急救" class="w-full h-48 object-cover">
+                    <div class="p-5">
+                        <h3 class="text-lg font-bold mb-2">医疗急救指南</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>立即拨打120，说明情况</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>检查患者意识和呼吸</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>必要时进行心肺复苏(CPR)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>控制出血，保持患者温暖</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                    <img src="https://picsum.photos/id/1071/600/300" alt="交通事故" class="w-full h-48 object-cover">
+                    <div class="p-5">
+                        <h3 class="text-lg font-bold mb-2">交通事故指南</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>确保安全，设置警示标志</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>如有伤员，先拨打120</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>拨打122报警，等待交警处理</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
+                                <span>拍照取证，交换联系方式</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fa fa-phone-square text-primary mr-2"></i>
+                        紧急电话查询
+                    </h3>
+                    <p class="text-gray-400 mb-4">提供全面的紧急电话信息，帮助您在紧急情况下做出正确的应对。</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-weibo text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-wechat text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#all" class="text-gray-400 hover:text-white transition-colors">全部紧急电话</a></li>
+                        <li><a href="#common" class="text-gray-400 hover:text-white transition-colors">常用紧急电话</a></li>
+                        <li><a href="#special" class="text-gray-400 hover:text-white transition-colors">特殊服务电话</a></li>
+                        <li><a href="#tips" class="text-gray-400 hover:text-white transition-colors">拨打技巧</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-4">相关资源</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">急救知识</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">防灾指南</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">安全防护</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">应急装备</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-bold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <i class="fa fa-envelope text-primary mt-1 mr-3"></i>
+                            <span class="text-gray-400">contact@emergency-phone.com</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-phone text-primary mt-1 mr-3"></i>
+                            <span class="text-gray-400">400-123-4567</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-map-marker text-primary mt-1 mr-3"></i>
+                            <span class="text-gray-400">北京市海淀区安全大厦101室</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
+                <p>© 2025 紧急电话查询网. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 详情模态框 -->
+    <div id="detail-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold" id="modal-title">服务详情</h3>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6" id="modal-content">
+                <!-- 详情内容将动态生成 -->
+            </div>
+            <div class="p-4 border-t bg-gray-50 flex justify-end">
+                <button id="close-modal-btn" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-primary text-white rounded-full p-3 shadow-lg opacity-0 invisible transition-all duration-300 hover:bg-primary/90">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 紧急电话数据（仅展示前4条）
+        const emergencyPhones = [
+            {
+                "id": 1,
+                "type": "报警服务",
+                "englishType": "Police Emergency",
+                "number": "110",
+                "whenToCall": [
+                    "正在发生或即将发生的犯罪行为",
+                    "生命或财产受到威胁的情况",
+                    "需要警方立即介入的紧急情况"
+                ],
+                "notes": "保持冷静，清晰说明事发地点、事件性质和个人信息。",
+                "color": "primary",
+                "category": "common"
+            },
+            {
+                "id": 2,
+                "type": "医疗急救",
+                "englishType": "Medical Emergency",
+                "number": "120",
+                "whenToCall": [
+                    "心脏骤停或呼吸停止",
+                    "严重外伤或大量出血",
+                    "中风、急性胸痛等危及生命的情况",
+                    "严重烧伤或中毒"
+                ],
+                "note": "说明详细地址、患者情况和联系方式，不要先挂断电话。",
+                "color": "danger",
+                "category": "common"
+            },
+            {
+                "id": 3,
+                "type": "火警服务",
+                "englishType": "Fire Emergency",
+                "number": "119",
+                "whenToCall": [
+                    "发生火灾或爆炸",
+                    "闻到强烈燃气气味",
+                    "需要紧急救援的其他灾害情况"
+                ],
+                "note": "说明火灾地点、类型和规模，保持电话畅通等待指示。",
+                "color": "warning",
+                "category": "common"
+            },
+            {
+                "id": 4,
+                "type": "交通事故报警",
+                "englishType": "Traffic Accident",
+                "number": "122",
+                "whenToCall": [
+                    "发生道路交通事故",
+                    "交通堵塞或危险路况",
+                    "需要交警现场处理的情况"
+                ],
+                "note": "说明事故地点、类型和伤亡情况，保护现场等待处理。",
+                "color": "primary",
+                "category": "common"
+            },
+            {
+                "id": 5,
+                "type": "海上搜救",
+                "englishType": "Maritime Rescue",
+                "number": "12395",
+                "whenToCall": [
+                    "海上人员失踪或遇险",
+                    "船只碰撞、沉没或火灾",
+                    "其他海上紧急情况"
+                ],
+                "note": "提供准确位置、遇险情况和联系方式，保持通讯畅通。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 6,
+                "type": "森林火警",
+                "englishType": "Forest Fire",
+                "number": "12119",
+                "whenToCall": [
+                    "发现森林或草原火情",
+                    "发现可能引发火灾的隐患"
+                ],
+                "note": "说明火灾地点、范围和发展情况，注意自身安全。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 7,
+                "type": "市民服务热线",
+                "englishType": "Citizen Service",
+                "number": "12345",
+                "whenToCall": [
+                    "需要咨询政府服务信息",
+                    "对公共服务提出建议或投诉",
+                    "非紧急的公共事务问题"
+                ],
+                "note": "提供详细问题描述和个人联系方式，以便跟进处理。",
+                "color": "primary",
+                "category": "common"
+            },
+            {
+                "id": 8,
+                "type": "电力监管热线",
+                "englishType": "Electricity Complaint",
+                "number": "12398",
+                "whenToCall": [
+                    "电力供应问题",
+                    "电力设施故障",
+                    "对电力服务的投诉或建议"
+                ],
+                "note": "提供详细地址、问题描述和联系方式，便于快速处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 9,
+                "type": "消费者投诉热线",
+                "englishType": "Consumer Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "购买到假冒伪劣商品",
+                    "消费纠纷需要调解",
+                    "发现虚假广告或不正当竞争"
+                ],
+                "note": "保留相关证据，提供详细交易信息和问题描述。",
+                "color": "primary",
+                "category": "common"
+            },
+            {
+                "id": 10,
+                "type": "电力故障报修",
+                "englishType": "Electricity Repair",
+                "number": "95598",
+                "whenToCall": [
+                    "家中或周边发生停电",
+                    "发现电力线路故障或隐患",
+                    "需要电力抢修服务"
+                ],
+                "note": "提供详细地址和故障情况，便于抢修人员快速到达。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 11,
+                "type": "燃气服务热线",
+                "englishType": "Gas Service",
+                "number": "96777",
+                "whenToCall": [
+                    "闻到燃气气味",
+                    "燃气管道泄漏",
+                    "燃气设备故障"
+                ],
+                "note": "如发现燃气泄漏，立即开窗通风，不要开关电器，到室外安全处拨打。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 12,
+                "type": "铁路客服中心",
+                "englishType": "Railway Service",
+                "number": "12306",
+                "whenToCall": [
+                    "铁路出行咨询",
+                    "票务预订与改签",
+                    "铁路服务投诉"
+                ],
+                "note": "提供乘车人信息和订单详情，以便快速处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 13,
+                "type": "航空服务热线",
+                "englishType": "Air Service",
+                "number": "95539",
+                "whenToCall": [
+                    "航班信息查询",
+                    "机票预订与改签",
+                    "行李丢失或损坏"
+                ],
+                "note": "提供航班号、姓名和证件信息，以便查询。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 14,
+                "type": "高速公路救援",
+                "englishType": "Highway Rescue",
+                "number": "96199",
+                "whenToCall": [
+                    "高速公路上发生交通事故",
+                    "车辆故障需要救援",
+                    "发现道路设施损坏"
+                ],
+                "note": "提供准确位置（公里桩号）、车型和联系方式。",
+                "color": "primary",
+                "category": "special"
+            },
+            {
+                "id": 15,
+                "type": "水上救援",
+                "englishType": "Water Rescue",
+                "number": "12395",
+                "whenToCall": [
+                    "人员落水或溺水",
+                    "船只遇险",
+                    "其他水上紧急情况"
+                ],
+                "note": "提供准确位置、人数和遇险情况，保持通讯畅通。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 16,
+                "type": "邮政客服",
+                "englishType": "Postal Service",
+                "number": "11183",
+                "whenToCall": [
+                    "邮件查询",
+                    "快递投诉",
+                    "邮政服务咨询"
+                ],
+                "note": "提供运单号和收寄件信息，便于查询。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 17,
+                "type": "天气预报",
+                "englishType": "Weather Forecast",
+                "number": "12121",
+                "whenToCall": [
+                    "查询天气情况",
+                    "获取灾害性天气预警",
+                    "气象服务咨询"
+                ],
+                "note": "可查询未来几天的天气情况和相关预警信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 18,
+                "type": "自来水报修",
+                "englishType": "Water Supply Repair",
+                "number": "96116",
+                "whenToCall": [
+                    "家中停水",
+                    "自来水管道泄漏",
+                    "水质异常"
+                ],
+                "note": "提供详细地址和问题描述，便于维修人员快速到达。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 19,
+                "type": "法律援助热线",
+                "englishType": "Legal Aid",
+                "number": "12348",
+                "whenToCall": [
+                    "需要法律咨询",
+                    "寻求法律援助",
+                    "了解法律程序"
+                ],
+                "note": "提供详细情况说明，以便获得准确的法律建议。",
+                "color": "primary",
+                "category": "special"
+            },
+            {
+                "id": 20,
+                "type": "妇女维权热线",
+                "englishType": "Women's Rights",
+                "number": "12338",
+                "whenToCall": [
+                    "遭受家庭暴力",
+                    "女性权益受到侵害",
+                    "需要心理疏导"
+                ],
+                "note": "可获得法律建议、心理支持和相关资源信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 21,
+                "type": "青少年服务台",
+                "englishType": "Youth Service",
+                "number": "12355",
+                "whenToCall": [
+                    "青少年心理问题",
+                    "学习压力和校园问题",
+                    "青少年权益保护"
+                ],
+                "note": "提供心理咨询、法律援助和危机干预服务。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 22,
+                "type": "物价举报热线",
+                "englishType": "Price Complaint",
+                "number": "12358",
+                "whenToCall": [
+                    "发现价格违法行为",
+                    "遭遇乱收费",
+                    "价格欺诈"
+                ],
+                "note": "提供详细情况和相关证据，以便调查处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 23,
+                "type": "环境举报热线",
+                "englishType": "Environmental Complaint",
+                "number": "12369",
+                "whenToCall": [
+                    "发现环境污染问题",
+                    "噪音扰民",
+                    "生态破坏"
+                ],
+                "note": "提供详细位置和问题描述，可拍照取证。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 24,
+                "type": "旅游服务热线",
+                "englishType": "Tourism Service",
+                "number": "12301",
+                "whenToCall": [
+                    "旅游咨询",
+                    "旅游投诉",
+                    "旅游紧急救援"
+                ],
+                "note": "提供详细行程信息和问题描述，以便处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 25,
+                "type": "纳税服务热线",
+                "englishType": "Tax Service",
+                "number": "12366",
+                "whenToCall": [
+                    "税务咨询",
+                    "纳税申报",
+                    "税收政策了解"
+                ],
+                "note": "提供详细问题和相关资料，以便获得准确解答。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 26,
+                "type": "食品安全投诉热线",
+                "englishType": "Food Safety Complaint",
+                "number": "12331",
+                "whenToCall": [
+                    "发现食品安全隐患",
+                    "购买到过期或变质食品",
+                    "餐饮场所卫生问题"
+                ],
+                "note": "提供详细购买信息和问题描述，最好保留相关证据。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 27,
+                "type": "公共卫生热线",
+                "englishType": "Public Health Hotline",
+                "number": "12320",
+                "whenToCall": [
+                    "疫情报告",
+                    "突发公共卫生事件",
+                    "公共卫生咨询"
+                ],
+                "note": "提供详细地点、时间和事件描述，保持电话畅通。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 28,
+                "type": "城市管理热线",
+                "englishType": "Urban Management",
+                "number": "12319",
+                "whenToCall": [
+                    "市容环境问题",
+                    "占道经营投诉",
+                    "城市基础设施故障"
+                ],
+                "note": "提供详细位置和问题描述，便于派人处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 29,
+                "type": "住房城乡建设热线",
+                "englishType": "Housing and Construction",
+                "number": "12319",
+                "whenToCall": [
+                    "房地产市场咨询",
+                    "建筑质量投诉",
+                    "住房保障咨询"
+                ],
+                "note": "提供相关合同信息和问题详情，以便处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 30,
+                "type": "劳动保障监察热线",
+                "englishType": "Labor Protection",
+                "number": "12333",
+                "whenToCall": [
+                    "劳动纠纷咨询",
+                    "工资拖欠投诉",
+                    "社保问题咨询"
+                ],
+                "note": "准备好相关证据和材料，详细说明情况。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 31,
+                "type": "文化市场举报热线",
+                "englishType": "Cultural Market Complaint",
+                "number": "12318",
+                "whenToCall": [
+                    "盗版侵权举报",
+                    "网吧违规经营",
+                    "文化市场违法活动"
+                ],
+                "note": "提供详细地点和违法事实描述，可提供证据材料。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 32,
+                "type": "网络不良与垃圾信息举报中心",
+                "englishType": "Internet Complaint Center",
+                "number": "12321",
+                "whenToCall": [
+                    "垃圾短信举报",
+                    "网络诈骗举报",
+                    "不良信息举报"
+                ],
+                "note": "提供相关截图和详细信息，便于调查处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 33,
+                "type": "电信用户申诉受理中心",
+                "englishType": "Telecom Complaint Center",
+                "number": "12300",
+                "whenToCall": [
+                    "电信服务质量投诉",
+                    "资费争议",
+                    "网络质量问题"
+                ],
+                "note": "提供详细套餐信息和问题描述，保持通讯畅通。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 34,
+                "type": "知识产权维权援助热线",
+                "englishType": "IP Protection Hotline",
+                "number": "12330",
+                "whenToCall": [
+                    "专利侵权举报",
+                    "商标侵权举报",
+                    "版权保护咨询"
+                ],
+                "note": "提供相关证据材料和侵权情况描述。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 35,
+                "type": "地震咨询热线",
+                "englishType": "Earthquake Information",
+                "number": "12322",
+                "whenToCall": [
+                    "地震信息咨询",
+                    "震后救援需求",
+                    "防震减灾咨询"
+                ],
+                "note": "提供准确位置和需求描述，听从专业指导。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 36,
+                "type": "气象灾害预警",
+                "englishType": "Meteorological Warning",
+                "number": "12121",
+                "whenToCall": [
+                    "获取天气预警信息",
+                    "查询灾害性天气情况",
+                    "气象服务咨询"
+                ],
+                "note": "可查询未来几天的天气情况和相关预警信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 37,
+                "type": "防汛抗旱指挥部",
+                "englishType": "Flood Control",
+                "number": "12328",
+                "whenToCall": [
+                    "洪水险情报告",
+                    "干旱情况反映",
+                    "防汛措施咨询"
+                ],
+                "note": "提供准确位置和险情描述，听从专业指导。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 38,
+                "type": "民政服务热线",
+                "englishType": "Civil Affairs",
+                "number": "12349",
+                "whenToCall": [
+                    "社会救助咨询",
+                    "婚姻登记咨询",
+                    "社区服务需求"
+                ],
+                "note": "提供个人基本信息和具体需求，以便获得帮助。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 39,
+                "type": "残疾人服务热线",
+                "englishType": "Disability Services",
+                "number": "12385",
+                "whenToCall": [
+                    "残疾人权益咨询",
+                    "无障碍设施投诉",
+                    "残疾人服务需求"
+                ],
+                "note": "提供详细情况说明，可获得相关政策和资源信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 40,
+                "type": "红十字会急救热线",
+                "englishType": "Red Cross Emergency",
+                "number": "999",
+                "whenToCall": [
+                    "紧急医疗救援",
+                    "献血咨询",
+                    "急救知识普及"
+                ],
+                "note": "说明详细地址和患者情况，不要先挂断电话。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 41,
+                "type": "野生动物保护热线",
+                "englishType": "Wildlife Protection",
+                "number": "12358",
+                "whenToCall": [
+                    "发现非法猎捕野生动物",
+                    "野生动物救助需求",
+                    "野生动物保护咨询"
+                ],
+                "note": "提供准确位置和情况描述，不要擅自接触野生动物。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 42,
+                "type": "铁路交通事故报警",
+                "englishType": "Railway Accident",
+                "number": "95306",
+                "whenToCall": [
+                    "铁路交通事故",
+                    "铁路安全隐患报告",
+                    "铁路应急求助"
+                ],
+                "note": "提供准确位置（车站或公里标）和情况描述。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 43,
+                "type": "水上搜救中心",
+                "englishType": "Maritime Rescue Center",
+                "number": "12395",
+                "whenToCall": [
+                    "海上人员失踪或遇险",
+                    "船只碰撞、沉没或火灾",
+                    "其他水上紧急情况"
+                ],
+                "note": "提供准确位置、遇险情况和联系方式，保持通讯畅通。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 44,
+                "type": "安全生产举报热线",
+                "englishType": "Work Safety Report",
+                "number": "12350",
+                "whenToCall": [
+                    "生产安全隐患举报",
+                    "职业病危害报告",
+                    "安全生产咨询"
+                ],
+                "note": "提供详细企业信息和隐患描述，可匿名举报。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 45,
+                "type": "道路运输服务热线",
+                "englishType": "Road Transport Service",
+                "number": "12328",
+                "whenToCall": [
+                    "公路出行咨询",
+                    "客运服务投诉",
+                    "货运信息咨询"
+                ],
+                "note": "提供详细路线和问题描述，以便获得准确信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 46,
+                "type": "铁路客服中心",
+                "englishType": "Railway Service Center",
+                "number": "12306",
+                "whenToCall": [
+                    "铁路出行咨询",
+                    "票务预订与改签",
+                    "铁路服务投诉"
+                ],
+                "note": "提供乘车人信息和订单详情，以便快速处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 47,
+                "type": "航空服务热线",
+                "englishType": "Air Service Hotline",
+                "number": "95539",
+                "whenToCall": [
+                    "航班信息查询",
+                    "机票预订与改签",
+                    "行李丢失或损坏"
+                ],
+                "note": "提供航班号、姓名和证件信息，以便查询。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 48,
+                "type": "水上救援",
+                "englishType": "Water Rescue",
+                "number": "12395",
+                "whenToCall": [
+                    "人员落水或溺水",
+                    "船只遇险",
+                    "其他水上紧急情况"
+                ],
+                "note": "提供准确位置、人数和遇险情况，保持通讯畅通。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 49,
+                "type": "邮政客服",
+                "englishType": "Postal Service",
+                "number": "11183",
+                "whenToCall": [
+                    "邮件查询",
+                    "快递投诉",
+                    "邮政服务咨询"
+                ],
+                "note": "提供运单号和收寄件信息，便于查询。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 50,
+                "type": "自来水报修",
+                "englishType": "Water Supply Repair",
+                "number": "96116",
+                "whenToCall": [
+                    "家中停水",
+                    "自来水管道泄漏",
+                    "水质异常"
+                ],
+                "note": "提供详细地址和问题描述，便于维修人员快速到达。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 51,
+                "type": "法律援助热线",
+                "englishType": "Legal Aid",
+                "number": "12348",
+                "whenToCall": [
+                    "需要法律咨询",
+                    "寻求法律援助",
+                    "了解法律程序"
+                ],
+                "note": "提供详细情况说明，以便获得准确的法律建议。",
+                "color": "primary",
+                "category": "special"
+            },
+            {
+                "id": 52,
+                "type": "妇女维权热线",
+                "englishType": "Women's Rights",
+                "number": "12338",
+                "whenToCall": [
+                    "遭受家庭暴力",
+                    "女性权益受到侵害",
+                    "需要心理疏导"
+                ],
+                "note": "可获得法律建议、心理支持和相关资源信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 53,
+                "type": "青少年服务台",
+                "englishType": "Youth Service",
+                "number": "12355",
+                "whenToCall": [
+                    "青少年心理问题",
+                    "学习压力和校园问题",
+                    "青少年权益保护"
+                ],
+                "note": "提供心理咨询、法律援助和危机干预服务。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 54,
+                "type": "物价举报热线",
+                "englishType": "Price Complaint",
+                "number": "12358",
+                "whenToCall": [
+                    "发现价格违法行为",
+                    "遭遇乱收费",
+                    "价格欺诈"
+                ],
+                "note": "提供详细情况和相关证据，以便调查处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 55,
+                "type": "环境举报热线",
+                "englishType": "Environmental Complaint",
+                "number": "12369",
+                "whenToCall": [
+                    "发现环境污染问题",
+                    "噪音扰民",
+                    "生态破坏"
+                ],
+                "note": "提供详细位置和问题描述，可拍照取证。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 56,
+                "type": "旅游服务热线",
+                "englishType": "Tourism Service",
+                "number": "12301",
+                "whenToCall": [
+                    "旅游咨询",
+                    "旅游投诉",
+                    "旅游紧急救援"
+                ],
+                "note": "提供详细行程信息和问题描述，以便处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 57,
+                "type": "纳税服务热线",
+                "englishType": "Tax Service",
+                "number": "12366",
+                "whenToCall": [
+                    "税务咨询",
+                    "纳税申报",
+                    "税收政策了解"
+                ],
+                "note": "提供详细问题和相关资料，以便获得准确解答。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 58,
+                "type": "燃气抢修热线",
+                "englishType": "Gas Emergency Repair",
+                "number": "96777",
+                "whenToCall": [
+                    "燃气泄漏",
+                    "燃气管道损坏",
+                    "燃气设备故障"
+                ],
+                "note": "发现燃气泄漏时，先确保通风，不要开关电器，到室外安全处拨打。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 59,
+                "type": "电力故障报修",
+                "englishType": "Electricity Fault Repair",
+                "number": "95598",
+                "whenToCall": [
+                    "突发停电",
+                    "电线掉落",
+                    "电力设施异常"
+                ],
+                "note": "提供详细地址和故障情况，不要自行接触电力设备。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 60,
+                "type": "电梯应急救援",
+                "englishType": "Elevator Emergency",
+                "number": "96333",
+                "whenToCall": [
+                    "电梯困人",
+                    "电梯异常运行",
+                    "电梯故障"
+                ],
+                "note": "保持冷静，说明所在位置和电梯编号，等待专业人员救援。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 61,
+                "type": "城市公交热线",
+                "englishType": "City Bus Hotline",
+                "number": "96166",
+                "whenToCall": [
+                    "公交信息咨询",
+                    "公交服务投诉",
+                    "公交失物招领"
+                ],
+                "note": "提供详细线路、时间和站点信息，以便查询。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 62,
+                "type": "地铁服务热线",
+                "englishType": "Subway Service",
+                "number": "96165",
+                "whenToCall": [
+                    "地铁运营信息",
+                    "地铁服务投诉",
+                    "地铁失物招领"
+                ],
+                "note": "提供具体线路、车站和时间信息，便于处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 63,
+                "type": "高速公路服务热线",
+                "englishType": "Highway Service",
+                "number": "96199",
+                "whenToCall": [
+                    "高速公路救援",
+                    "路况咨询",
+                    "收费争议"
+                ],
+                "note": "提供准确位置（公里桩号）和车辆信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 64,
+                "type": "交通事故报警",
+                "englishType": "Traffic Accident",
+                "number": "122",
+                "whenToCall": [
+                    "道路交通事故",
+                    "交通堵塞",
+                    "危险路况"
+                ],
+                "note": "说明事故地点、类型和伤亡情况，保护现场等待处理。",
+                "color": "primary",
+                "category": "common"
+            },
+            {
+                "id": 65,
+                "type": "道路救援",
+                "englishType": "Roadside Assistance",
+                "number": "122",
+                "whenToCall": [
+                    "车辆故障",
+                    "轮胎爆胎",
+                    "需要拖车服务"
+                ],
+                "note": "提供准确位置和车辆信息，确保自身安全。",
+                "color": "primary",
+                "category": "special"
+            },
+            {
+                "id": 66,
+                "type": "消防救援",
+                "englishType": "Fire Rescue",
+                "number": "119",
+                "whenToCall": [
+                    "火灾",
+                    "爆炸",
+                    "其他需要消防救援的情况"
+                ],
+                "note": "说明火灾地点、类型和规模，保持电话畅通等待指示。",
+                "color": "warning",
+                "category": "common"
+            },
+            {
+                "id": 67,
+                "type": "医疗急救",
+                "englishType": "Medical Emergency",
+                "number": "120",
+                "whenToCall": [
+                    "心脏骤停",
+                    "严重外伤",
+                    "其他危及生命的情况"
+                ],
+                "note": "说明详细地址、患者情况和联系方式，不要先挂断电话。",
+                "color": "danger",
+                "category": "common"
+            },
+            {
+                "id": 68,
+                "type": "报警服务",
+                "englishType": "Police Emergency",
+                "number": "110",
+                "whenToCall": [
+                    "刑事案件",
+                    "治安事件",
+                    "紧急求助"
+                ],
+                "note": "保持冷静，清晰说明事发地点、事件性质和个人信息。",
+                "color": "primary",
+                "category": "common"
+            },
+            {
+                "id": 69,
+                "type": "消费者投诉热线",
+                "englishType": "Consumer Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "购买到假冒伪劣商品",
+                    "消费纠纷",
+                    "虚假广告"
+                ],
+                "note": "保留相关证据，提供详细交易信息和问题描述。",
+                "color": "primary",
+                "category": "special"
+            },
+            {
+                "id": 70,
+                "type": "食品药品投诉举报",
+                "englishType": "Food and Drug Complaint",
+                "number": "12331",
+                "whenToCall": [
+                    "食品安全问题",
+                    "药品质量问题",
+                    "化妆品安全问题"
+                ],
+                "note": "提供详细购买信息和问题描述，最好保留相关证据。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 71,
+                "type": "价格监督举报",
+                "englishType": "Price Supervision",
+                "number": "12358",
+                "whenToCall": [
+                    "价格违法行为",
+                    "乱收费",
+                    "价格欺诈"
+                ],
+                "note": "提供详细情况和相关证据，以便调查处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 72,
+                "type": "环境举报热线",
+                "englishType": "Environmental Complaint",
+                "number": "12369",
+                "whenToCall": [
+                    "环境污染",
+                    "噪音扰民",
+                    "生态破坏"
+                ],
+                "note": "提供详细位置和问题描述，可拍照取证。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 73,
+                "type": "安全生产举报",
+                "englishType": "Work Safety Report",
+                "number": "12350",
+                "whenToCall": [
+                    "生产安全隐患",
+                    "职业病危害",
+                    "安全事故"
+                ],
+                "note": "提供详细企业信息和隐患描述，可匿名举报。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 74,
+                "type": "劳动保障咨询",
+                "englishType": "Labor Security",
+                "number": "12333",
+                "whenToCall": [
+                    "劳动纠纷",
+                    "工资拖欠",
+                    "社保问题"
+                ],
+                "note": "准备好相关证据和材料，详细说明情况。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 75,
+                "type": "文化市场举报",
+                "englishType": "Cultural Market",
+                "number": "12318",
+                "whenToCall": [
+                    "盗版侵权",
+                    "网吧违规",
+                    "文化市场违法"
+                ],
+                "note": "提供详细地点和违法事实描述，可提供证据材料。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 76,
+                "type": "网络不良信息举报",
+                "englishType": "Internet Complaint",
+                "number": "12321",
+                "whenToCall": [
+                    "垃圾短信",
+                    "网络诈骗",
+                    "不良信息"
+                ],
+                "note": "提供相关截图和详细信息，便于调查处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 77,
+                "type": "电信用户申诉",
+                "englishType": "Telecom Complaint",
+                "number": "12300",
+                "whenToCall": [
+                    "电信服务质量",
+                    "资费争议",
+                    "网络质量"
+                ],
+                "note": "提供详细套餐信息和问题描述，保持通讯畅通。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 78,
+                "type": "知识产权维权",
+                "englishType": "IP Protection",
+                "number": "12330",
+                "whenToCall": [
+                    "专利侵权",
+                    "商标侵权",
+                    "版权保护"
+                ],
+                "note": "提供相关证据材料和侵权情况描述。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 79,
+                "type": "地震咨询",
+                "englishType": "Earthquake Info",
+                "number": "12322",
+                "whenToCall": [
+                    "地震信息",
+                    "震后救援",
+                    "防震咨询"
+                ],
+                "note": "提供准确位置和需求描述，听从专业指导。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 80,
+                "type": "气象服务热线",
+                "englishType": "Meteorological Service",
+                "number": "12121",
+                "whenToCall": [
+                    "天气预报",
+                    "灾害预警",
+                    "气象咨询"
+                ],
+                "note": "可查询未来天气情况和相关预警信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 81,
+                "type": "野生动物救助热线",
+                "englishType": "Wildlife Rescue",
+                "number": "12345",
+                "whenToCall": [
+                    "发现受伤野生动物",
+                    "野生动物闯入居民区",
+                    "需要专业人员处理野生动物问题"
+                ],
+                "note": "不要自行接触野生动物，保持安全距离，等待专业人员到来。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 82,
+                "type": "农作物病虫害防治热线",
+                "englishType": "Crop Pest Control",
+                "number": "12316",
+                "whenToCall": [
+                    "农作物病虫害防治咨询",
+                    "农业技术指导需求",
+                    "农药使用咨询"
+                ],
+                "note": "提供详细作物类型、生长阶段和病虫害症状描述。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 83,
+                "type": "林业有害生物防治热线",
+                "englishType": "Forest Pest Control",
+                "number": "12345",
+                "whenToCall": [
+                    "发现林业病虫害",
+                    "树木异常死亡情况",
+                    "森林防火隐患"
+                ],
+                "note": "提供详细位置和病虫害症状描述，不要自行处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 84,
+                "type": "气象灾害防御热线",
+                "englishType": "Meteorological Disaster Defense",
+                "number": "12345",
+                "whenToCall": [
+                    "台风防御咨询",
+                    "暴雨洪涝应对",
+                    "其他气象灾害防御"
+                ],
+                "note": "提供详细位置和需求，听从专业人员指导。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 85,
+                "type": "防汛抗旱应急热线",
+                "englishType": "Flood Control and Drought Relief",
+                "number": "12345",
+                "whenToCall": [
+                    "洪水险情报告",
+                    "内涝积水问题",
+                    "干旱情况反映"
+                ],
+                "note": "提供准确位置和险情描述，确保自身安全。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 86,
+                "type": "城市排水应急热线",
+                "englishType": "Urban Drainage Emergency",
+                "number": "12319",
+                "whenToCall": [
+                    "道路积水严重",
+                    "排水设施堵塞",
+                    "下水道溢出"
+                ],
+                "note": "提供详细位置和积水情况，避免靠近积水区域。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 87,
+                "type": "公共照明故障报修",
+                "englishType": "Public Lighting Repair",
+                "number": "12319",
+                "whenToCall": [
+                    "路灯不亮",
+                    "照明设施损坏",
+                    "夜间安全隐患"
+                ],
+                "note": "提供详细位置和照明设施编号，便于快速维修。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 88,
+                "type": "城市桥梁隧道应急热线",
+                "englishType": "Bridge and Tunnel Emergency",
+                "number": "12319",
+                "whenToCall": [
+                    "发现桥梁异常",
+                    "隧道设施故障",
+                    "道路塌陷情况"
+                ],
+                "note": "立即远离危险区域，提供准确位置和险情描述。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 89,
+                "type": "市容环境卫生投诉热线",
+                "englishType": "Environmental Sanitation Complaint",
+                "number": "12319",
+                "whenToCall": [
+                    "垃圾清运不及时",
+                    "环境卫生脏乱差",
+                    "环卫设施损坏"
+                ],
+                "note": "提供详细位置和问题描述，便于派人处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 90,
+                "type": "园林绿化服务热线",
+                "englishType": "Landscaping Service",
+                "number": "12319",
+                "whenToCall": [
+                    "树木倒伏",
+                    "绿化设施损坏",
+                    "病虫害问题"
+                ],
+                "note": "提供详细位置和情况描述，注意安全距离。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 91,
+                "type": "物业服务投诉热线",
+                "englishType": "Property Service Complaint",
+                "number": "12345",
+                "whenToCall": [
+                    "物业服务不到位",
+                    "物业费纠纷",
+                    "小区安全隐患"
+                ],
+                "note": "提供详细小区名称、位置和问题描述，准备相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 92,
+                "type": "住房公积金热线",
+                "englishType": "Housing Provident Fund",
+                "number": "12329",
+                "whenToCall": [
+                    "公积金缴存查询",
+                    "公积金提取咨询",
+                    "贷款业务办理"
+                ],
+                "note": "准备好个人身份信息和相关材料，便于查询。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 93,
+                "type": "出入境管理咨询热线",
+                "englishType": "Exit-Entry Administration",
+                "number": "12367",
+                "whenToCall": [
+                    "护照办理咨询",
+                    "签证政策了解",
+                    "港澳台通行证办理"
+                ],
+                "note": "提供个人基本信息和具体问题，便于准确解答。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 94,
+                "type": "法律援助热线",
+                "englishType": "Legal Aid",
+                "number": "12348",
+                "whenToCall": [
+                    "法律咨询需求",
+                    "法律文书指导",
+                    "法律援助申请"
+                ],
+                "note": "准备好相关证据材料，详细说明情况。",
+                "color": "primary",
+                "category": "special"
+            },
+            {
+                "id": 95,
+                "type": "司法服务热线",
+                "englishType": "Judicial Service",
+                "number": "12368",
+                "whenToCall": [
+                    "案件查询",
+                    "诉讼咨询",
+                    "法院服务投诉"
+                ],
+                "note": "提供案件编号和个人信息，便于查询。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 96,
+                "type": "纪检监察举报热线",
+                "englishType": "Discipline Inspection",
+                "number": "12388",
+                "whenToCall": [
+                    "干部违纪举报",
+                    "腐败问题反映",
+                    "作风问题投诉"
+                ],
+                "note": "提供详细事实和证据材料，可匿名举报。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 97,
+                "type": "信访咨询热线",
+                "englishType": "Letters and Visits",
+                "number": "12345",
+                "whenToCall": [
+                    "政策咨询",
+                    "问题反映",
+                    "建议提交"
+                ],
+                "note": "提供详细情况和诉求，保持电话畅通。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 98,
+                "type": "教育咨询热线",
+                "englishType": "Education Consultation",
+                "number": "12391",
+                "whenToCall": [
+                    "教育政策咨询",
+                    "招生考试问题",
+                    "师德师风投诉"
+                ],
+                "note": "提供详细学校信息和问题描述，准备相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 99,
+                "type": "烟草专卖举报热线",
+                "englishType": "Tobacco Monopoly",
+                "number": "12313",
+                "whenToCall": [
+                    "无证经营烟草",
+                    "销售假冒卷烟",
+                    "烟草市场违法行为"
+                ],
+                "note": "提供详细位置和违法事实，可匿名举报。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 100,
+                "type": "农业农村咨询热线",
+                "englishType": "Agriculture and Rural Affairs",
+                "number": "12316",
+                "whenToCall": [
+                    "农业技术咨询",
+                    "农村政策了解",
+                    "农产品质量安全"
+                ],
+                "note": "提供详细情况和问题描述，便于专业人员解答。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 101,
+                "type": "退役军人服务热线",
+                "englishType": "Veteran Service",
+                "number": "12397",
+                "whenToCall": [
+                    "退役军人政策咨询",
+                    "就业创业帮扶",
+                    "优抚待遇落实"
+                ],
+                "note": "提供个人身份信息和具体需求，以便获得精准帮助。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 102,
+                "type": "扶贫监督举报热线",
+                "englishType": "Poverty Alleviation",
+                "number": "12317",
+                "whenToCall": [
+                    "扶贫政策落实问题",
+                    "扶贫资金使用违规",
+                    "贫困识别不精准"
+                ],
+                "note": "提供详细情况和证据材料，可匿名举报。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 103,
+                "type": "住房保障热线",
+                "englishType": "Housing Security",
+                "number": "12345",
+                "whenToCall": [
+                    "公租房申请咨询",
+                    "廉租房政策了解",
+                    "住房补贴申请"
+                ],
+                "note": "准备好个人身份和收入证明材料，以便咨询。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 104,
+                "type": "公共资源交易投诉",
+                "englishType": "Public Resource Trading",
+                "number": "12345",
+                "whenToCall": [
+                    "招投标过程违规",
+                    "政府采购问题",
+                    "土地出让违规"
+                ],
+                "note": "提供详细项目信息和违规事实，准备相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 105,
+                "type": "安全生产应急救援",
+                "englishType": "Work Safety Rescue",
+                "number": "12350",
+                "whenToCall": [
+                    "生产安全事故",
+                    "重大安全隐患",
+                    "职业危害事件"
+                ],
+                "note": "提供准确位置和险情描述，确保自身安全。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 106,
+                "type": "煤矿安全举报",
+                "englishType": "Coal Mine Safety",
+                "number": "12350",
+                "whenToCall": [
+                    "煤矿安全隐患",
+                    "违规生产作业",
+                    "安全事故瞒报"
+                ],
+                "note": "提供详细矿名和位置，可匿名举报。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 107,
+                "type": "非煤矿山安全举报",
+                "englishType": "Non-coal Mine Safety",
+                "number": "12350",
+                "whenToCall": [
+                    "矿山安全隐患",
+                    "非法采矿行为",
+                    "环境污染问题"
+                ],
+                "note": "提供详细位置和问题描述，注意自身安全。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 108,
+                "type": "危险化学品安全举报",
+                "englishType": "Hazardous Chemicals",
+                "number": "12350",
+                "whenToCall": [
+                    "化学品泄漏",
+                    "违规储存运输",
+                    "安全管理问题"
+                ],
+                "note": "提供准确位置和化学品信息，远离危险区域。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 109,
+                "type": "烟花爆竹安全举报",
+                "englishType": "Fireworks Safety",
+                "number": "12350",
+                "whenToCall": [
+                    "非法生产销售",
+                    "违规燃放行为",
+                    "储存安全隐患"
+                ],
+                "note": "提供详细位置和情况描述，不要自行处理。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 110,
+                "type": "特种设备安全举报",
+                "englishType": "Special Equipment Safety",
+                "number": "12365",
+                "whenToCall": [
+                    "电梯安全隐患",
+                    "压力容器问题",
+                    "起重设备故障"
+                ],
+                "note": "提供设备类型和位置，不要自行维修。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 111,
+                "type": "产品质量投诉",
+                "englishType": "Product Quality Complaint",
+                "number": "12365",
+                "whenToCall": [
+                    "假冒伪劣产品",
+                    "质量不合格商品",
+                    "认证标志违规使用"
+                ],
+                "note": "提供购买凭证和产品信息，保留相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 112,
+                "type": "标准化工作咨询",
+                "englishType": "Standardization Consultation",
+                "number": "12365",
+                "whenToCall": [
+                    "国家标准查询",
+                    "行业标准咨询",
+                    "标准化认证了解"
+                ],
+                "note": "提供具体标准名称或编号，便于查询。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 113,
+                "type": "计量监督投诉",
+                "englishType": "Metrology Supervision",
+                "number": "12365",
+                "whenToCall": [
+                    "计量器具不准",
+                    "计价器作弊",
+                    "计量标准问题"
+                ],
+                "note": "提供详细情况和证据，便于调查处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 114,
+                "type": "认证认可投诉",
+                "englishType": "Certification and Accreditation",
+                "number": "12365",
+                "whenToCall": [
+                    "虚假认证",
+                    "认证过程违规",
+                    "认证结果异议"
+                ],
+                "note": "提供认证机构和证书信息，准备相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 115,
+                "type": "检验检测投诉",
+                "englishType": "Inspection and Testing",
+                "number": "12365",
+                "whenToCall": [
+                    "检测结果异议",
+                    "检测过程违规",
+                    "虚假检测报告"
+                ],
+                "note": "提供检测机构和报告编号，准备相关材料。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 116,
+                "type": "校车安全举报热线",
+                "englishType": "School Bus Safety",
+                "number": "12345",
+                "whenToCall": [
+                    "校车超员超载",
+                    "无证驾驶校车",
+                    "校车安全隐患"
+                ],
+                "note": "提供详细车辆信息和时间地点，确保学生安全。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 117,
+                "type": "校园安全投诉热线",
+                "englishType": "Campus Safety",
+                "number": "12345",
+                "whenToCall": [
+                    "校园欺凌事件",
+                    "校园安全隐患",
+                    "食品安全问题"
+                ],
+                "note": "提供详细学校信息和问题描述，保护举报人隐私。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 118,
+                "type": "民办教育投诉热线",
+                "englishType": "Private Education",
+                "number": "12345",
+                "whenToCall": [
+                    "违规办学行为",
+                    "虚假招生宣传",
+                    "乱收费问题"
+                ],
+                "note": "提供学校名称、地址和具体问题，准备相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 119,
+                "type": "旅游投诉举报热线",
+                "englishType": "Tourism Complaint",
+                "number": "12301",
+                "whenToCall": [
+                    "旅游服务质量问题",
+                    "不合理低价游",
+                    "强迫购物行为"
+                ],
+                "note": "提供旅行社信息、行程详情和问题描述。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 120,
+                "type": "文化和旅游市场举报热线",
+                "englishType": "Culture and Tourism Market",
+                "number": "12301",
+                "whenToCall": [
+                    "景区服务问题",
+                    "文化市场违规",
+                    "旅游安全隐患"
+                ],
+                "note": "提供详细地点和问题描述，可提供照片证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 121,
+                "type": "文物保护举报热线",
+                "englishType": "Cultural Heritage Protection",
+                "number": "12359",
+                "whenToCall": [
+                    "文物破坏行为",
+                    "非法考古挖掘",
+                    "文物走私活动"
+                ],
+                "note": "提供详细位置和情况描述，保护现场等待处理。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 122,
+                "type": "体育赛事举报热线",
+                "englishType": "Sports Event",
+                "number": "12345",
+                "whenToCall": [
+                    "赛事违规行为",
+                    "兴奋剂问题",
+                    "体育场馆安全隐患"
+                ],
+                "note": "提供赛事名称、时间地点和问题描述。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 123,
+                "type": "彩票举报热线",
+                "englishType": "Lottery Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "非法销售彩票",
+                    "彩票欺诈行为",
+                    "兑奖纠纷"
+                ],
+                "note": "提供详细销售点信息和问题描述，保留相关票据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 124,
+                "type": "殡葬服务投诉热线",
+                "englishType": "Funeral Service",
+                "number": "12345",
+                "whenToCall": [
+                    "殡葬服务乱收费",
+                    "服务态度恶劣",
+                    "违规土葬行为"
+                ],
+                "note": "提供详细机构名称和问题描述，准备相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 125,
+                "type": "残疾人联合会服务热线",
+                "englishType": "Disabled Persons' Federation",
+                "number": "12385",
+                "whenToCall": [
+                    "残疾人证办理咨询",
+                    "康复服务申请",
+                    "无障碍设施投诉"
+                ],
+                "note": "提供个人基本信息和具体需求，以便获得帮助。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 126,
+                "type": "慈善事业举报热线",
+                "englishType": "Charity Complaint",
+                "number": "12345",
+                "whenToCall": [
+                    "慈善组织违规",
+                    "善款使用不当",
+                    "虚假慈善活动"
+                ],
+                "note": "提供详细组织名称和问题描述，准备相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 127,
+                "type": "红十字会服务热线",
+                "englishType": "Red Cross Service",
+                "number": "999",
+                "whenToCall": [
+                    "紧急医疗救援",
+                    "献血咨询",
+                    "人道救助申请"
+                ],
+                "note": "提供详细位置和情况描述，保持电话畅通。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 128,
+                "type": "志愿服务热线",
+                "englishType": "Volunteer Service",
+                "number": "12355",
+                "whenToCall": [
+                    "志愿者招募信息",
+                    "志愿活动咨询",
+                    "志愿者权益保障"
+                ],
+                "note": "提供个人特长和可服务时间，便于匹配志愿项目。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 129,
+                "type": "社会救助热线",
+                "englishType": "Social Assistance",
+                "number": "12345",
+                "whenToCall": [
+                    "临时生活困难求助",
+                    "流浪乞讨人员救助",
+                    "突发灾害救助"
+                ],
+                "note": "提供个人基本情况和困难原因，准备相关证明材料。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 130,
+                "type": "儿童福利服务热线",
+                "englishType": "Child Welfare",
+                "number": "12355",
+                "whenToCall": [
+                    "未成年人保护咨询",
+                    "困境儿童救助",
+                    "收养政策咨询"
+                ],
+                "note": "提供详细情况说明，保护未成年人隐私。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 131,
+                "type": "地震应急咨询热线",
+                "englishType": "Earthquake Emergency",
+                "number": "12322",
+                "whenToCall": [
+                    "地震灾情咨询",
+                    "震后救援需求",
+                    "防震减灾指导"
+                ],
+                "note": "提供准确位置和需求描述，听从专业人员指导。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 132,
+                "type": "地质灾害防治热线",
+                "englishType": "Geological Disaster",
+                "number": "12336",
+                "whenToCall": [
+                    "山体滑坡预警",
+                    "泥石流险情",
+                    "地面塌陷报告"
+                ],
+                "note": "提供详细位置和险情描述，远离危险区域。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 133,
+                "type": "水利工程安全热线",
+                "englishType": "Water Conservancy Safety",
+                "number": "12314",
+                "whenToCall": [
+                    "水库安全隐患",
+                    "堤坝险情",
+                    "河道堵塞问题"
+                ],
+                "note": "提供详细工程名称和位置，确保自身安全。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 134,
+                "type": "气象灾害预警热线",
+                "englishType": "Meteorological Warning",
+                "number": "12121",
+                "whenToCall": [
+                    "台风预警",
+                    "暴雨警报",
+                    "雷电预警"
+                ],
+                "note": "提供所在地区，获取最新气象预警信息。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 135,
+                "type": "森林防火热线",
+                "englishType": "Forest Fire Prevention",
+                "number": "12119",
+                "whenToCall": [
+                    "森林火情报告",
+                    "火灾隐患举报",
+                    "森林防火咨询"
+                ],
+                "note": "提供火情位置和规模，不要擅自进入林区。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 136,
+                "type": "野生动物保护热线",
+                "englishType": "Wildlife Protection",
+                "number": "12358",
+                "whenToCall": [
+                    "非法猎捕野生动物",
+                    "野生动物救助",
+                    "野生动物保护咨询"
+                ],
+                "note": "提供准确位置和情况描述，不要擅自接触野生动物。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 137,
+                "type": "海洋环境举报热线",
+                "englishType": "Marine Environment",
+                "number": "12309",
+                "whenToCall": [
+                    "海洋污染事件",
+                    "非法捕捞行为",
+                    "海洋生态破坏"
+                ],
+                "note": "提供详细位置和问题描述，可提供照片证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 138,
+                "type": "农产品质量安全举报",
+                "englishType": "Agricultural Product Safety",
+                "number": "12316",
+                "whenToCall": [
+                    "农产品质量问题",
+                    "农药残留超标",
+                    "非法添加物质"
+                ],
+                "note": "提供产品信息和购买渠道，保留相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 139,
+                "type": "农业机械安全举报",
+                "englishType": "Agricultural Machinery Safety",
+                "number": "12316",
+                "whenToCall": [
+                    "农机安全隐患",
+                    "违规操作行为",
+                    "农机事故报告"
+                ],
+                "note": "提供详细位置和情况描述，确保现场安全。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 140,
+                "type": "渔业船舶安全举报",
+                "englishType": "Fishing Vessel Safety",
+                "number": "12316",
+                "whenToCall": [
+                    "渔船安全隐患",
+                    "违规作业行为",
+                    "渔业事故报告"
+                ],
+                "note": "提供船只信息和位置，确保人员安全。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 141,
+                "type": "农村饮水安全举报",
+                "englishType": "Rural Drinking Water",
+                "number": "12314",
+                "whenToCall": [
+                    "饮用水水质问题",
+                    "供水设施故障",
+                    "停水问题报告"
+                ],
+                "note": "提供详细村庄和问题描述，便于及时处理。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 142,
+                "type": "农机购置补贴举报",
+                "englishType": "Agricultural Machinery Subsidy",
+                "number": "12316",
+                "whenToCall": [
+                    "补贴政策落实问题",
+                    "违规发放补贴",
+                    "虚假申报补贴"
+                ],
+                "note": "提供详细情况和证据材料，可匿名举报。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 143,
+                "type": "农业保险投诉热线",
+                "englishType": "Agricultural Insurance",
+                "number": "12378",
+                "whenToCall": [
+                    "理赔纠纷",
+                    "销售误导",
+                    "服务质量问题"
+                ],
+                "note": "提供保单信息和问题描述，准备相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 144,
+                "type": "农村土地承包经营纠纷",
+                "englishType": "Rural Land Dispute",
+                "number": "12316",
+                "whenToCall": [
+                    "土地承包纠纷",
+                    "流转合同问题",
+                    "土地征收补偿"
+                ],
+                "note": "提供详细土地信息和纠纷情况，准备相关证明材料。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 145,
+                "type": "农产品批发市场投诉",
+                "englishType": "Agricultural Market",
+                "number": "12316",
+                "whenToCall": [
+                    "市场管理问题",
+                    "交易纠纷",
+                    "食品安全隐患"
+                ],
+                "note": "提供市场名称和具体问题，准备相关证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 146,
+                "type": "保险消费投诉热线",
+                "englishType": "Insurance Consumption Complaint",
+                "number": "12378",
+                "whenToCall": [
+                    "保险理赔纠纷",
+                    "销售误导或虚假宣传",
+                    "保单服务不到位",
+                    "违规扣费问题"
+                ],
+                "note": "提供保单号、保险公司名称及问题详情，保留相关沟通记录。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 147,
+                "type": "公证服务咨询热线",
+                "englishType": "Notary Service Consultation",
+                "number": "12348",
+                "whenToCall": [
+                    "公证业务办理流程咨询",
+                    "公证材料准备疑问",
+                    "公证结果异议处理",
+                    "公证机构查询"
+                ],
+                "note": "明确说明公证类型（如遗嘱、委托等），便于精准解答。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 148,
+                "type": "司法鉴定投诉热线",
+                "englishType": "Forensic Appraisal Complaint",
+                "number": "12348",
+                "whenToCall": [
+                    "司法鉴定程序违规",
+                    "鉴定结果存疑",
+                    "鉴定机构乱收费",
+                    "鉴定人员资质问题"
+                ],
+                "note": "提供鉴定委托书编号、机构名称及具体异议点，附相关材料。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 149,
+                "type": "专利服务热线",
+                "englishType": "Patent Service Hotline",
+                "number": "12330",
+                "whenToCall": [
+                    "专利申请流程咨询",
+                    "专利侵权投诉",
+                    "专利年费缴纳疑问",
+                    "专利检索与分析需求"
+                ],
+                "note": "涉及侵权需提供专利号、侵权产品信息及证据材料。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 150,
+                "type": "商标服务热线",
+                "englishType": "Trademark Service Hotline",
+                "number": "12330",
+                "whenToCall": [
+                    "商标注册流程咨询",
+                    "商标异议与无效宣告申请",
+                    "商标侵权举报",
+                    "商标续展与转让疑问"
+                ],
+                "note": "提供商标注册号或名称，明确涉及的商标类别。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 151,
+                "type": "版权保护投诉热线",
+                "englishType": "Copyright Protection Complaint",
+                "number": "12390",
+                "whenToCall": [
+                    "作品抄袭或盗版举报",
+                    "未经授权使用版权作品",
+                    "网络文学/影视盗版投诉",
+                    "版权登记咨询"
+                ],
+                "note": "提供侵权作品链接、原作品证明及侵权事实描述。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 152,
+                "type": "中小学有偿补课举报热线",
+                "englishType": "Paid Tutoring Complaint",
+                "number": "12391",
+                "whenToCall": [
+                    "教师违规有偿补课",
+                    "培训机构虚假宣传",
+                    "超标超前教学投诉",
+                    "违规收取补课费用"
+                ],
+                "note": "提供学校/机构名称、教师信息及补课时间地点，可匿名举报。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 153,
+                "type": "高校招生咨询热线",
+                "englishType": "College Admission Consultation",
+                "number": "12345",
+                "whenToCall": [
+                    "招生政策解读疑问",
+                    "志愿填报指导需求",
+                    "招生违规行为举报",
+                    "录取结果查询协助"
+                ],
+                "note": "明确高校名称及招生批次，准备好考生基本信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 154,
+                "type": "职业技能培训投诉热线",
+                "englishType": "Vocational Training Complaint",
+                "number": "12345",
+                "whenToCall": [
+                    "培训机构卷款跑路",
+                    "培训内容与宣传不符",
+                    "拒绝退还培训费",
+                    "师资资质造假"
+                ],
+                "note": "提供培训合同、缴费凭证及沟通记录等证据材料。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 155,
+                "type": "母婴保健服务投诉热线",
+                "englishType": "Maternal and Child Health Service",
+                "number": "12320",
+                "whenToCall": [
+                    "月子中心服务违规",
+                    "婴幼儿照护机构安全隐患",
+                    "母婴用品质量问题",
+                    "产后康复服务纠纷"
+                ],
+                "note": "说明服务机构名称、问题发生时间及具体情况，保护母婴安全。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 156,
+                "type": "养老服务投诉热线",
+                "englishType": "Elderly Care Service Complaint",
+                "number": "12349",
+                "whenToCall": [
+                    "养老院服务质量差",
+                    "虐待老人行为举报",
+                    "违规收取养老费用",
+                    "养老设施安全隐患"
+                ],
+                "note": "提供养老院名称、老人信息及问题细节，可要求保密处理。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 157,
+                "type": "殡葬用品质量举报热线",
+                "englishType": "Funeral Supplies Quality",
+                "number": "12315",
+                "whenToCall": [
+                    "殡葬用品以次充好",
+                    "哄抬殡葬用品价格",
+                    "销售假冒伪劣祭品",
+                    "强制捆绑销售"
+                ],
+                "note": "保留购买凭证，记录商品名称、价格及销售商家信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 158,
+                "type": "户外广告违规举报热线",
+                "englishType": "Outdoor Advertising Violation",
+                "number": "12319",
+                "whenToCall": [
+                    "广告内容低俗违法",
+                    "未经审批设置户外广告",
+                    "广告设施存在安全隐患",
+                    "广告遮挡交通标识"
+                ],
+                "note": "提供广告位置、内容及设置单位信息，可拍照留存证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 159,
+                "type": "机动车维修投诉热线",
+                "englishType": "Vehicle Maintenance Complaint",
+                "number": "12328",
+                "whenToCall": [
+                    "维修质量不合格",
+                    "夸大故障乱收费",
+                    "使用假冒伪劣配件",
+                    "维修后未解决问题"
+                ],
+                "note": "提供维修厂名称、维修单据及故障描述，保留更换的旧配件。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 160,
+                "type": "二手车交易投诉热线",
+                "englishType": "Used Car Transaction Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "隐瞒车辆事故历史",
+                    "篡改车辆里程数",
+                    "交易合同欺诈",
+                    "拒绝履行售后承诺"
+                ],
+                "note": "提供交易合同、车辆检测报告及沟通记录，明确欺诈事实。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 161,
+                "type": "宠物医疗纠纷投诉热线",
+                "englishType": "Pet Medical Dispute Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "宠物医院过度治疗",
+                    "误诊导致宠物伤亡",
+                    "收取不合理医疗费用",
+                    "使用过期药品或劣质耗材"
+                ],
+                "note": "提供宠物病历、缴费凭证及沟通记录，明确纠纷核心问题。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 162,
+                "type": "宠物用品质量举报热线",
+                "englishType": "Pet Products Quality Report",
+                "number": "12315",
+                "whenToCall": [
+                    "宠物食品存在安全隐患",
+                    "宠物玩具锋利易致伤",
+                    "宠物用品虚假宣传功效",
+                    "购买到过期宠物用品"
+                ],
+                "note": "保留商品包装、购买凭证及宠物食用/使用后的异常反应记录。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 163,
+                "type": "快递包装污染举报热线",
+                "englishType": "Express Packaging Pollution Report",
+                "number": "12305",
+                "whenToCall": [
+                    "快递过度包装造成浪费",
+                    "包装材料含刺激性有害物质",
+                    "快递企业拒不提供环保包装选项",
+                    "包装废弃物回收体系缺失"
+                ],
+                "note": "提供快递单号、企业名称及包装问题具体描述，可附照片证据。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 164,
+                "type": "跨境电商消费投诉热线",
+                "englishType": "Cross-border E-commerce Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "商品与宣传严重不符",
+                    "虚假标注产地或成分",
+                    "售后维权无响应",
+                    "关税及清关问题纠纷"
+                ],
+                "note": "提供订单截图、商品详情页截图及沟通记录，明确诉求。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 165,
+                "type": "直播带货投诉热线",
+                "englishType": "Live Streaming Sales Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "主播虚假宣传商品功效",
+                    "销售假冒伪劣商品",
+                    "承诺福利不兑现",
+                    "售后客服失联"
+                ],
+                "note": "录制直播片段、保留订单信息及商品实物照片，注明主播及平台名称。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 166,
+                "type": "共享单车投诉热线",
+                "englishType": "Shared Bike Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "押金逾期不退",
+                    "车辆故障导致受伤",
+                    "乱扣费或套餐欺诈",
+                    "车辆违规停放影响通行"
+                ],
+                "note": "提供注册手机号、订单编号及问题发生时间，附故障车辆照片。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 167,
+                "type": "共享汽车投诉热线",
+                "englishType": "Shared Car Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "车辆存在安全隐患",
+                    "平台乱收违约金或维修费",
+                    "续航里程严重虚标",
+                    "事故后保险理赔纠纷"
+                ],
+                "note": "提供用车订单、车辆故障照片及维修检测报告，明确责任归属。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 168,
+                "type": "家政服务投诉热线",
+                "englishType": "Domestic Service Complaint",
+                "number": "12345",
+                "whenToCall": [
+                    "家政人员技能不符承诺",
+                    "服务过程损坏财物",
+                    "机构拒不退还服务费",
+                    "家政人员背景审查缺失"
+                ],
+                "note": "提供服务合同、缴费凭证及问题发生经过，注明机构及人员信息。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 169,
+                "type": "室内空气污染检测投诉热线",
+                "englishType": "Indoor Air Pollution Complaint",
+                "number": "12369",
+                "whenToCall": [
+                    "检测机构出具虚假报告",
+                    "治理公司效果未达承诺",
+                    "装修材料甲醛超标",
+                    "邻居污染影响室内空气"
+                ],
+                "note": "提供检测报告、装修合同及空气质量异常症状描述，可申请复检。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 170,
+                "type": "健身房预付费纠纷投诉热线",
+                "englishType": "Gym Prepayment Dispute",
+                "number": "12315",
+                "whenToCall": [
+                    "健身房突然闭店跑路",
+                    "强制推销高价课程",
+                    "拒不退还剩余预付款",
+                    "承诺设施与实际不符"
+                ],
+                "note": "提供会员卡、缴费凭证及与商家的沟通记录，联合其他消费者维权更佳。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 171,
+                "type": "美容美发行业投诉热线",
+                "englishType": "Beauty and Hairdressing Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "强制消费或诱导办卡",
+                    "使用假冒伪劣产品",
+                    "服务后出现皮肤过敏",
+                    "办卡后商家失联"
+                ],
+                "note": "保留消费凭证、产品包装及过敏诊断证明，明确产品成分及问题关联。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 172,
+                "type": "艺术培训投诉热线",
+                "englishType": "Art Training Complaint",
+                "number": "12345",
+                "whenToCall": [
+                    "师资水平与宣传差距大",
+                    "擅自更改课程内容或时间",
+                    "培训场所存在安全隐患",
+                    "退费政策不合理或拒不退费"
+                ],
+                "note": "提供培训合同、缴费凭证及课程安排表，注明具体违约事项。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 173,
+                "type": "网约车服务投诉热线",
+                "englishType": "Ride-hailing Service Complaint",
+                "number": "12328",
+                "whenToCall": [
+                    "司机绕路多收费",
+                    "车内环境脏乱或有异味",
+                    "司机危险驾驶",
+                    "物品遗落车内无法找回"
+                ],
+                "note": "提供订单截图、车辆信息及问题发生时间地点，便于平台追溯。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 174,
+                "type": "货运物流投诉热线",
+                "englishType": "Freight Logistics Complaint",
+                "number": "12328",
+                "whenToCall": [
+                    "货物丢失或损坏",
+                    "物流延迟且无合理解释",
+                    "乱收运费或附加费",
+                    "签收异常拒不处理"
+                ],
+                "note": "提供货运单、货物价值证明及破损照片，明确保价及赔偿约定。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 175,
+                "type": "家电维修投诉热线",
+                "englishType": "Appliance Repair Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "维修后故障复发",
+                    "夸大故障收取高额费用",
+                    "使用非原厂配件",
+                    "保修期内拒保"
+                ],
+                "note": "提供维修单据、家电购买凭证及故障描述，保留更换的旧零件。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 176,
+                "type": "家居装修投诉热线",
+                "englishType": "Home Decoration Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "装修公司偷工减料",
+                    "施工质量严重不达标",
+                    "恶意增项乱收费",
+                    "装修材料与约定不符"
+                ],
+                "note": "提供装修合同、付款凭证及现场问题照片，明确违约条款。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 177,
+                "type": "商品房质量举报热线",
+                "englishType": "Commercial Housing Quality Report",
+                "number": "12345",
+                "whenToCall": [
+                    "房屋漏水、墙体开裂",
+                    "主体结构存在安全隐患",
+                    "装修标准缩水",
+                    "配套设施未按承诺交付"
+                ],
+                "note": "提供购房合同、验房报告及问题部位照片，注明交房时间。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 178,
+                "type": "租房纠纷投诉热线",
+                "englishType": "Rental Dispute Complaint",
+                "number": "12345",
+                "whenToCall": [
+                    "房东无故克扣押金",
+                    "房屋设施损坏拒不维修",
+                    "中介虚假房源欺诈",
+                    "单方面涨租或解约"
+                ],
+                "note": "提供租赁合同、沟通记录及房屋现状照片，明确责任方。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 179,
+                "type": "物业服务质量投诉热线",
+                "englishType": "Property Service Quality Complaint",
+                "number": "12345",
+                "whenToCall": [
+                    "安保缺失导致财物被盗",
+                    "垃圾清运不及时",
+                    "公共设施损坏拒不维修",
+                    "违规收取物业费"
+                ],
+                "note": "提供物业费缴纳凭证、问题现场照片及沟通记录。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 180,
+                "type": "电梯安全投诉热线",
+                "englishType": "Elevator Safety Complaint",
+                "number": "96333",
+                "whenToCall": [
+                    "电梯频繁故障停运",
+                    "维保记录造假",
+                    "超期未检仍在使用",
+                    "困人后救援不及时"
+                ],
+                "note": "提供电梯编号、所在楼栋及故障发生时间，保留故障照片。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 181,
+                "type": "供暖服务投诉热线",
+                "englishType": "Heating Service Complaint",
+                "number": "12345",
+                "whenToCall": [
+                    "室温不达标",
+                    "供暖期无故停暖",
+                    "违规收取供暖费",
+                    "管道漏水拒不维修"
+                ],
+                "note": "提供测温记录、缴费凭证及房屋朝向信息，注明供暖公司。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 182,
+                "type": "燃气安全投诉热线",
+                "englishType": "Gas Safety Complaint",
+                "number": "96777",
+                "whenToCall": [
+                    "燃气表计量不准",
+                    "安检人员服务态度差",
+                    "改装管道违规操作",
+                    "燃气具安装不规范"
+                ],
+                "note": "提供户号、地址及问题描述，涉及泄漏立即撤离至安全区域再拨打。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 183,
+                "type": "电力服务投诉热线",
+                "englishType": "Electricity Service Complaint",
+                "number": "95598",
+                "whenToCall": [
+                    "电表计量异常",
+                    "抢修不及时",
+                    "乱收电费或违约金",
+                    "服务人员态度恶劣"
+                ],
+                "note": "提供户号、地址及问题发生时间，保留电费缴纳凭证。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 184,
+                "type": "自来水服务投诉热线",
+                "englishType": "Water Supply Service Complaint",
+                "number": "96116",
+                "whenToCall": [
+                    "水质浑浊有异味",
+                    "水表自转多收费",
+                    "停水未提前通知",
+                    "管道维修破坏路面未恢复"
+                ],
+                "note": "提供户号、地址及问题描述，可留存水样照片。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 185,
+                "type": "有线电视投诉热线",
+                "englishType": "Cable TV Complaint",
+                "number": "96196",
+                "whenToCall": [
+                    "信号中断",
+                    "乱收增值服务费",
+                    "维修不及时",
+                    "机顶盒故障"
+                ],
+                "note": "提供用户编号、地址及问题发生时间，注明套餐类型。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 186,
+                "type": "宽带网络投诉热线",
+                "englishType": "Broadband Network Complaint",
+                "number": "10086",
+                "whenToCall": [
+                    "网速严重不达标",
+                    "频繁断网",
+                    "套餐变更欺诈",
+                    "安装维修超时"
+                ],
+                "note": "提供宽带账号、地址及测速截图，注明套餐带宽。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 187,
+                "type": "手机通信投诉热线",
+                "englishType": "Mobile Communication Complaint",
+                "number": "12300",
+                "whenToCall": [
+                    "乱开增值业务",
+                    "话费异常扣费",
+                    "信号覆盖差",
+                    "投诉处理无结果"
+                ],
+                "note": "提供手机号、扣费记录及业务办理凭证，明确投诉诉求。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 188,
+                "type": "快递服务投诉热线",
+                "englishType": "Express Service Complaint",
+                "number": "12305",
+                "whenToCall": [
+                    "快递丢失损毁",
+                    "未经允许放驿站",
+                    "派送延误",
+                    "客服态度恶劣"
+                ],
+                "note": "提供快递单号、寄收件信息及货物价值证明，附破损照片。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 189,
+                "type": "邮政服务投诉热线",
+                "englishType": "Postal Service Complaint",
+                "number": "11185",
+                "whenToCall": [
+                    "邮件丢失",
+                    "投递延误",
+                    "代收货款纠纷",
+                    "营业厅服务差"
+                ],
+                "note": "提供邮件单号、寄收件地址及问题描述，保留相关凭证。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 190,
+                "type": "物流货运投诉热线",
+                "englishType": "Logistics Freight Complaint",
+                "number": "12328",
+                "whenToCall": [
+                    "货物破损拒赔",
+                    "虚报重量收费",
+                    "中转滞留无信息",
+                    "自提网点乱收费"
+                ],
+                "note": "提供货运单、货物照片及报价单，明确保价金额。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 191,
+                "type": "汽车销售投诉热线",
+                "englishType": "Car Sales Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "销售库存车当新车卖",
+                    "隐瞒车辆维修历史",
+                    "强制购买保险",
+                    "定金不退"
+                ],
+                "note": "提供购车合同、付款凭证及车辆检测报告，注明车型配置。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 192,
+                "type": "汽车保险投诉热线",
+                "englishType": "Auto Insurance Complaint",
+                "number": "12378",
+                "whenToCall": [
+                    "拒赔理由不成立",
+                    "定损金额过低",
+                    "销售捆绑保险",
+                    "理赔进度慢"
+                ],
+                "note": "提供保单号、事故认定书及定损报告，明确投诉焦点。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 193,
+                "type": "驾校培训投诉热线",
+                "englishType": "Driving School Complaint",
+                "number": "12345",
+                "whenToCall": [
+                    "教练索要红包",
+                    "拖延培训时间",
+                    "乱收额外费用",
+                    "教学质量差"
+                ],
+                "note": "提供培训合同、缴费凭证及沟通录音，注明教练姓名。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 194,
+                "type": "二手车市场投诉热线",
+                "englishType": "Used Car Market Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "隐瞒重大事故",
+                    "篡改行驶里程",
+                    "手续不全无法过户",
+                    "售后承诺不兑现"
+                ],
+                "note": "提供交易合同、车况检测报告及付款凭证，附车辆VIN码。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 195,
+                "type": "电动车质量投诉热线",
+                "englishType": "Electric Vehicle Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "电池鼓包自燃",
+                    "续航里程虚标",
+                    "刹车失灵",
+                    "售后维修难"
+                ],
+                "note": "提供购车凭证、电池编号及故障照片，注明购买时间。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 196,
+                "type": "自行车质量投诉热线",
+                "englishType": "Bicycle Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "车架断裂",
+                    "刹车失效",
+                    "变速系统故障",
+                    "配件质量差"
+                ],
+                "note": "提供购车凭证、故障部位照片及品牌型号，注明使用时长。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 197,
+                "type": "儿童玩具质量举报热线",
+                "englishType": "Children's Toy Quality Report",
+                "number": "12315",
+                "whenToCall": [
+                    "含有毒有害物质",
+                    "小零件易脱落致窒息",
+                    "锋利边缘易划伤",
+                    "虚假标注年龄适用范围"
+                ],
+                "note": "提供购买凭证、玩具包装及检测报告，注明孩子是否受伤。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 198,
+                "type": "童装质量投诉热线",
+                "englishType": "Children's Clothing Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "甲醛超标致皮肤过敏",
+                    "面料起球掉色严重",
+                    "绳索设计存在安全隐患",
+                    "尺寸标注不符"
+                ],
+                "note": "提供购买凭证、衣物标签及过敏诊断证明，保留衣物样本。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 199,
+                "type": "成人服装质量投诉热线",
+                "englishType": "Adult Clothing Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "面料成分与标注不符",
+                    "做工粗糙开线",
+                    "洗后严重缩水变形",
+                    "虚假宣传功效"
+                ],
+                "note": "提供购买凭证、洗涤说明及衣物问题照片，注明洗涤方式。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 200,
+                "type": "鞋类质量投诉热线",
+                "englishType": "Footwear Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "开胶断底",
+                    "鞋面掉色染色",
+                    "尺码不符",
+                    "鞋垫脱落"
+                ],
+                "note": "提供购买凭证、鞋子照片及穿着时长，注明是否按说明保养。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 201,
+                "type": "箱包质量投诉热线",
+                "englishType": "Luggage Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "拉杆断裂",
+                    "轮子脱落",
+                    "拉链损坏",
+                    "面料撕裂"
+                ],
+                "note": "提供购买凭证、箱包照片及使用场景，注明购买价格。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 202,
+                "type": "家具质量投诉热线",
+                "englishType": "Furniture Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "甲醛超标刺鼻",
+                    "木材开裂变形",
+                    "五金配件损坏",
+                    "布艺面料起球褪色"
+                ],
+                "note": "提供购买合同、检测报告及家具照片，注明放置环境。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 203,
+                "type": "家电质量投诉热线",
+                "englishType": "Home Appliance Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "保修期内频繁故障",
+                    "维修后仍无法正常使用",
+                    "存在安全隐患",
+                    "能效标识虚假"
+                ],
+                "note": "提供购买凭证、维修记录及故障描述，注明品牌型号。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 204,
+                "type": "厨房电器投诉热线",
+                "englishType": "Kitchen Appliance Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "油烟机吸力不足",
+                    "燃气灶回火漏气",
+                    "微波炉加热不均",
+                    "洗碗机洗不干净"
+                ],
+                "note": "提供购买凭证、故障照片及使用时长，注明安装环境。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 205,
+                "type": "卫浴产品投诉热线",
+                "englishType": "Bathroom Product Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "马桶漏水堵塞",
+                    "花洒出水不畅",
+                    "水龙头生锈漏水",
+                    "浴室柜发霉变形"
+                ],
+                "note": "提供购买凭证、产品照片及安装时间，注明水质情况。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 206,
+                "type": "灯具质量投诉热线",
+                "englishType": "Lighting Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "灯泡频繁烧毁",
+                    "灯具漏电",
+                    "亮度与标注不符",
+                    "开关故障"
+                ],
+                "note": "提供购买凭证、灯具照片及故障描述，注明电压情况。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 207,
+                "type": "五金工具投诉热线",
+                "englishType": "Hardware Tools Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "工具断裂伤人",
+                    "镀层脱落生锈",
+                    "性能与标注不符",
+                    "保修期内拒修"
+                ],
+                "note": "提供购买凭证、工具照片及使用场景，注明是否规范操作。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 208,
+                "type": "文具用品质量举报热线",
+                "englishType": "Stationery Quality Report",
+                "number": "12315",
+                "whenToCall": [
+                    "文具含毒有害物质",
+                    "作业本纸张掉粉",
+                    "笔类漏墨断水",
+                    "涂改液气味刺鼻"
+                ],
+                "note": "提供购买凭证、产品包装及检测报告，注明使用者是否出现不适。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 209,
+                "type": "办公用品投诉热线",
+                "englishType": "Office Supplies Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "打印机频繁卡纸",
+                    "墨盒漏墨",
+                    "文件夹易断裂",
+                    "复印纸起皱掉渣"
+                ],
+                "note": "提供购买凭证、产品型号及故障描述，注明使用频率。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 210,
+                "type": "体育用品质量投诉热线",
+                "englishType": "Sports Goods Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "运动鞋开胶断底",
+                    "运动器材断裂伤人",
+                    "运动服透气差起球",
+                    "护具防护效果差"
+                ],
+                "note": "提供购买凭证、产品照片及受伤情况说明，注明使用场景。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 211,
+                "type": "户外用品投诉热线",
+                "englishType": "Outdoor Products Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "帐篷漏水",
+                    "登山鞋进水",
+                    "睡袋保暖性差",
+                    "背包肩带断裂"
+                ],
+                "note": "提供购买凭证、产品照片及使用环境，注明是否按说明使用。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 212,
+                "type": "乐器质量投诉热线",
+                "englishType": "Musical Instrument Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "钢琴音准不稳",
+                    "吉他琴颈变形",
+                    "管乐器漏气",
+                    "电子琴按键失灵"
+                ],
+                "note": "提供购买凭证、乐器照片及检测报告，注明保养情况。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 213,
+                "type": "摄影器材投诉热线",
+                "englishType": "Photographic Equipment Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "相机镜头进灰",
+                    "快门故障",
+                    "电池续航严重缩水",
+                    "存储卡损坏丢失数据"
+                ],
+                "note": "提供购买凭证、器材型号及故障描述，保留故障时的照片视频。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 214,
+                "type": "音响设备投诉热线",
+                "englishType": "Audio Equipment Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "音箱杂音严重",
+                    "功放过热关机",
+                    "耳机音质差",
+                    "蓝牙连接不稳定"
+                ],
+                "note": "提供购买凭证、设备型号及故障描述，注明使用环境。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 215,
+                "type": "电视质量投诉热线",
+                "englishType": "TV Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "屏幕碎裂",
+                    "开机黑屏",
+                    "声音卡顿",
+                    "系统频繁死机"
+                ],
+                "note": "提供购买凭证、电视型号及故障照片，注明购买时间。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 216,
+                "type": "冰箱质量投诉热线",
+                "englishType": "Refrigerator Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "制冷效果差",
+                    "噪音过大",
+                    "漏水结冰",
+                    "压缩机故障"
+                ],
+                "note": "提供购买凭证、冰箱型号及故障描述，注明使用环境温度。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 217,
+                "type": "洗衣机质量投诉热线",
+                "englishType": "Washing Machine Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "洗不干净衣物",
+                    "脱水震动剧烈",
+                    "漏水漏电",
+                    "程序出错"
+                ],
+                "note": "提供购买凭证、洗衣机型号及故障描述，注明洗涤程序。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 218,
+                "type": "空调质量投诉热线",
+                "englishType": "Air Conditioner Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "制冷制热效果差",
+                    "噪音过大",
+                    "漏水",
+                    "压缩机不工作"
+                ],
+                "note": "提供购买凭证、空调型号及故障描述，注明房间面积。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 219,
+                "type": "电脑质量投诉热线",
+                "englishType": "Computer Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "蓝屏死机频繁",
+                    "电池鼓包",
+                    "屏幕闪烁",
+                    "硬件故障"
+                ],
+                "note": "提供购买凭证、电脑型号及故障截图，注明系统版本。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 220,
+                "type": "手机质量投诉热线",
+                "englishType": "Mobile Phone Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "电池续航严重不足",
+                    "屏幕失灵",
+                    "信号差",
+                    "发热严重"
+                ],
+                "note": "提供购买凭证、手机型号及故障描述，注明系统版本。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 221,
+                "type": "平板电脑质量投诉热线",
+                "englishType": "Tablet Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "触控失灵",
+                    "电池鼓包",
+                    "系统卡顿",
+                    "屏幕碎裂"
+                ],
+                "note": "提供购买凭证、平板型号及故障描述，注明使用场景。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 222,
+                "type": "智能手表质量投诉热线",
+                "englishType": "Smart Watch Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "续航时间短",
+                    "心率检测不准",
+                    "连接不稳定",
+                    "屏幕损坏"
+                ],
+                "note": "提供购买凭证、手表型号及故障描述，注明手机型号。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 223,
+                "type": "智能家居设备投诉热线",
+                "englishType": "Smart Home Device Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "连接断连频繁",
+                    "指令响应延迟",
+                    "数据泄露隐患",
+                    "功能与宣传不符"
+                ],
+                "note": "提供购买凭证、设备型号及故障描述，注明网关型号。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 224,
+                "type": "路由器质量投诉热线",
+                "englishType": "Router Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "信号覆盖差",
+                    "频繁断网",
+                    "网速慢",
+                    "发热严重"
+                ],
+                "note": "提供购买凭证、路由器型号及测速截图，注明连接设备数量。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 225,
+                "type": "打印机质量投诉热线",
+                "englishType": "Printer Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "频繁卡纸",
+                    "打印模糊",
+                    "墨盒漏墨",
+                    "无法连接电脑"
+                ],
+                "note": "提供购买凭证、打印机型号及故障描述，注明纸张类型。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 226,
+                "type": "复印机质量投诉热线",
+                "englishType": "Copier Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "复印模糊",
+                    "卡纸频繁",
+                    " toner泄漏",
+                    "报错代码无法解决"
+                ],
+                "note": "提供购买凭证、复印机型号及故障描述，注明使用频率。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 227,
+                "type": "扫描仪质量投诉热线",
+                "englishType": "Scanner Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "扫描模糊",
+                    "卡纸",
+                    "无法识别文件",
+                    "连接失败"
+                ],
+                "note": "提供购买凭证、扫描仪型号及故障描述，注明文件类型。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 228,
+                "type": "投影仪质量投诉热线",
+                "englishType": "Projector Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "画面模糊",
+                    "亮度不足",
+                    "噪音过大",
+                    "自动关机"
+                ],
+                "note": "提供购买凭证、投影仪型号及故障描述，注明使用环境亮度。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 229,
+                "type": "游戏机质量投诉热线",
+                "englishType": "Game Console Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "无法开机",
+                    "手柄失灵",
+                    "画面卡顿",
+                    "光驱故障"
+                ],
+                "note": "提供购买凭证、游戏机型号及故障描述，注明游戏名称。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 230,
+                "type": "耳机质量投诉热线",
+                "englishType": "Headphone Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "音质差有杂音",
+                    "连接不稳定",
+                    "佩戴不适",
+                    "线材断裂"
+                ],
+                "note": "提供购买凭证、耳机型号及故障描述，注明使用设备。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 231,
+                "type": "无人机质量投诉热线",
+                "englishType": "Drone Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "飞行中失控坠机",
+                    "续航严重缩水",
+                    "摄像头故障",
+                    "GPS定位不准"
+                ],
+                "note": "提供购买凭证、无人机型号及飞行记录，注明飞行环境。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 232,
+                "type": "充电宝质量举报热线",
+                "englishType": "Power Bank Quality Report",
+                "number": "12315",
+                "whenToCall": [
+                    "充电时发烫鼓包",
+                    "容量虚标严重",
+                    "充不上电",
+                    "接口损坏"
+                ],
+                "note": "提供购买凭证、产品照片及故障描述，勿继续使用有安全隐患的产品。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 233,
+                "type": "充电器质量投诉热线",
+                "englishType": "Charger Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "充电时发烫",
+                    "无法充电",
+                    "接口松动",
+                    "烧毁设备"
+                ],
+                "note": "提供购买凭证、充电器型号及受损设备照片，停止使用有安全隐患的产品。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 234,
+                "type": "数据线质量投诉热线",
+                "englishType": "Data Cable Quality Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "接口易断裂",
+                    "充电断断续续",
+                    "数据传输失败",
+                    "外皮开裂"
+                ],
+                "note": "提供购买凭证、数据线照片及使用设备型号，注明使用时长。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 235,
+                "type": "移动硬盘质量投诉热线",
+                "englishType": "Mobile Hard Drive Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "数据丢失",
+                    "无法识别",
+                    "传输速度慢",
+                    "异响卡顿"
+                ],
+                "note": "提供购买凭证、硬盘型号及故障描述，重要数据建议立即停止操作。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 236,
+                "type": "U盘质量投诉热线",
+                "englishType": "USB Flash Drive Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "无法读取",
+                    "容量虚标",
+                    "数据损坏",
+                    "接口脱落"
+                ],
+                "note": "提供购买凭证、U盘型号及故障描述，注明使用场景。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 237,
+                "type": "存储卡质量投诉热线",
+                "englishType": "Memory Card Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "数据丢失",
+                    "无法格式化",
+                    "读写速度慢",
+                    "兼容性差"
+                ],
+                "note": "提供购买凭证、存储卡型号及使用设备，停止使用避免数据彻底丢失。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 238,
+                "type": "智能门锁投诉热线",
+                "englishType": "Smart Lock Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "指纹识别失灵",
+                    "密码被破解隐患",
+                    "无法开锁",
+                    "电池耗电快"
+                ],
+                "note": "提供购买凭证、门锁型号及故障描述，保留应急开锁记录。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 239,
+                "type": "监控摄像头投诉热线",
+                "englishType": "Surveillance Camera Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "画面模糊",
+                    "夜视功能差",
+                    "远程连接失败",
+                    "存储异常"
+                ],
+                "note": "提供购买凭证、摄像头型号及故障描述，注明安装位置。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 240,
+                "type": "智能音箱投诉热线",
+                "englishType": "Smart Speaker Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "唤醒不灵敏",
+                    "语音识别错误",
+                    "连接不稳定",
+                    "音质差"
+                ],
+                "note": "提供购买凭证、音箱型号及故障描述，注明网络环境。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 241,
+                "type": "空气净化器投诉热线",
+                "englishType": "Air Purifier Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "净化效果差",
+                    "噪音大",
+                    "滤芯寿命显示不准",
+                    "自动关机"
+                ],
+                "note": "提供购买凭证、净化器型号及室内面积，附检测数据对比。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 242,
+                "type": "加湿器投诉热线",
+                "englishType": "Humidifier Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "加湿效果差",
+                    "漏水",
+                    "产生白雾",
+                    "噪音大"
+                ],
+                "note": "提供购买凭证、加湿器型号及使用环境，注明水质情况。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 243,
+                "type": "除湿机投诉热线",
+                "englishType": "Dehumidifier Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "除湿效果差",
+                    "漏水",
+                    "噪音大",
+                    "压缩机故障"
+                ],
+                "note": "提供购买凭证、除湿机型号及使用环境湿度，注明房间面积。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 244,
+                "type": "吸尘器投诉热线",
+                "englishType": "Vacuum Cleaner Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "吸力不足",
+                    "噪音大",
+                    "尘盒漏灰",
+                    "刷头损坏"
+                ],
+                "note": "提供购买凭证、吸尘器型号及故障描述，注明使用场景。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 245,
+                "type": "扫地机器人投诉热线",
+                "englishType": "Robotic Vacuum Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "规划路线混乱",
+                    "吸力不足",
+                    "频繁碰撞",
+                    "无法回充"
+                ],
+                "note": "提供购买凭证、机器人型号及使用环境，附清洁效果对比。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 246,
+                "type": "微波炉投诉热线",
+                "englishType": "Microwave Oven Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "加热不均",
+                    "噪音大",
+                    "门封不严",
+                    "控制面板失灵"
+                ],
+                "note": "提供购买凭证、微波炉型号及故障描述，停止使用有漏电风险的产品。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 247,
+                "type": "电磁炉投诉热线",
+                "englishType": "Induction Cooker Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "加热慢",
+                    "面板破裂",
+                    "自动断电",
+                    "有异味"
+                ],
+                "note": "提供购买凭证、电磁炉型号及故障描述，涉及漏电立即停用。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 248,
+                "type": "电饭煲投诉热线",
+                "englishType": "Rice Cooker Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "米饭夹生",
+                    "粘锅严重",
+                    "盖口漏水",
+                    "按键失灵"
+                ],
+                "note": "提供购买凭证、电饭煲型号及故障描述，注明米种和水量。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 249,
+                "type": "电压力锅投诉热线",
+                "englishType": "Electric Pressure Cooker Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "无法保压",
+                    "安全阀漏气",
+                    "锅盖打不开",
+                    "内胆变形"
+                ],
+                "note": "提供购买凭证、压力锅型号及故障描述，涉及安全隐患立即停用。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 250,
+                "type": "榨汁机投诉热线",
+                "englishType": "Juicer Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "榨汁不彻底",
+                    "噪音大",
+                    "刀片松动",
+                    "漏水"
+                ],
+                "note": "提供购买凭证、榨汁机型号及故障描述，注明食材类型。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 251,
+                "type": "咖啡机投诉热线",
+                "englishType": "Coffee Machine Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "冲泡温度不够",
+                    "漏水",
+                    "研磨不均匀",
+                    "堵塞"
+                ],
+                "note": "提供购买凭证、咖啡机型号及故障描述，注明咖啡豆类型。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 252,
+                "type": "面包机投诉热线",
+                "englishType": "Bread Maker Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "烤色不均",
+                    "面团搅拌不匀",
+                    "内胆脱落",
+                    "程序错误"
+                ],
+                "note": "提供购买凭证、面包机型号及故障描述，注明配方和用量。",
+                "color": "info",
+                "category": "special"
+            },
+            {
+                "id": 253,
+                "type": "电烤箱投诉热线",
+                "englishType": "Electric Oven Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "温度不准",
+                    "加热管损坏",
+                    "门封不严",
+                    "烤盘变形"
+                ],
+                "note": "提供购买凭证、烤箱型号及故障描述，涉及漏电立即停用。",
+                "color": "warning",
+                "category": "special"
+            },
+            {
+                "id": 254,
+                "type": "热水器投诉热线",
+                "englishType": "Water Heater Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "加热慢",
+                    "漏水",
+                    "温度不稳定",
+                    "有异味"
+                ],
+                "note": "提供购买凭证、热水器型号及故障描述，燃气类需注意通风安全。",
+                "color": "danger",
+                "category": "special"
+            },
+            {
+                "id": 255,
+                "type": "浴霸投诉热线",
+                "englishType": "Bathroom Heater Complaint",
+                "number": "12315",
+                "whenToCall": [
+                    "加热效果差",
+                    "换气失灵",
+                    "灯泡炸裂",
+                    "开关故障"
+                ],
+                "note": "提供购买凭证、浴霸型号及故障描述，涉及漏电立即断电停用。",
+                "color": "danger",
+                "category": "special"
+            }
+        ];
+
+        // 分页配置
+        const paginationConfig = {
+            itemsPerPage: 9,
+            currentPage: 1,
+            totalPages: 1,
+            filteredData: [...emergencyPhones]
+        };
+
+        // 生成紧急电话卡片
+        function renderEmergencyCards() {
+            const container = document.getElementById('emergency-cards-container');
+            container.innerHTML = '';
+
+            // 显示加载状态
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+
+            // 模拟加载延迟
+            setTimeout(() => {
+                // 计算当前页数据范围
+                const startIndex = (paginationConfig.currentPage - 1) * paginationConfig.itemsPerPage;
+                const endIndex = startIndex + paginationConfig.itemsPerPage;
+                const currentPageData = paginationConfig.filteredData.slice(startIndex, endIndex);
+
+                if (currentPageData.length === 0) {
+                    document.getElementById('empty-state').classList.remove('hidden');
+                    document.getElementById('loading-state').classList.add('hidden');
+                    document.getElementById('pagination-container').classList.add('hidden');
+                    return;
+                }
+
+                currentPageData.forEach(phone => {
+                    const card = document.createElement('div');
+                    card.className = `emergency-card border-l-${phone.color}`;
+                    card.setAttribute('data-id', phone.id);
+
+                    const whenToCallList = phone.whenToCall.map(item => `<li>${item}</li>`).join('');
+
+                    card.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-xl font-bold text-${phone.color}">${phone.type}</h3>
+                                    <p class="text-gray-600 mb-2">${phone.englishType}</p>
+                                </div>
+                                <span class="bg-${phone.color}/10 text-${phone.color} text-sm font-semibold px-3 py-1 rounded-full">${phone.category === 'common' ? '常用' : '特殊'}</span>
+                            </div>
+                            <div class="phone-number text-${phone.color}">${phone.number}</div>
+                            <div class="space-y-3">
+                                <div>
+                                    <h4 class="font-semibold flex items-center">
+                                        <i class="fa fa-check-circle text-success mr-2"></i>
+                                        什么时候拨打：
+                                    </h4>
+                                    <ul class="ml-6 mt-1 list-disc text-gray-700 space-y-1 max-h-24 overflow-y-auto">
+                                        ${whenToCallList}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold flex items-center">
+                                        <i class="fa fa-info-circle text-info mr-2"></i>
+                                        注意事项：
+                                    </h4>
+                                    <p class="ml-6 mt-1 text-gray-700">${phone.note}</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-100">
+                                <button class="view-details w-full bg-primary/10 text-primary font-medium py-2 rounded-lg hover:bg-primary/20 transition-colors" data-id="${phone.id}">
+                                    查看详情
+                                </button>
+                            </div>
+                        `;
+
+                    container.appendChild(card);
+
+                    // 添加查看详情事件
+                    card.querySelector('.view-details').addEventListener('click', () => {
+                        showDetails(phone);
+                    });
+                });
+
+                // 更新分页
+                updatePagination();
+
+                // 隐藏加载状态
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('pagination-container').classList.remove('hidden');
+            }, 500);
+        }
+
+        // 生成常用紧急电话
+        function renderCommonPhones() {
+            const container = document.getElementById('common-phones-container');
+            container.innerHTML = '';
+
+            const commonPhones = emergencyPhones.filter(phone => phone.category === 'common');
+
+            commonPhones.forEach(phone => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-md p-4 text-center card-hover border-t-4 border-t-' + phone.color;
+
+                card.innerHTML = `
+                        <div class="text-3xl font-bold text-${phone.color} mb-2">${phone.number}</div>
+                        <div class="text-sm text-gray-600">${phone.type}</div>
+                        <button class="mt-3 text-xs text-primary hover:underline view-details" data-id="${phone.id}">
+                            详情
+                        </button>
+                    `;
+
+                container.appendChild(card);
+
+                // 添加查看详情事件
+                card.querySelector('.view-details').addEventListener('click', () => {
+                    const phoneData = emergencyPhones.find(p => p.id === phone.id);
+                    showDetails(phoneData);
+                });
+            });
+        }
+
+        // 生成特殊服务电话
+        function renderSpecialPhones(filterText = '') {
+            const container = document.getElementById('special-phones-container');
+            container.innerHTML = '';
+
+            let specialPhones = emergencyPhones.filter(phone => phone.category === 'special');
+
+            // 应用搜索过滤
+            if (filterText) {
+                const searchTerm = filterText.toLowerCase();
+                specialPhones = specialPhones.filter(phone =>
+                    phone.type.toLowerCase().includes(searchTerm) ||
+                    phone.number.includes(searchTerm) ||
+                    phone.whenToCall.some(item => item.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            if (specialPhones.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td colspan="4" class="py-6 px-4 text-center text-gray-500">
+                            未找到匹配的特殊服务电话
+                        </td>
+                    `;
+                container.appendChild(row);
+                return;
+            }
+
+            specialPhones.forEach(phone => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+
+                // 从whenToCall数组中取第一个元素作为使用场景
+                const usageScenario = phone.whenToCall[0] || '特殊服务需求';
+
+                row.innerHTML = `
+                        <td class="py-3 px-4">${phone.type}</td>
+                        <td class="py-3 px-4 text-center font-semibold">${phone.number}</td>
+                        <td class="py-3 px-4">${usageScenario}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="badge bg-${phone.color}/10 text-${phone.color}">${getCategoryName(phone.category)}</span>
+                        </td>
+                    `;
+
+                container.appendChild(row);
+
+                // 添加点击查看详情事件
+                row.addEventListener('click', () => {
+                    showDetails(phone);
+                });
+            });
+        }
+
+        // 更新分页控件
+        function updatePagination() {
+            const totalPages = Math.ceil(paginationConfig.filteredData.length / paginationConfig.itemsPerPage);
+            paginationConfig.totalPages = totalPages;
+
+            const pageNumbersContainer = document.getElementById('page-numbers');
+            pageNumbersContainer.innerHTML = '';
+
+            // 限制显示的页码数量
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, paginationConfig.currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = startPage + maxVisiblePages - 1;
+
+            if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            // 添加页码
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = `px-4 py-2 text-sm ${i === paginationConfig.currentPage ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'}`;
+                pageButton.textContent = i;
+                pageButton.addEventListener('click', () => {
+                    paginationConfig.currentPage = i;
+                    renderEmergencyCards();
+                    scrollToResults();
+                });
+                pageNumbersContainer.appendChild(pageButton);
+            }
+
+            // 更新上一页/下一页按钮状态
+            document.getElementById('prev-page').disabled = paginationConfig.currentPage === 1;
+            document.getElementById('prev-page').classList.toggle('opacity-50', paginationConfig.currentPage === 1);
+            document.getElementById('prev-page').classList.toggle('cursor-not-allowed', paginationConfig.currentPage === 1);
+
+            document.getElementById('next-page').disabled = paginationConfig.currentPage === totalPages;
+            document.getElementById('next-page').classList.toggle('opacity-50', paginationConfig.currentPage === totalPages);
+            document.getElementById('next-page').classList.toggle('cursor-not-allowed', paginationConfig.currentPage === totalPages);
+        }
+
+        // 显示详情模态框
+        function showDetails(phone) {
+            const modal = document.getElementById('detail-modal');
+            const title = document.getElementById('modal-title');
+            const content = document.getElementById('modal-content');
+
+            title.textContent = `${phone.type} (${phone.englishType})`;
+            title.className = `text-xl font-bold text-${phone.color}`;
+
+            const whenToCallList = phone.whenToCall.map(item => `
+                    <li class="flex items-start mb-2">
+                        <i class="fa fa-check-circle text-success mt-1 mr-2 flex-shrink-0"></i>
+                        <span>${item}</span>
+                    </li>
+                `).join('');
+
+            content.innerHTML = `
+                    <div class="mb-6 text-center">
+                        <div class="inline-block px-6 py-3 bg-${phone.color}/10 rounded-full">
+                            <span class="text-4xl font-bold text-${phone.color}">${phone.number}</span>
+                        </div>
+                        <div class="mt-3">
+                            <span class="badge bg-${phone.color}/10 text-${phone.color}">${getCategoryName(phone.category)}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-3 flex items-center">
+                            <i class="fa fa-check-circle text-success mr-2"></i>
+                            适用场景
+                        </h4>
+                        <ul class="pl-6">
+                            ${whenToCallList}
+                        </ul>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-3 flex items-center">
+                            <i class="fa fa-info-circle text-info mr-2"></i>
+                            注意事项
+                        </h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p>${phone.note}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center mt-4">
+                        <button class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center">
+                            <i class="fa fa-phone mr-2"></i> 拨打此电话
+                        </button>
+                    </div>
+                `;
+
+            // 显示模态框
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        // 关闭详情模态框
+        function closeModal() {
+            const modal = document.getElementById('detail-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+
+        // 搜索功能
+        function performSearch(searchTerm) {
+            if (!searchTerm) {
+                // 重置过滤
+                paginationConfig.filteredData = [...emergencyPhones];
+                document.getElementById('search-results').classList.add('hidden');
+                renderEmergencyCards();
+                return;
+            }
+
+            const term = searchTerm.toLowerCase();
+            const results = emergencyPhones.filter(phone =>
+                phone.type.toLowerCase().includes(term) ||
+                phone.englishType.toLowerCase().includes(term) ||
+                phone.number.includes(term) ||
+                phone.whenToCall.some(item => item.toLowerCase().includes(term)) ||
+                (phone.note && phone.note.toLowerCase().includes(term))
+            );
+
+            // 更新过滤后的数据
+            paginationConfig.filteredData = results;
+            paginationConfig.currentPage = 1; // 重置到第一页
+
+            // 更新全局搜索结果下拉框
+            const searchResultsContainer = document.getElementById('search-results');
+            const searchEmpty = document.getElementById('search-empty');
+
+            if (results.length > 0) {
+                searchEmpty.classList.add('hidden');
+                searchResultsContainer.innerHTML = '';
+
+                // 只显示前5条结果
+                const displayResults = results.slice(0, 5);
+
+                displayResults.forEach(phone => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors';
+                    resultItem.innerHTML = `
+                            <div class="font-medium text-${phone.color}">${phone.type}</div>
+                            <div class="text-sm text-gray-600">${phone.number} - ${phone.whenToCall[0] || ''}</div>
+                        `;
+
+                    resultItem.addEventListener('click', () => {
+                        searchResultsContainer.classList.add('hidden');
+                        document.getElementById('global-search').value = '';
+                        showDetails(phone);
+                    });
+
+                    searchResultsContainer.appendChild(resultItem);
+                });
+
+                // 添加查看全部按钮
+                if (results.length > 5) {
+                    const viewAllItem = document.createElement('div');
+                    viewAllItem.className = 'p-3 text-center text-primary font-medium hover:bg-gray-50 rounded-lg cursor-pointer transition-colors';
+                    viewAllItem.textContent = `查看全部 ${results.length} 条结果`;
+
+                    viewAllItem.addEventListener('click', () => {
+                        searchResultsContainer.classList.add('hidden');
+                        document.getElementById('global-search').value = '';
+                        renderEmergencyCards();
+                        document.getElementById('all').scrollIntoView({ behavior: 'smooth' });
+                    });
+
+                    searchResultsContainer.appendChild(viewAllItem);
+                }
+
+                searchResultsContainer.classList.remove('hidden');
+            } else {
+                searchResultsContainer.innerHTML = '';
+                searchEmpty.textContent = '未找到匹配结果';
+                searchEmpty.classList.remove('hidden');
+                searchResultsContainer.classList.remove('hidden');
+            }
+
+            // 更新主列表
+            renderEmergencyCards();
+        }
+
+        // 应用分类筛选
+        function applyFilter(filterType, filterValue) {
+            let filteredResults = [...emergencyPhones];
+
+            // 应用分类筛选
+            if (filterType === 'category' && filterValue !== 'all') {
+                filteredResults = filteredResults.filter(phone => phone.category === filterValue);
+            }
+
+            // 应用颜色筛选
+            if (filterType === 'color' && filterValue !== 'all') {
+                filteredResults = filteredResults.filter(phone => phone.color === filterValue);
+            }
+
+            // 更新过滤后的数据
+            paginationConfig.filteredData = filteredResults;
+            paginationConfig.currentPage = 1; // 重置到第一页
+
+            // 更新筛选标签样式
+            document.querySelectorAll(`[data-${filterType}]`).forEach(tag => {
+                if (tag.getAttribute(`data-${filterType}`) === filterValue) {
+                    if (filterType === 'category') {
+                        tag.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                        tag.classList.add('bg-primary/10', 'text-primary');
+                    } else {
+                        const color = filterValue === 'all' ? 'primary' : filterValue;
+                        tag.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                        tag.classList.add(`bg-${color}/10`, `text-${color}`);
+                    }
+                } else {
+                    if (filterType === 'category' && filterValue !== 'all') {
+                        tag.classList.remove('bg-primary/10', 'text-primary');
+                        tag.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                    } else if (filterType === 'color' && filterValue !== 'all') {
+                        tag.classList.remove(`bg-${tag.getAttribute('data-color')}/10`, `text-${tag.getAttribute('data-color')}`);
+                        tag.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                    }
+                }
+            });
+
+            // 更新列表
+            renderEmergencyCards();
+        }
+
+        // 辅助函数：获取分类名称
+        function getCategoryName(category) {
+            const categoryMap = {
+                'common': '常用电话',
+                'special': '特殊服务'
+            };
+            return categoryMap[category] || category;
+        }
+
+        // 滚动到结果区域
+        function scrollToResults() {
+            document.getElementById('emergency-cards-container').scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function () {
+            // 渲染紧急电话卡片
+            renderEmergencyCards();
+
+            // 渲染常用紧急电话
+            renderCommonPhones();
+
+            // 渲染特殊服务电话
+            renderSpecialPhones();
+
+            // 移动端菜单切换
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // 导航栏滚动效果
+            const navbar = document.getElementById('navbar');
+
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 100) {
+                    navbar.classList.add('shadow-md');
+                    navbar.classList.add('py-2');
+                    navbar.classList.remove('py-4');
+                } else {
+                    navbar.classList.remove('shadow-md');
+                    navbar.classList.add('py-4');
+                    navbar.classList.remove('py-2');
+                }
+            });
+
+            // 返回顶部按钮
+            const backToTopButton = document.getElementById('back-to-top');
+
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    backToTopButton.classList.remove('opacity-0', 'invisible');
+                    backToTopButton.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopButton.classList.add('opacity-0', 'invisible');
+                    backToTopButton.classList.remove('opacity-100', 'visible');
+                }
+            });
+
+            backToTopButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        // 关闭移动端菜单（如果打开）
+                        if (!mobileMenu.classList.contains('hidden')) {
+                            mobileMenu.classList.add('hidden');
+                        }
+
+                        // 滚动到目标位置
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // 搜索功能
+            const globalSearchInput = document.getElementById('global-search');
+            const localSearchInput = document.getElementById('local-search');
+
+            // 全局搜索
+            globalSearchInput.addEventListener('input', (e) => {
+                performSearch(e.target.value);
+            });
+
+            // 点击页面其他区域关闭搜索结果
+            document.addEventListener('click', (e) => {
+                const searchContainer = document.getElementById('search-results');
+                const searchInput = document.getElementById('global-search');
+
+                if (!searchContainer.contains(e.target) && e.target !== searchInput) {
+                    searchContainer.classList.add('hidden');
+                }
+            });
+
+            // 本地搜索
+            localSearchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+
+                if (!searchTerm) {
+                    paginationConfig.filteredData = [...emergencyPhones];
+                } else {
+                    paginationConfig.filteredData = emergencyPhones.filter(phone =>
+                        phone.type.toLowerCase().includes(searchTerm) ||
+                        phone.englishType.toLowerCase().includes(searchTerm) ||
+                        phone.number.includes(searchTerm) ||
+                        phone.whenToCall.some(item => item.toLowerCase().includes(searchTerm)) ||
+                        (phone.note && phone.note.toLowerCase().includes(searchTerm))
+                    );
+                }
+
+                paginationConfig.currentPage = 1;
+                renderEmergencyCards();
+            });
+
+            // 特殊服务搜索
+            const specialSearchInput = document.getElementById('special-search');
+            specialSearchInput.addEventListener('input', (e) => {
+                renderSpecialPhones(e.target.value);
+            });
+
+            // 分类筛选
+            document.querySelectorAll('[data-filter]').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    applyFilter('category', tag.getAttribute('data-filter'));
+                });
+            });
+
+            // 颜色筛选
+            document.querySelectorAll('[data-color]').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    applyFilter('color', tag.getAttribute('data-color'));
+                });
+            });
+
+            // 分页控制
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (paginationConfig.currentPage > 1) {
+                    paginationConfig.currentPage--;
+                    renderEmergencyCards();
+                    scrollToResults();
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                if (paginationConfig.currentPage < paginationConfig.totalPages) {
+                    paginationConfig.currentPage++;
+                    renderEmergencyCards();
+                    scrollToResults();
+                }
+            });
+
+            // 关闭模态框
+            document.getElementById('close-modal').addEventListener('click', closeModal);
+            document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+
+            // 点击模态框背景关闭
+            document.getElementById('detail-modal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('detail-modal')) {
+                    closeModal();
+                }
+            });
+
+            // 按ESC键关闭模态框
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !document.getElementById('detail-modal').classList.contains('hidden')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>笔记宝 - 多功能网页笔记工具</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#6366f1',
+                        accent: '#f97316',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+
+            .note-shadow {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+
+            .editor-focus {
+                @apply focus:ring-2 focus:ring-primary/50 focus:outline-none;
+            }
+
+            .btn-effect {
+                @apply transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0;
+            }
+        }
+    </style>
+
+    <style>
+        /* 基础编辑器样式 */
+        #editor-content [contenteditable=true]:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* 编辑器元素样式 */
+        #editor-content h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #editor-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        #editor-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        #editor-content p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        #editor-content ul, #editor-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        #editor-content ul {
+            list-style-type: disc;
+        }
+
+        #editor-content ol {
+            list-style-type: decimal;
+        }
+
+        /* 提示消息样式 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+            .toast.show {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .toast.success {
+                background-color: #10b981;
+            }
+
+            .toast.error {
+                background-color: #ef4444;
+            }
+
+            .toast.info {
+                background-color: #3b82f6;
+            }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white border-b border-gray-200 shadow-sm z-30">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- 品牌标识 -->
+            <div class="flex items-center space-x-2">
+                <button id="sidebar-toggle" class="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="flex items-center">
+                    <i class="fa fa-sticky-note text-primary text-2xl mr-2"></i>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text">笔记宝</h1>
+                </div>
+            </div>
+
+            <!-- 搜索栏 -->
+            <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+                <div class="relative w-full">
+                    <input type="text" id="search-notes" placeholder="搜索笔记..."
+                           class="w-full py-2 pl-10 pr-4 rounded-lg border border-gray-200 focus:border-primary editor-focus transition-all">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- 右侧工具栏 -->
+            <div class="flex items-center space-x-1 sm:space-x-3">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 transition-colors relative btn-effect">
+                    <i class="fa fa-moon-o text-gray-600"></i>
+                </button>
+                <button id="help-button" class="p-2 rounded-full hover:bg-gray-100 transition-colors relative btn-effect">
+                    <i class="fa fa-question text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex flex-1 overflow-hidden">
+        <!-- 左侧笔记列表 -->
+        <aside id="sidebar" class="w-64 bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300 transform lg:translate-x-0 -translate-x-full fixed lg:static top-0 left-0 h-screen z-20 pt-16 lg:pt-0">
+            <!-- 笔记操作工具栏 -->
+            <div class="p-3 border-b border-gray-200">
+                <button id="new-note-btn" class="w-full flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all shadow-sm hover:shadow btn-effect">
+                    <i class="fa fa-plus"></i>
+                    <span>新建笔记</span>
+                </button>
+            </div>
+
+            <!-- 笔记分类 -->
+            <div class="p-3 border-b border-gray-200">
+                <h3 class="text-xs uppercase text-gray-500 font-semibold mb-2 px-2">笔记分类</h3>
+                <div class="space-y-1">
+                    <button class="category-btn w-full flex items-center space-x-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium" data-category="all">
+                        <i class="fa fa-home w-5 text-center"></i>
+                        <span>所有笔记</span>
+                        <span class="ml-auto bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full" id="total-notes">0</span>
+                    </button>
+                    <button class="category-btn w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors" data-category="starred">
+                        <i class="fa fa-star-o w-5 text-center"></i>
+                        <span>重要笔记</span>
+                        <span class="ml-auto bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded-full" id="starred-notes">0</span>
+                    </button>
+                    <button class="category-btn w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors" data-category="recent">
+                        <i class="fa fa-clock-o w-5 text-center"></i>
+                        <span>最近编辑</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 自定义分类 -->
+            <div class="p-3 border-b border-gray-200">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs uppercase text-gray-500 font-semibold px-2">我的分类</h3>
+                    <button id="add-category-btn" class="text-gray-400 hover:text-gray-600 p-1 rounded btn-effect">
+                        <i class="fa fa-plus text-sm"></i>
+                    </button>
+                </div>
+                <div class="space-y-1" id="custom-categories">
+                    <!-- 自定义分类将通过JS动态生成 -->
+                </div>
+            </div>
+
+            <!-- 笔记列表 -->
+            <div class="flex-1 overflow-y-auto p-2">
+                <h3 class="text-xs uppercase text-gray-500 font-semibold mb-2 px-2">笔记列表</h3>
+
+                <div id="notes-list" class="space-y-1">
+                    <!-- 笔记项将通过JS动态生成 -->
+                    <div class="flex items-center justify-center h-32 text-gray-500">
+                        <p>暂无笔记，点击"新建笔记"开始</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 笔记编辑区域 -->
+        <section class="flex-1 flex flex-col overflow-hidden bg-gray-50" id="editor-container">
+            <!-- 空状态提示 -->
+            <div id="empty-state" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                <div class="bg-primary/10 p-6 rounded-full mb-4">
+                    <i class="fa fa-file-text-o text-4xl text-primary"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">选择或创建笔记</h2>
+                <p class="text-gray-500 max-w-md mb-6">从左侧选择一个笔记进行编辑，或创建一个新笔记开始记录你的想法</p>
+                <button id="empty-state-new-note" class="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all shadow-sm hover:shadow btn-effect">
+                    <i class="fa fa-plus"></i>
+                    <span>新建笔记</span>
+                </button>
+            </div>
+
+            <!-- 编辑器区域 (默认隐藏) -->
+            <div id="editor" class="hidden flex-1 flex flex-col overflow-hidden">
+                <!-- 笔记标题栏 -->
+                <div class="bg-white border-b border-gray-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <input type="text" id="note-title" placeholder="输入笔记标题..."
+                               class="w-full text-2xl font-bold border-none bg-transparent editor-focus placeholder-gray-400">
+                        <div class="flex items-center mt-2 text-sm text-gray-500">
+                            <span><i class="fa fa-calendar-o mr-1"></i> <span id="note-last-edited">最后编辑于今天</span></span>
+                            <span class="mx-2">•</span>
+                            <span><i class="fa fa-folder-o mr-1"></i> <span id="note-category-display">未分类</span></span>
+                            <button id="toggle-star" class="ml-2 text-gray-400 hover:text-yellow-500 transition-colors btn-effect">
+                                <i class="fa fa-star-o"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 mt-3 sm:mt-0">
+                        <button id="export-note" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors relative btn-effect" title="导出笔记">
+                            <i class="fa fa-download"></i>
+                        </button>
+                        <button id="delete-note" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors relative btn-effect" title="删除笔记">
+                            <i class="fa fa-trash-o"></i>
+                        </button>
+                        <button id="more-options" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors relative btn-effect" title="更多选项">
+                            <i class="fa fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 编辑器工具栏 -->
+                <div class="bg-white border-b border-gray-200 p-1 flex flex-wrap items-center gap-1">
+                    <!-- 文本格式 -->
+                    <div class="flex items-center border-r border-gray-200 pr-2">
+                        <button class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors" title="段落样式">
+                            <i class="fa fa-paragraph"></i>
+                        </button>
+                        <select id="text-style" class="text-sm border-none bg-transparent editor-focus">
+                            <option value="p">正文</option>
+                            <option value="h1">标题 1</option>
+                            <option value="h2">标题 2</option>
+                            <option value="h3">标题 3</option>
+                        </select>
+                    </div>
+
+                    <!-- 文本样式 -->
+                    <div class="flex items-center border-r border-gray-200 pr-2">
+                        <button id="format-bold" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="加粗 (Ctrl+B)">
+                            <i class="fa fa-bold"></i>
+                        </button>
+                        <button id="format-italic" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="斜体 (Ctrl+I)">
+                            <i class="fa fa-italic"></i>
+                        </button>
+                        <button id="format-underline" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="下划线 (Ctrl+U)">
+                            <i class="fa fa-underline"></i>
+                        </button>
+                        <button id="format-strikethrough" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="删除线">
+                            <i class="fa fa-strikethrough"></i>
+                        </button>
+                    </div>
+
+                    <!-- 文本颜色和字号 -->
+                    <div class="flex items-center border-r border-gray-200 pr-2">
+                        <div class="relative">
+                            <button id="text-color-btn" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="文字颜色">
+                                <i class="fa fa-font"></i>
+                            </button>
+                            <div id="color-picker" class="hidden absolute top-full left-0 mt-1 bg-white shadow-lg rounded-lg p-2 z-10">
+                                <div class="grid grid-cols-8 gap-1">
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-black" data-color="#000000"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-gray-700" data-color="#374151"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-red-600" data-color="#dc2626"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-orange-500" data-color="#ea580c"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-yellow-500" data-color="#ca8a04"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-green-600" data-color="#059669"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-blue-600" data-color="#2563eb"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-purple-600" data-color="#7c3aed"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-pink-600" data-color="#db2777"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-indigo-600" data-color="#4f46e5"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-teal-500" data-color="#0d9488"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-rose-500" data-color="#e11d48"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-slate-400" data-color="#94a3b8"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-gray-200 border border-gray-300" data-color="#e5e7eb"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full bg-white border border-gray-300" data-color="#ffffff"></button>
+                                    <button class="text-color-option w-6 h-6 rounded-full flex items-center justify-center text-xs" data-color="custom">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                                <input type="color" id="custom-color" class="hidden w-full h-6 mt-2 rounded">
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button id="font-size-btn" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="字体大小">
+                                <i class="fa fa-text-height"></i>
+                            </button>
+                            <div id="font-size-options" class="hidden absolute top-full left-0 mt-1 bg-white shadow-lg rounded-lg p-2 z-10">
+                                <div class="flex flex-col min-w-[100px]">
+                                    <button class="font-size-option py-1 px-3 text-left hover:bg-gray-100 rounded text-xs" data-size="12px">极小</button>
+                                    <button class="font-size-option py-1 px-3 text-left hover:bg-gray-100 rounded text-sm" data-size="14px">小</button>
+                                    <button class="font-size-option py-1 px-3 text-left hover:bg-gray-100 rounded" data-size="16px">正常</button>
+                                    <button class="font-size-option py-1 px-3 text-left hover:bg-gray-100 rounded text-lg" data-size="18px">大</button>
+                                    <button class="font-size-option py-1 px-3 text-left hover:bg-gray-100 rounded text-xl" data-size="24px">较大</button>
+                                    <button class="font-size-option py-1 px-3 text-left hover:bg-gray-100 rounded text-2xl" data-size="32px">极大</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 文本对齐 -->
+                    <div class="flex items-center border-r border-gray-200 pr-2">
+                        <button id="align-left" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="左对齐">
+                            <i class="fa fa-align-left"></i>
+                        </button>
+                        <button id="align-center" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="居中对齐">
+                            <i class="fa fa-align-center"></i>
+                        </button>
+                        <button id="align-right" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="右对齐">
+                            <i class="fa fa-align-right"></i>
+                        </button>
+                        <button id="align-justify" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="两端对齐">
+                            <i class="fa fa-align-justify"></i>
+                        </button>
+                    </div>
+
+                    <!-- 列表 -->
+                    <div class="flex items-center border-r border-gray-200 pr-2">
+                        <button id="insert-ul" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="无序列表">
+                            <i class="fa fa-list-ul"></i>
+                        </button>
+                        <button id="insert-ol" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="有序列表">
+                            <i class="fa fa-list-ol"></i>
+                        </button>
+                        <button id="insert-task" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="任务列表">
+                            <i class="fa fa-check-square-o"></i>
+                        </button>
+                    </div>
+
+                    <!-- 插入元素 -->
+                    <div class="flex items-center">
+                        <button id="insert-image" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="插入图片">
+                            <i class="fa fa-image"></i>
+                        </button>
+                        <button id="insert-video" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="插入视频">
+                            <i class="fa fa-video-camera"></i>
+                        </button>
+                        <button id="insert-link" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="插入链接 (Ctrl+K)">
+                            <i class="fa fa-link"></i>
+                        </button>
+                        <button id="insert-table" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="插入表格">
+                            <i class="fa fa-table"></i>
+                        </button>
+                        <button id="add-chapter" class="p-2 rounded hover:bg-gray-100 text-gray-700 transition-colors btn-effect" title="添加章节">
+                            <i class="fa fa-plus-square-o"></i>
+                            <span class="ml-1 text-xs hidden sm:inline">章节</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 编辑器内容区 -->
+                <div id="editor-content" class="flex-1 overflow-y-auto p-6 bg-white m-4 md:m-6 rounded-xl note-shadow">
+                    <!-- 编辑器内容将通过JS动态生成或加载 -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 插入图片模态框 -->
+    <div id="image-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden fade-in">
+        <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">插入图片</h3>
+                <button id="close-image-modal" class="text-gray-500 hover:text-gray-700 btn-effect">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">图片URL</label>
+                    <input type="text" id="image-url" placeholder="https://example.com/image.jpg"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg editor-focus">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">或上传图片</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors">
+                        <input type="file" id="image-upload" accept="image/*" class="hidden">
+                        <label for="image-upload" class="cursor-pointer">
+                            <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm text-gray-500">点击或拖拽图片到此处上传</p>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">图片说明</label>
+                    <input type="text" id="image-caption" placeholder="添加图片说明（可选）"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg editor-focus">
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="cancel-image" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors btn-effect">
+                    取消
+                </button>
+                <button id="confirm-image" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors btn-effect">
+                    插入图片
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 插入视频模态框 -->
+    <div id="video-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden fade-in">
+        <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">插入视频</h3>
+                <button id="close-video-modal" class="text-gray-500 hover:text-gray-700 btn-effect">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">视频URL</label>
+                    <input type="text" id="video-url" placeholder="https://example.com/video.mp4 或 YouTube 链接"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg editor-focus">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">或上传视频</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors">
+                        <input type="file" id="video-upload" accept="video/*" class="hidden">
+                        <label for="video-upload" class="cursor-pointer">
+                            <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-sm text-gray-500">点击或拖拽视频到此处上传</p>
+                            <p class="text-xs text-gray-400 mt-1">支持 MP4、WebM 格式，最大 100MB</p>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">视频说明</label>
+                    <input type="text" id="video-caption" placeholder="添加视频说明（可选）"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg editor-focus">
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="cancel-video" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors btn-effect">
+                    取消
+                </button>
+                <button id="confirm-video" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors btn-effect">
+                    插入视频
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 插入链接模态框 -->
+    <div id="link-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden fade-in">
+        <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">插入链接</h3>
+                <button id="close-link-modal" class="text-gray-500 hover:text-gray-700 btn-effect">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">显示文本</label>
+                    <input type="text" id="link-text" placeholder="链接显示的文本"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg editor-focus">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">链接URL</label>
+                    <input type="url" id="link-url" placeholder="https://example.com"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg editor-focus">
+                </div>
+
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="link-new-tab" class="rounded text-primary focus:ring-primary">
+                        <span class="ml-2 text-sm text-gray-700">在新标签页中打开</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="cancel-link" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors btn-effect">
+                    取消
+                </button>
+                <button id="confirm-link" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors btn-effect">
+                    插入链接
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建笔记模态框 -->
+    <div id="new-note-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden fade-in">
+        <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">新建笔记</h3>
+                <button id="close-note-modal" class="text-gray-500 hover:text-gray-700 btn-effect">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">笔记标题</label>
+                    <input type="text" id="new-note-title" placeholder="输入笔记标题"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg editor-focus">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">选择分类</label>
+                    <select id="note-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg editor-focus">
+                        <option value="">无分类</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="note-starred" class="rounded text-primary focus:ring-primary">
+                        <span class="ml-2 text-sm text-gray-700">设为重要笔记</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="cancel-note" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors btn-effect">
+                    取消
+                </button>
+                <button id="confirm-note" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors btn-effect">
+                    创建笔记
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加分类模态框 -->
+    <div id="add-category-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden fade-in">
+        <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">添加分类</h3>
+                <button id="close-category-modal" class="text-gray-500 hover:text-gray-700 btn-effect">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">分类名称</label>
+                    <input type="text" id="new-category-name" placeholder="输入分类名称"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg editor-focus">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">选择颜色</label>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="category-color w-8 h-8 rounded-full bg-red-500 border-2 border-transparent hover:border-gray-300" data-color="red-500"></button>
+                        <button class="category-color w-8 h-8 rounded-full bg-orange-500 border-2 border-transparent hover:border-gray-300" data-color="orange-500"></button>
+                        <button class="category-color w-8 h-8 rounded-full bg-yellow-500 border-2 border-transparent hover:border-gray-300" data-color="yellow-500"></button>
+                        <button class="category-color w-8 h-8 rounded-full bg-green-500 border-2 border-transparent hover:border-gray-300" data-color="green-500"></button>
+                        <button class="category-color w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent hover:border-gray-300" data-color="blue-500"></button>
+                        <button class="category-color w-8 h-8 rounded-full bg-indigo-500 border-2 border-transparent hover:border-gray-300" data-color="indigo-500"></button>
+                        <button class="category-color w-8 h-8 rounded-full bg-purple-500 border-2 border-transparent hover:border-gray-300" data-color="purple-500"></button>
+                        <button class="category-color w-8 h-8 rounded-full bg-pink-500 border-2 border-transparent hover:border-gray-300" data-color="pink-500"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="cancel-category" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors btn-effect">
+                    取消
+                </button>
+                <button id="confirm-category" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors btn-effect">
+                    添加分类
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导出笔记模态框 -->
+    <div id="export-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden fade-in">
+        <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">导出笔记</h3>
+                <button id="close-export-modal" class="text-gray-500 hover:text-gray-700 btn-effect">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <p class="text-gray-600">选择导出格式：</p>
+
+                <div class="space-y-3">
+                    <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="radio" name="export-format" value="html" checked class="text-primary focus:ring-primary">
+                        <span class="ml-3 text-gray-700">HTML 格式</span>
+                        <span class="ml-auto text-sm text-gray-500">保留完整格式</span>
+                    </label>
+
+                    <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="radio" name="export-format" value="txt" class="text-primary focus:ring-primary">
+                        <span class="ml-3 text-gray-700">纯文本格式</span>
+                        <span class="ml-auto text-sm text-gray-500">仅保留文字内容</span>
+                    </label>
+
+                    <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                        <input type="radio" name="export-format" value="json" class="text-primary focus:ring-primary">
+                        <span class="ml-3 text-gray-700">JSON 格式</span>
+                        <span class="ml-auto text-sm text-gray-500">便于数据交换</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="cancel-export" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors btn-effect">
+                    取消
+                </button>
+                <button id="confirm-export" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors btn-effect">
+                    导出
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div id="delete-confirm-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden fade-in">
+        <div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
+                    <i class="fa fa-trash-o text-2xl text-red-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">确认删除笔记？</h3>
+                <p class="text-gray-600">此操作无法撤销，笔记将被永久删除。</p>
+            </div>
+
+            <div class="flex justify-center space-x-3">
+                <button id="cancel-delete" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors btn-effect">
+                    取消
+                </button>
+                <button id="confirm-delete" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors btn-effect">
+                    删除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div id="toast" class="toast">这是一条提示消息</div>
+
+    <script>
+        // 全局变量
+        let db;
+        let currentNoteId = null;
+        let selectedCategoryColor = 'blue-500';
+        let saveTimeout = null;
+        let isDbReady = false; // 数据库是否准备就绪的标志
+        let defaultCategoriesAdded = false; // 默认分类是否已添加
+        let activeTransaction = null; // 当前活动的数据库事务
+
+        // DOM元素
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const newNoteBtn = document.getElementById('new-note-btn');
+        const emptyStateNewNote = document.getElementById('empty-state-new-note');
+        const newNoteModal = document.getElementById('new-note-modal');
+        const closeNoteModal = document.getElementById('close-note-modal');
+        const cancelNote = document.getElementById('cancel-note');
+        const confirmNote = document.getElementById('confirm-note');
+        const insertImageBtn = document.getElementById('insert-image');
+        const imageModal = document.getElementById('image-modal');
+        const closeImageModal = document.getElementById('close-image-modal');
+        const cancelImage = document.getElementById('cancel-image');
+        const confirmImage = document.getElementById('confirm-image');
+        const insertVideoBtn = document.getElementById('insert-video');
+        const videoModal = document.getElementById('video-modal');
+        const closeVideoModal = document.getElementById('close-video-modal');
+        const cancelVideo = document.getElementById('cancel-video');
+        const confirmVideo = document.getElementById('confirm-video');
+        const insertLinkBtn = document.getElementById('insert-link');
+        const linkModal = document.getElementById('link-modal');
+        const closeLinkModal = document.getElementById('close-link-modal');
+        const cancelLink = document.getElementById('cancel-link');
+        const confirmLink = document.getElementById('confirm-link');
+        const addChapterBtn = document.getElementById('add-chapter');
+        const editorContent = document.getElementById('editor-content');
+        const noteTitle = document.getElementById('note-title');
+        const notesList = document.getElementById('notes-list');
+        const emptyState = document.getElementById('empty-state');
+        const editor = document.getElementById('editor');
+        const noteLastEdited = document.getElementById('note-last-edited');
+        const noteCategoryDisplay = document.getElementById('note-category-display');
+        const toggleStar = document.getElementById('toggle-star');
+        const deleteNoteBtn = document.getElementById('delete-note');
+        const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+        const cancelDelete = document.getElementById('cancel-delete');
+        const confirmDelete = document.getElementById('confirm-delete');
+        const exportNoteBtn = document.getElementById('export-note');
+        const exportModal = document.getElementById('export-modal');
+        const closeExportModal = document.getElementById('close-export-modal');
+        const cancelExport = document.getElementById('cancel-export');
+        const confirmExport = document.getElementById('confirm-export');
+        const addCategoryBtn = document.getElementById('add-category-btn');
+        const addCategoryModal = document.getElementById('add-category-modal');
+        const closeCategoryModal = document.getElementById('close-category-modal');
+        const cancelCategory = document.getElementById('cancel-category');
+        const confirmCategory = document.getElementById('confirm-category');
+        const categoryColors = document.querySelectorAll('.category-color');
+        const customCategories = document.getElementById('custom-categories');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const searchNotesInput = document.getElementById('search-notes');
+        const totalNotesCounter = document.getElementById('total-notes');
+        const starredNotesCounter = document.getElementById('starred-notes');
+
+        // 文本颜色和字号相关元素
+        const textColorBtn = document.getElementById('text-color-btn');
+        const colorPicker = document.getElementById('color-picker');
+        const textColorOptions = document.querySelectorAll('.text-color-option');
+        const customColorInput = document.getElementById('custom-color');
+        const fontSizeBtn = document.getElementById('font-size-btn');
+        const fontSizeOptions = document.getElementById('font-size-options');
+        const fontSizeSelectors = document.querySelectorAll('.font-size-option');
+
+        // 格式化工具按钮
+        const formatBoldBtn = document.getElementById('format-bold');
+        const formatItalicBtn = document.getElementById('format-italic');
+        const formatUnderlineBtn = document.getElementById('format-underline');
+        const formatStrikethroughBtn = document.getElementById('format-strikethrough');
+        const alignLeftBtn = document.getElementById('align-left');
+        const alignCenterBtn = document.getElementById('align-center');
+        const alignRightBtn = document.getElementById('align-right');
+        const alignJustifyBtn = document.getElementById('align-justify');
+        const insertUlBtn = document.getElementById('insert-ul');
+        const insertOlBtn = document.getElementById('insert-ol');
+        const insertTaskBtn = document.getElementById('insert-task');
+        const textStyleSelect = document.getElementById('text-style');
+
+        // 初始化IndexedDB
+        function initDB() {
+            const request = indexedDB.open('NoteAppDB', 3); // 数据库版本号升级
+
+            request.onupgradeneeded = function (event) {
+                db = event.target.result;
+
+                // 确保事务处于激活状态
+                event.target.transaction.onabort = function () {
+                    console.error('事务在升级时被中止');
+                    showToast('数据库升级失败', 'error');
+                };
+
+                // 创建笔记对象存储空间
+                if (!db.objectStoreNames.contains('notes')) {
+                    const notesStore = db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
+                    notesStore.createIndex('category', 'category', { unique: false });
+                    notesStore.createIndex('starred', 'starred', { unique: false });
+                    notesStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+                }
+
+                // 创建分类对象存储空间
+                if (!db.objectStoreNames.contains('categories')) {
+                    const categoriesStore = db.createObjectStore('categories', { keyPath: 'id', autoIncrement: true });
+                    categoriesStore.createIndex('name', 'name', { unique: true });
+                }
+            };
+
+            request.onsuccess = function (event) {
+                db = event.target.result;
+
+                // 监听数据库关闭事件
+                db.onclose = function () {
+                    console.log('数据库已关闭');
+                    isDbReady = false;
+                    showToast('数据库连接已关闭，部分功能可能受限', 'error');
+                };
+
+                // 监听版本变更事件
+                db.onversionchange = function (e) {
+                    console.log('数据库版本即将变更，关闭当前连接');
+                    db.close();
+                    showToast('应用需要更新，请刷新页面', 'info');
+                };
+
+                // 数据库版本更新完成后添加默认分类
+                addDefaultCategories(() => {
+                    isDbReady = true;
+                    loadCategories();
+                    loadNotes();
+                });
+            };
+
+            request.onerror = function (event) {
+                showToast('初始化数据库失败', 'error');
+                console.error('IndexedDB error:', event.target.error);
+            };
+
+            request.onblocked = function () {
+                showToast('请关闭其他标签页中的相同应用以继续', 'info');
+            };
+        }
+
+        // 添加默认分类（在版本更新完成后）
+        function addDefaultCategories(callback) {
+            if (defaultCategoriesAdded || !db) {
+                callback();
+                return;
+            }
+
+            // 确保之前的事务已完成
+            if (activeTransaction && activeTransaction.active) {
+                setTimeout(() => addDefaultCategories(callback), 100);
+                return;
+            }
+
+            try {
+                const tx = db.transaction('categories', 'readwrite');
+                activeTransaction = tx;
+
+                // 监听事务事件
+                tx.oncomplete = function () {
+                    activeTransaction = null;
+                };
+
+                tx.onerror = function () {
+                    console.error('添加默认分类事务错误:', tx.error);
+                    activeTransaction = null;
+                };
+
+                tx.onabort = function () {
+                    console.error('添加默认分类事务被中止:', tx.error);
+                    activeTransaction = null;
+                };
+
+                const store = tx.objectStore('categories');
+
+                const defaultCategories = [
+                    { name: '学习笔记', color: 'green-500' },
+                    { name: '工作记录', color: 'blue-500' },
+                    { name: '创意灵感', color: 'purple-500' },
+                    { name: '其他', color: 'gray-500' }
+                ];
+
+                let completed = 0;
+                let errors = 0;
+
+                // 为每个默认分类创建添加请求
+                defaultCategories.forEach(category => {
+                    const request = store.add(category);
+
+                    // 处理成功
+                    request.onsuccess = function () {
+                        completed++;
+                        checkCompletion();
+                    };
+
+                    // 处理错误（主要是分类已存在的错误）
+                    request.onerror = function () {
+                        // 忽略已存在的分类错误
+                        if (request.error.name !== 'ConstraintError') {
+                            console.error('添加默认分类错误:', request.error);
+                            errors++;
+                        }
+                        completed++;
+                        checkCompletion();
+                    };
+                });
+
+                // 检查是否所有分类都已处理完毕
+                function checkCompletion() {
+                    if (completed === defaultCategories.length) {
+                        defaultCategoriesAdded = true;
+                        callback();
+                    }
+                }
+            } catch (error) {
+                console.error('添加默认分类时发生异常:', error);
+                defaultCategoriesAdded = true; // 防止无限重试
+                callback();
+            }
+        }
+
+        // 检查数据库是否准备就绪
+        function checkDbReady() {
+            if (!isDbReady || !db) {
+                showToast('数据库正在准备中，请稍候...', 'info');
+                return false;
+            }
+            return true;
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast';
+            toast.classList.add(type);
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 加载分类
+        function loadCategories() {
+            if (!checkDbReady()) return;
+
+            try {
+                const tx = db.transaction('categories', 'readonly');
+                const store = tx.objectStore('categories');
+                const request = store.getAll();
+
+                request.onsuccess = function () {
+                    const categories = request.result;
+                    customCategories.innerHTML = '';
+
+                    // 清空现有选项（保留"无分类"）
+                    const noteCategorySelect = document.getElementById('note-category');
+                    while (noteCategorySelect.options.length > 1) {
+                        noteCategorySelect.remove(1);
+                    }
+
+                    categories.forEach(category => {
+                        const categoryBtn = document.createElement('button');
+                        categoryBtn.className = `category-btn w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors`;
+                        categoryBtn.dataset.category = category.name;
+                        categoryBtn.innerHTML = `
+                                <i class="fa fa-folder w-5 text-center text-${category.color}"></i>
+                                <span>${category.name}</span>
+                            `;
+
+                        categoryBtn.addEventListener('click', () => {
+                            // 移除其他分类的选中状态
+                            document.querySelectorAll('.category-btn').forEach(btn => {
+                                btn.classList.remove('bg-primary/10', 'text-primary', 'font-medium');
+                                btn.classList.add('hover:bg-gray-100');
+                            });
+
+                            // 添加当前分类的选中状态
+                            categoryBtn.classList.add('bg-primary/10', 'text-primary', 'font-medium');
+                            categoryBtn.classList.remove('hover:bg-gray-100');
+
+                            // 筛选显示该分类的笔记
+                            filterNotesByCategory(category.name);
+                        });
+
+                        customCategories.appendChild(categoryBtn);
+
+                        // 添加到新建笔记的分类选择下拉框
+                        const option = document.createElement('option');
+                        option.value = category.name;
+                        option.textContent = category.name;
+                        noteCategorySelect.appendChild(option);
+                    });
+                };
+
+                request.onerror = function () {
+                    showToast('加载分类失败', 'error');
+                    console.error('加载分类错误:', request.error);
+                };
+            } catch (error) {
+                console.error('加载分类时发生异常:', error);
+                showToast('加载分类失败', 'error');
+            }
+        }
+
+        // 加载所有笔记
+        function loadNotes() {
+            if (!checkDbReady()) return;
+
+            try {
+                const tx = db.transaction('notes', 'readonly');
+                const store = tx.objectStore('notes');
+                const index = store.index('updatedAt');
+                const request = index.openCursor(null, 'prev'); // 按更新时间降序排列
+
+                const notes = [];
+
+                request.onsuccess = function (event) {
+                    const cursor = event.target.result;
+                    if (cursor) {
+                        notes.push(cursor.value);
+                        cursor.continue();
+                    } else {
+                        renderNotesList(notes);
+                        updateNotesCounters(notes);
+
+                        // 如果有笔记且没有选中的笔记，默认选中第一个
+                        if (notes.length > 0 && currentNoteId === null) {
+                            openNote(notes[0].id);
+                        }
+                    }
+                };
+
+                request.onerror = function () {
+                    showToast('加载笔记失败', 'error');
+                    console.error('加载笔记错误:', request.error);
+                };
+            } catch (error) {
+                console.error('加载笔记时发生异常:', error);
+                showToast('加载笔记失败', 'error');
+            }
+        }
+
+        // 按分类筛选笔记
+        function filterNotesByCategory(category) {
+            if (!checkDbReady()) return;
+
+            try {
+                const tx = db.transaction('notes', 'readonly');
+                const store = tx.objectStore('notes');
+
+                let request;
+
+                if (category === 'all') {
+                    request = store.getAll();
+                } else if (category === 'starred') {
+                    const index = store.index('starred');
+                    request = index.getAll(true);
+                } else if (category === 'recent') {
+                    // 获取最近7天的笔记
+                    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+                    const index = store.index('updatedAt');
+                    request = index.openCursor(IDBKeyRange.lowerBound(sevenDaysAgo));
+                } else {
+                    // 验证分类名称是否有效
+                    if (typeof category !== 'string' || category.trim() === '') {
+                        showToast('无效的分类筛选条件', 'error');
+                        return;
+                    }
+
+                    const index = store.index('category');
+                    request = index.getAll(category);
+                }
+
+                const notes = [];
+
+                if (category === 'recent') {
+                    request.onsuccess = function (event) {
+                        const cursor = event.target.result;
+                        if (cursor) {
+                            notes.push(cursor.value);
+                            cursor.continue();
+                        } else {
+                            // 按更新时间降序排序
+                            notes.sort((a, b) => b.updatedAt - a.updatedAt);
+                            renderNotesList(notes);
+                        }
+                    };
+                } else {
+                    request.onsuccess = function () {
+                        let results = request.result || [];
+                        // 确保结果是数组
+                        if (!Array.isArray(results)) {
+                            results = [results];
+                        }
+                        // 按更新时间降序排序
+                        results.sort((a, b) => b.updatedAt - a.updatedAt);
+                        renderNotesList(results);
+                    };
+                }
+
+                request.onerror = function () {
+                    showToast('筛选笔记失败', 'error');
+                    console.error('筛选笔记错误:', request.error);
+                };
+            } catch (error) {
+                console.error('筛选笔记时发生异常:', error);
+                showToast('筛选笔记失败', 'error');
+            }
+        }
+
+        // 搜索笔记
+        function searchNotes(query) {
+            if (!checkDbReady()) return;
+
+            if (!query.trim()) {
+                loadNotes();
+                return;
+            }
+
+            try {
+                const tx = db.transaction('notes', 'readonly');
+                const store = tx.objectStore('notes');
+                const request = store.getAll();
+
+                request.onsuccess = function () {
+                    const notes = request.result.filter(note =>
+                        note.title.toLowerCase().includes(query.toLowerCase()) ||
+                        note.content.toLowerCase().includes(query.toLowerCase())
+                    );
+
+                    // 按匹配度排序
+                    notes.sort((a, b) => {
+                        const aTitleMatch = a.title.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
+                        const bTitleMatch = b.title.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
+
+                        if (aTitleMatch !== bTitleMatch) {
+                            return bTitleMatch - aTitleMatch;
+                        }
+
+                        // 按更新时间排序
+                        return b.updatedAt - a.updatedAt;
+                    });
+
+                    renderNotesList(notes);
+                };
+
+                request.onerror = function () {
+                    showToast('搜索笔记失败', 'error');
+                    console.error('搜索笔记错误:', request.error);
+                };
+            } catch (error) {
+                console.error('搜索笔记时发生异常:', error);
+                showToast('搜索笔记失败', 'error');
+            }
+        }
+
+        // 更新笔记计数器
+        function updateNotesCounters(notes) {
+            totalNotesCounter.textContent = notes.length;
+
+            const starredCount = notes.filter(note => note.starred).length;
+            starredNotesCounter.textContent = starredCount;
+        }
+
+        // 渲染笔记列表
+        function renderNotesList(notes) {
+            if (notes.length === 0) {
+                notesList.innerHTML = `
+                        <div class="flex items-center justify-center h-32 text-gray-500">
+                            <p>没有找到笔记</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            notesList.innerHTML = '';
+
+            notes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.className = `mb-1`;
+
+                const isSelected = currentNoteId === note.id;
+
+                noteItem.innerHTML = `
+                        <div class="p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition-colors ${isSelected ? 'bg-primary/5 border-l-4 border-primary rounded-r-lg' : ''}">
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-medium text-gray-800 truncate ${isSelected ? 'text-gray-900' : ''}">${note.title}</h4>
+                                ${note.starred ? '<i class="fa fa-star text-yellow-500"></i>' : ''}
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1 line-clamp-2">${getPlainTextFromHtml(note.content).substring(0, 100)}${getPlainTextFromHtml(note.content).length > 100 ? '...' : ''}</p>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-xs text-gray-500">${formatDate(note.updatedAt)}</span>
+                                <span class="text-xs text-gray-500 ${getCategoryColorClass(note.category)}">${note.category || '未分类'}</span>
+                            </div>
+                        </div>
+                    `;
+
+                noteItem.addEventListener('click', () => {
+                    openNote(note.id);
+                });
+
+                notesList.appendChild(noteItem);
+            });
+        }
+
+        // 获取分类的颜色类
+        function getCategoryColorClass(categoryName) {
+            if (!categoryName) return 'text-gray-500';
+
+            const categories = Array.from(customCategories.children);
+            const category = categories.find(cat => cat.dataset.category === categoryName);
+
+            if (category) {
+                const icon = category.querySelector('i');
+                return icon.className.split(' ').find(cls => cls.startsWith('text-'));
+            }
+
+            return 'text-gray-500';
+        }
+
+        // 从HTML获取纯文本
+        function getPlainTextFromHtml(html) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            return tempDiv.textContent || '';
+        }
+
+        // 格式化日期
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+
+            if (diffInSeconds < 60) {
+                return '刚刚';
+            } else if (diffInSeconds < 3600) {
+                const minutes = Math.floor(diffInSeconds / 60);
+                return `${minutes}分钟前`;
+            } else if (diffInSeconds < 86400) {
+                const hours = Math.floor(diffInSeconds / 3600);
+                return `${hours}小时前`;
+            } else if (diffInSeconds < 604800) { // 7天
+                const days = Math.floor(diffInSeconds / 86400);
+                return `${days}天前`;
+            } else {
+                return `${date.getMonth() + 1}月${date.getDate()}日`;
+            }
+        }
+
+        // 打开笔记进行编辑
+        function openNote(noteId) {
+            if (!checkDbReady()) return;
+
+            try {
+                const tx = db.transaction('notes', 'readonly');
+                const store = tx.objectStore('notes');
+                const request = store.get(noteId);
+
+                request.onsuccess = function () {
+                    const note = request.result;
+                    if (note) {
+                        currentNoteId = noteId;
+
+                        // 显示编辑器，隐藏空状态
+                        emptyState.classList.add('hidden');
+                        editor.classList.remove('hidden');
+
+                        // 填充笔记内容
+                        noteTitle.value = note.title;
+                        editorContent.innerHTML = note.content;
+                        noteLastEdited.textContent = `最后编辑于 ${formatDate(note.updatedAt)}`;
+                        noteCategoryDisplay.textContent = note.category || '未分类';
+
+                        // 更新星标状态
+                        if (note.starred) {
+                            toggleStar.innerHTML = '<i class="fa fa-star text-yellow-500"></i>';
+                        } else {
+                            toggleStar.innerHTML = '<i class="fa fa-star-o"></i>';
+                        }
+
+                        // 更新笔记列表选中状态
+                        renderNotesListAgain();
+
+                        // 自动保存计时器重置
+                        resetAutoSave();
+                    } else {
+                        showToast('未找到该笔记', 'error');
+                        console.error('未找到ID为', noteId, '的笔记');
+                    }
+                };
+
+                request.onerror = function () {
+                    showToast('打开笔记失败', 'error');
+                    console.error('打开笔记错误:', request.error);
+                };
+            } catch (error) {
+                console.error('打开笔记时发生异常:', error);
+                showToast('打开笔记失败', 'error');
+            }
+        }
+
+        // 重新渲染笔记列表以更新选中状态
+        function renderNotesListAgain() {
+            const activeCategoryBtn = document.querySelector('.category-btn.bg-primary\\/10');
+            if (activeCategoryBtn) {
+                const category = activeCategoryBtn.dataset.category;
+                filterNotesByCategory(category);
+            } else {
+                loadNotes();
+            }
+        }
+
+        // 保存笔记
+        function saveNote() {
+            if (!checkDbReady() || currentNoteId === null) return;
+
+            const title = noteTitle.value.trim() || '无标题笔记';
+            const content = editorContent.innerHTML;
+            const updatedAt = Date.now();
+
+            try {
+                const tx = db.transaction('notes', 'readwrite');
+                const store = tx.objectStore('notes');
+                const request = store.get(currentNoteId);
+
+                request.onsuccess = function () {
+                    const note = request.result;
+                    if (note) {
+                        // 更新现有笔记
+                        note.title = title;
+                        note.content = content;
+                        note.updatedAt = updatedAt;
+
+                        const updateRequest = store.put(note);
+
+                        updateRequest.onsuccess = function () {
+                            showToast('笔记已保存', 'success');
+                            noteLastEdited.textContent = `最后编辑于 ${formatDate(updatedAt)}`;
+                            renderNotesListAgain();
+                        };
+
+                        updateRequest.onerror = function () {
+                            showToast('保存笔记失败', 'error');
+                            console.error('更新笔记错误:', updateRequest.error);
+                        };
+                    } else {
+                        showToast('未找到要保存的笔记', 'error');
+                        console.error('未找到ID为', currentNoteId, '的笔记');
+                    }
+                };
+
+                request.onerror = function () {
+                    showToast('保存笔记失败', 'error');
+                    console.error('保存笔记错误:', request.error);
+                };
+            } catch (error) {
+                console.error('保存笔记时发生异常:', error);
+                showToast('保存笔记失败', 'error');
+            }
+        }
+
+        // 重置自动保存计时器
+        function resetAutoSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveNote, 2000); // 2秒后自动保存
+        }
+
+        // 创建新笔记
+        function createNewNote(title, category, starred) {
+            if (!checkDbReady()) return;
+
+            const newNote = {
+                title: title || '无标题笔记',
+                content: '',
+                category: category || '',
+                starred: starred || false,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+
+            try {
+                const tx = db.transaction('notes', 'readwrite');
+                const store = tx.objectStore('notes');
+                const request = store.add(newNote);
+
+                request.onsuccess = function () {
+                    const newNoteId = request.result;
+                    showToast('笔记创建成功', 'success');
+                    closeModal(newNoteModal);
+                    document.getElementById('new-note-title').value = '';
+                    document.getElementById('note-category').value = '';
+                    document.getElementById('note-starred').checked = false;
+
+                    // 打开新创建的笔记
+                    openNote(newNoteId);
+
+                    // 重新加载笔记列表
+                    loadNotes();
+                };
+
+                request.onerror = function () {
+                    showToast('创建笔记失败', 'error');
+                    console.error('创建笔记错误:', request.error);
+                };
+            } catch (error) {
+                console.error('创建笔记时发生异常:', error);
+                showToast('创建笔记失败', 'error');
+            }
+        }
+
+        // 删除笔记
+        function deleteNote(noteId) {
+            if (!checkDbReady()) return;
+
+            try {
+                const tx = db.transaction('notes', 'readwrite');
+                const store = tx.objectStore('notes');
+                const request = store.delete(noteId);
+
+                request.onsuccess = function () {
+                    showToast('笔记已删除', 'success');
+                    closeModal(deleteConfirmModal);
+
+                    // 如果删除的是当前打开的笔记
+                    if (currentNoteId === noteId) {
+                        currentNoteId = null;
+
+                        // 隐藏编辑器，显示空状态
+                        editor.classList.add('hidden');
+                        emptyState.classList.remove('hidden');
+                    }
+
+                    // 重新加载笔记列表
+                    loadNotes();
+                };
+
+                request.onerror = function () {
+                    showToast('删除笔记失败', 'error');
+                    console.error('删除笔记错误:', request.error);
+                };
+            } catch (error) {
+                console.error('删除笔记时发生异常:', error);
+                showToast('删除笔记失败', 'error');
+            }
+        }
+
+        // 导出笔记
+        function exportNote(format) {
+            if (!checkDbReady() || currentNoteId === null) return;
+
+            try {
+                const tx = db.transaction('notes', 'readonly');
+                const store = tx.objectStore('notes');
+                const request = store.get(currentNoteId);
+
+                request.onsuccess = function () {
+                    const note = request.result;
+                    if (note) {
+                        let content, mimeType, extension;
+
+                        switch (format) {
+                            case 'html':
+                                content = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+        <meta charset="UTF-8">
+        <title>${note.title}</title>
+        <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+            h1 { color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+            h2 { color: #444; margin-top: 30px; }
+            img, video { max-width: 100%; height: auto; margin: 20px 0; }
+            ul, ol { margin: 10px 0 20px 20px; }
+            .meta { color: #666; font-size: 0.9em; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        </style>
+</head>
+<body>
+        <h1>${note.title}</h1>
+        <div class="meta">
+            <p>最后编辑: ${new Date(note.updatedAt).toLocaleString()}</p>
+            <p>分类: ${note.category || '未分类'}</p>
+        </div>
+        ${note.content}
+</body>
+</html>

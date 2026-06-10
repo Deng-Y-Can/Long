@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>符号与特殊字符大全 | 一键复制</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#EC4899',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .symbol-card {
+                @apply flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200 cursor-pointer;
+            }
+            .symbol-tooltip {
+                @apply invisible absolute -top-10 left-1/2 -translate-x-1/2 bg-dark text-white text-xs py-1 px-2 rounded whitespace-nowrap opacity-0 transition-all duration-200 z-10;
+            }
+            .symbol-container:hover .symbol-tooltip {
+                @apply visible opacity-100;
+            }
+            .category-header {
+                @apply text-xl font-bold mb-4 text-dark border-b pb-2;
+            }
+            .category-section {
+                @apply mb-10 bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md;
+            }
+            .search-highlight {
+                @apply bg-yellow-100 rounded px-1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-inter">
+    <!-- 顶部导航 -->
+    <header class="bg-white shadow-md sticky top-0 z-50 transition-all duration-300" id="mainHeader">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <i class="fa fa-font text-primary text-2xl mr-3"></i>
+                <h1 class="text-2xl font-bold text-dark">符号与特殊字符大全</h1>
+            </div>
+            <div class="flex items-center w-full md:w-auto">
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="symbolSearch" placeholder="搜索符号或名称..." 
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                    <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <button id="clearSearch" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <button id="themeToggle" class="ml-4 p-2 rounded-full hover:bg-gray-100 transition-colors">
+                    <i class="fa fa-moon-o text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 统计信息 -->
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-8 flex flex-wrap justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <div class="bg-primary/10 rounded-full p-3 mr-4">
+                    <i class="fa fa-th text-primary text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">总符号数</p>
+                    <p class="text-2xl font-bold text-dark" id="totalSymbols">0</p>
+                </div>
+            </div>
+            <div class="flex items-center mb-4 md:mb-0 md:mr-8">
+                <div class="bg-secondary/10 rounded-full p-3 mr-4">
+                    <i class="fa fa-folder-open text-secondary text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">分类数</p>
+                    <p class="text-2xl font-bold text-dark" id="totalCategories">0</p>
+                </div>
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <p class="text-sm text-gray-500 mb-1">使用提示</p>
+                <p class="text-sm text-gray-600">点击任意符号即可复制到剪贴板</p>
+            </div>
+        </div>
+        
+        <!-- 搜索结果 -->
+        <div id="searchResults" class="mb-8 hidden category-section">
+            <h2 class="category-header flex items-center">
+                <i class="fa fa-search text-primary mr-2"></i>
+                搜索结果 <span id="resultsCount" class="ml-2 text-sm font-normal text-gray-500">(0 个结果)</span>
+                <button id="clearSearchBtn" class="ml-4 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                    <i class="fa fa-times"></i> 清除
+                </button>
+            </h2>
+            <div id="searchResultsContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+        </div>
+
+        <!-- 分类标签导航 -->
+        <div class="mb-8 overflow-x-auto pb-2 scrollbar-hide">
+            <div class="flex space-x-2 min-w-max">
+                <button class="category-tab active px-4 py-2 bg-primary text-white rounded-full text-sm font-medium transition-all" data-category="all">
+                    全部
+                </button>
+                <!-- 标签将通过JS动态生成 -->
+            </div>
+        </div>
+
+        <!-- 符号分类区域 -->
+        <div id="symbolCategories">
+            <!-- 符号分类将通过JavaScript动态生成 -->
+        </div>
+    </main>
+
+    <!-- 复制提示 -->
+    <div id="copyNotification" class="fixed bottom-6 right-6 bg-secondary text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center z-50">
+        <i class="fa fa-check-circle mr-2"></i>
+        <span>符号已复制到剪贴板</span>
+    </div>
+
+    <!-- 返回顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 left-6 bg-primary text-white p-3 rounded-full shadow-lg opacity-0 invisible transition-all duration-300 hover:bg-primary/90 z-50">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>符号与特殊字符大全 &copy; 2023</p>
+            <p class="text-sm text-gray-400 mt-2">设计用于方便快速查找和复制各种符号</p>
+        </div>
+    </footer>
+
+    <script>
+        // 扩展后的符号数据 - 包含所有类别
+        const symbolData = {
+            greekLetters: {
+                name: "希腊字母",
+                icon: "fa-font",
+                symbols: [
+                    { symbol: 'α', name: '阿尔法' },
+                    { symbol: 'β', name: '贝塔' },
+                    { symbol: 'γ', name: '伽马' },
+                    { symbol: 'δ', name: '德尔塔' },
+                    { symbol: 'ε', name: '伊普西隆' },
+                    { symbol: 'ζ', name: '泽塔' },
+                    { symbol: 'η', name: '伊塔' },
+                    { symbol: 'θ', name: '西塔' },
+                    { symbol: 'ι', name: '约塔' },
+                    { symbol: 'κ', name: '卡帕' },
+                    { symbol: 'λ', name: '兰姆达' },
+                    { symbol: 'μ', name: '缪' },
+                    { symbol: 'ν', name: '纽' },
+                    { symbol: 'ξ', name: '克西' },
+                    { symbol: 'ο', name: '奥密克戎' },
+                    { symbol: 'π', name: '派（圆周率）' },
+                    { symbol: 'ρ', name: '柔' },
+                    { symbol: 'σ', name: '西格玛' },
+                    { symbol: 'τ', name: '陶' },
+                    { symbol: 'υ', name: '宇普西隆' },
+                    { symbol: 'φ', name: '斐' },
+                    { symbol: 'χ', name: '希' },
+                    { symbol: 'ψ', name: '普西' },
+                    { symbol: 'ω', name: '欧米伽' },
+                    { symbol: 'Γ', name: '大写伽马' },
+                    { symbol: 'Δ', name: '大写德尔塔' },
+                    { symbol: 'Θ', name: '大写西塔' },
+                    { symbol: 'Λ', name: '大写兰姆达' },
+                    { symbol: 'Ξ', name: '大写克西' },
+                    { symbol: 'Π', name: '大写派' },
+                    { symbol: 'Σ', name: '大写西格玛' },
+                    { symbol: 'Φ', name: '大写斐' },
+                    { symbol: 'Ψ', name: '大写普西' },
+                    { symbol: 'Ω', name: '大写欧米伽' }
+                ]
+            },
+            
+            basicMath: {
+                name: "基本数学符号",
+                icon: "fa-calculator",
+                symbols: [
+                    { symbol: '∞', name: '无穷大' },
+                    { symbol: 'π', name: '圆周率' },
+                    { symbol: 'e', name: '自然常数' },
+                    { symbol: '∏', name: '连乘积' },
+                    { symbol: '∑', name: '求和' },
+                    { symbol: '√', name: '平方根' },
+                    { symbol: '∛', name: '立方根' },
+                    { symbol: '∜', name: '四次方根' },
+                    { symbol: '∫', name: '积分' },
+                    { symbol: '∬', name: '二重积分' },
+                    { symbol: '∭', name: '三重积分' },
+                    { symbol: '∮', name: '曲线积分' },
+                    { symbol: '∇', name: 'nabla算子' },
+                    { symbol: '∆', name: '增量' },
+                    { symbol: '∏', name: '乘积' },
+                    { symbol: '∐', name: '余积' },
+                    { symbol: '∅', name: '空集' },
+                    { symbol: '∝', name: '成正比' },
+                    { symbol: '∟', name: '直角' },
+                    { symbol: '∠', name: '角' },
+                    { symbol: '∡', name: '角' },
+                    { symbol: '∢', name: '球面角' },
+                    { symbol: '∼', name: '相似' },
+                    { symbol: '≅', name: '全等' }
+                ]
+            },
+            
+            operators: {
+                name: "运算符号",
+                icon: "fa-plus-square",
+                symbols: [
+                    { symbol: '+', name: '加号' },
+                    { symbol: '−', name: '减号' },
+                    { symbol: '×', name: '乘号' },
+                    { symbol: '÷', name: '除号' },
+                    { symbol: '±', name: '正负号' },
+                    { symbol: '∓', name: '负正号' },
+                    { symbol: '⋅', name: '点乘' },
+                    { symbol: '∗', name: '星号乘' },
+                    { symbol: '×', name: '叉乘' },
+                    { symbol: '∕', name: '斜线除' },
+                    { symbol: '∖', name: '集合减' },
+                    { symbol: '⋅', name: '中点' },
+                    { symbol: '∘', name: '小圆圈' },
+                    { symbol: '∗', name: '星号' },
+                    { symbol: '†', name: '匕首' },
+                    { symbol: '‡', name: '双匕首' },
+                    { symbol: '∙', name: 'bullet' },
+                    { symbol: '∘', name: '函数复合' },
+                    { symbol: '⊕', name: '异或' },
+                    { symbol: '⊗', name: '张量积' },
+                    { symbol: '⊘', name: '除' },
+                    { symbol: '⊙', name: '圆内点' },
+                    { symbol: '⊚', name: '圆内加号' },
+                    { symbol: '⊛', name: '圆内星号' }
+                ]
+            },
+            
+            relations: {
+                name: "关系符号",
+                icon: "fa-exchange",
+                symbols: [
+                    { symbol: '=', name: '等于' },
+                    { symbol: '≠', name: '不等于' },
+                    { symbol: '<', name: '小于' },
+                    { symbol: '>', name: '大于' },
+                    { symbol: '≤', name: '小于等于' },
+                    { symbol: '≥', name: '大于等于' },
+                    { symbol: '≦', name: '小于等于' },
+                    { symbol: '≧', name: '大于等于' },
+                    { symbol: '≺', name: '小于（序关系）' },
+                    { symbol: '≻', name: '大于（序关系）' },
+                    { symbol: '≼', name: '小于等于（序关系）' },
+                    { symbol: '≽', name: '大于等于（序关系）' },
+                    { symbol: '≈', name: '约等于' },
+                    { symbol: '≊', name: '约等于' },
+                    { symbol: '∼', name: '相似' },
+                    { symbol: '≌', name: '全等' },
+                    { symbol: '∝', name: '成正比' },
+                    { symbol: '∈', name: '属于' },
+                    { symbol: '∉', name: '不属于' },
+                    { symbol: '⊂', name: '子集' },
+                    { symbol: '⊃', name: '超集' },
+                    { symbol: '⊆', name: '子集或等于' },
+                    { symbol: '⊇', name: '超集或等于' },
+                    { symbol: '⊊', name: '真子集' },
+                    { symbol: '⊋', name: '真超集' },
+                    { symbol: '⊤', name: '顶' },
+                    { symbol: '⊥', name: '底/垂直' },
+                    { symbol: '∥', name: '平行' },
+                    { symbol: '∦', name: '不平行' },
+                    { symbol: '∣', name: '整除' },
+                    { symbol: '∤', name: '不能整除' },
+                    { symbol: '∼', name: '等价' },
+                    { symbol: '≍', name: '渐近等于' }
+                ]
+            },
+            
+            sets: {
+                name: "集合符号",
+                icon: "fa-sitemap",
+                symbols: [
+                    { symbol: '∅', name: '空集' },
+                    { symbol: '∈', name: '属于' },
+                    { symbol: '∉', name: '不属于' },
+                    { symbol: '⊂', name: '真子集' },
+                    { symbol: '⊃', name: '真超集' },
+                    { symbol: '⊆', name: '子集' },
+                    { symbol: '⊇', name: '超集' },
+                    { symbol: '∩', name: '交集' },
+                    { symbol: '∪', name: '并集' },
+                    { symbol: '∅', name: '空集' },
+                    { symbol: '∁', name: '补集' },
+                    { symbol: '∀', name: '全称量词' },
+                    { symbol: '∃', name: '存在量词' },
+                    { symbol: '∄', name: '不存在' },
+                    { symbol: '∈', name: '元素属于集合' },
+                    { symbol: '∋', name: '集合包含元素' },
+                    { symbol: '∌', name: '集合不包含元素' },
+                    { symbol: '⊎', name: '不相交并集' },
+                    { symbol: 'ℕ', name: '自然数集' },
+                    { symbol: 'ℤ', name: '整数集' },
+                    { symbol: 'ℚ', name: '有理数集' },
+                    { symbol: 'ℝ', name: '实数集' },
+                    { symbol: 'ℂ', name: '复数集' },
+                    { symbol: 'ℍ', name: '四元数集' }
+                ]
+            },
+            
+            logic: {
+                name: "逻辑符号",
+                icon: "fa-code-fork",
+                symbols: [
+                    { symbol: '¬', name: '非' },
+                    { symbol: '∧', name: '合取' },
+                    { symbol: '∨', name: '析取' },
+                    { symbol: '→', name: '蕴含' },
+                    { symbol: '←', name: '逆蕴含' },
+                    { symbol: '↔', name: '等价' },
+                    { symbol: '⇒', name: '推出' },
+                    { symbol: '⇐', name: '逆推出' },
+                    { symbol: '⇔', name: '等价' },
+                    { symbol: '∀', name: '对所有' },
+                    { symbol: '∃', name: '存在' },
+                    { symbol: '∄', name: '不存在' },
+                    { symbol: '∴', name: '所以' },
+                    { symbol: '∵', name: '因为' },
+                    { symbol: '⊤', name: '真' },
+                    { symbol: '⊥', name: '假' },
+                    { symbol: '⊕', name: '异或' },
+                    { symbol: '⊻', name: '异或' },
+                    { symbol: '⇁', name: '右箭头波浪线' },
+                    { symbol: '⇀', name: '左箭头波浪线' },
+                    { symbol: '⇌', name: '双向箭头波浪线' },
+                    { symbol: '⇐⇒', name: '等价箭头' },
+                    { symbol: '⇑', name: '上箭头' },
+                    { symbol: '⇓', name: '下箭头' }
+                ]
+            },
+            
+            scripts: {
+                name: "上下标符号",
+                icon: "fa-text-height",
+                symbols: [
+                    // 上标
+                    { symbol: '⁰', name: '上标0' },
+                    { symbol: '¹', name: '上标1' },
+                    { symbol: '²', name: '上标2' },
+                    { symbol: '³', name: '上标3' },
+                    { symbol: '⁴', name: '上标4' },
+                    { symbol: '⁵', name: '上标5' },
+                    { symbol: '⁶', name: '上标6' },
+                    { symbol: '⁷', name: '上标7' },
+                    { symbol: '⁸', name: '上标8' },
+                    { symbol: '⁹', name: '上标9' },
+                    { symbol: '⁺', name: '上标加' },
+                    { symbol: '⁻', name: '上标减' },
+                    { symbol: '⁼', name: '上标等于' },
+                    { symbol: '⁽', name: '上标左括号' },
+                    { symbol: '⁾', name: '上标右括号' },
+                    { symbol: 'ⁿ', name: '上标n' },
+                    { symbol: 'ᵃ', name: '上标a' },
+                    { symbol: 'ᵇ', name: '上标b' },
+                    { symbol: 'ᶜ', name: '上标c' },
+                    { symbol: 'ᵈ', name: '上标d' },
+                    { symbol: 'ᵉ', name: '上标e' },
+                    { symbol: 'ᶠ', name: '上标f' },
+                    { symbol: 'ᵍ', name: '上标g' },
+                    { symbol: 'ʰ', name: '上标h' },
+                    
+                    // 下标
+                    { symbol: '₀', name: '下标0' },
+                    { symbol: '₁', name: '下标1' },
+                    { symbol: '₂', name: '下标2' },
+                    { symbol: '₃', name: '下标3' },
+                    { symbol: '₄', name: '下标4' },
+                    { symbol: '₅', name: '下标5' },
+                    { symbol: '₆', name: '下标6' },
+                    { symbol: '₇', name: '下标7' },
+                    { symbol: '₈', name: '下标8' },
+                    { symbol: '₉', name: '下标9' },
+                    { symbol: '₊', name: '下标加' },
+                    { symbol: '₋', name: '下标减' },
+                    { symbol: '₌', name: '下标等于' },
+                    { symbol: '₍', name: '下标左括号' },
+                    { symbol: '₎', name: '下标右括号' },
+                    { symbol: 'ₐ', name: '下标a' },
+                    { symbol: 'ₑ', name: '下标e' },
+                    { symbol: 'ₒ', name: '下标o' },
+                    { symbol: 'ₓ', name: '下标x' },
+                    { symbol: 'ₔ', name: '下标q' }
+                ]
+            },
+            
+            arrows: {
+                name: "箭头符号",
+                icon: "fa-long-arrow-right",
+                symbols: [
+                    { symbol: '←', name: '左箭头' },
+                    { symbol: '→', name: '右箭头' },
+                    { symbol: '↑', name: '上箭头' },
+                    { symbol: '↓', name: '下箭头' },
+                    { symbol: '↔', name: '左右箭头' },
+                    { symbol: '↕', name: '上下箭头' },
+                    { symbol: '↖', name: '左上箭头' },
+                    { symbol: '↗', name: '右上箭头' },
+                    { symbol: '↘', name: '右下箭头' },
+                    { symbol: '↙', name: '左下箭头' },
+                    { symbol: '⇐', name: '双线左箭头' },
+                    { symbol: '⇒', name: '双线右箭头' },
+                    { symbol: '⇑', name: '双线上箭头' },
+                    { symbol: '⇓', name: '双线下箭头' },
+                    { symbol: '⇔', name: '双线左右箭头' },
+                    { symbol: '⇕', name: '双线上下箭头' },
+                    { symbol: '⇦', name: '粗体左箭头' },
+                    { symbol: '⇧', name: '粗体上箭头' },
+                    { symbol: '⇨', name: '粗体右箭头' },
+                    { symbol: '⇩', name: '粗体下箭头' },
+                    { symbol: '↦', name: '映射箭头' },
+                    { symbol: '↤', name: '逆映射箭头' },
+                    { symbol: '⇝', name: '右波浪箭头' },
+                    { symbol: '⇜', name: '左波浪箭头' },
+                    { symbol: '⇞', name: '上双箭头' },
+                    { symbol: '⇟', name: '下双箭头' },
+                    { symbol: '↺', name: '顺时针箭头' },
+                    { symbol: '↻', name: '逆时针箭头' },
+                    { symbol: '➻', name: '装饰箭头' },
+                    { symbol: '➼', name: '装饰箭头' },
+                    { symbol: '➽', name: '装饰箭头' },
+                    { symbol: '➸', name: '装饰箭头' },
+                    { symbol: '➳', name: '装饰箭头' },
+                    { symbol: '➺', name: '装饰箭头' },
+                    { symbol: '➻', name: '装饰箭头' },
+                    { symbol: '➴', name: '装饰箭头' },
+                    { symbol: '➵', name: '装饰箭头' },
+                    { symbol: '➶', name: '装饰箭头' },
+                    { symbol: '➷', name: '装饰箭头' },
+                    { symbol: '➹', name: '装饰箭头' },
+                    { symbol: '▶', name: '右三角箭头' },
+                    { symbol: '►', name: '右三角箭头' },
+                    { symbol: '▷', name: '右三角箭头' },
+                    { symbol: '◁', name: '左三角箭头' },
+                    { symbol: '◀', name: '左三角箭头' },
+                    { symbol: '◄', name: '左三角箭头' },
+                    { symbol: '«', name: '左双箭头' },
+                    { symbol: '»', name: '右双箭头' }
+                ]
+            },
+            
+            special: {
+                name: "特殊符号",
+                icon: "fa-asterisk",
+                symbols: [
+                    { symbol: '©', name: '版权符号' },
+                    { symbol: '®', name: '注册商标' },
+                    { symbol: '™', name: '商标' },
+                    { symbol: '§', name: '段落符号' },
+                    { symbol: '¶', name: '段落标记' },
+                    { symbol: '†', name: '匕首' },
+                    { symbol: '‡', name: '双匕首' },
+                    { symbol: '•', name: '项目符号' },
+                    { symbol: '‣', name: '三角项目符号' },
+                    { symbol: '⁃', name: '连字符' },
+                    { symbol: '⁎', name: '星号' },
+                    { symbol: '⁕', name: '花形符号' },
+                    { symbol: '※', name: '参考符号' },
+                    { symbol: '‽', name: '疑问感叹号' },
+                    { symbol: '‼', name: '双感叹号' },
+                    { symbol: '⁇', name: '双问号' },
+                    { symbol: '♠', name: '黑桃' },
+                    { symbol: '♥', name: '红桃' },
+                    { symbol: '♦', name: '方块' },
+                    { symbol: '♣', name: '梅花' },
+                    { symbol: '♤', name: '白色黑桃' },
+                    { symbol: '♡', name: '白色红桃' },
+                    { symbol: '♢', name: '白色方块' },
+                    { symbol: '♧', name: '白色梅花' },
+                    { symbol: '♨', name: '温泉符号' },
+                    { symbol: '♩', name: '音乐符号' },
+                    { symbol: '♪', name: '八分音符' },
+                    { symbol: '♫', name: '十六分音符' },
+                    { symbol: '♬', name: '音乐符号' },
+                    { symbol: '♭', name: '降音符' },
+                    { symbol: '♮', name: '自然音符' },
+                    { symbol: '♯', name: '升音符' }
+                ]
+            },
+            
+            numbering: {
+                name: "编号序号",
+                icon: "fa-list-ol",
+                symbols: [
+                    { symbol: '①', name: '带圈数字1' },
+                    { symbol: '②', name: '带圈数字2' },
+                    { symbol: '③', name: '带圈数字3' },
+                    { symbol: '④', name: '带圈数字4' },
+                    { symbol: '⑤', name: '带圈数字5' },
+                    { symbol: '⑥', name: '带圈数字6' },
+                    { symbol: '⑦', name: '带圈数字7' },
+                    { symbol: '⑧', name: '带圈数字8' },
+                    { symbol: '⑨', name: '带圈数字9' },
+                    { symbol: '⑩', name: '带圈数字10' },
+                    { symbol: '⑪', name: '带圈数字11' },
+                    { symbol: '⑫', name: '带圈数字12' },
+                    { symbol: '⑬', name: '带圈数字13' },
+                    { symbol: '⑭', name: '带圈数字14' },
+                    { symbol: '⑮', name: '带圈数字15' },
+                    { symbol: '⑯', name: '带圈数字16' },
+                    { symbol: '⑰', name: '带圈数字17' },
+                    { symbol: '⑱', name: '带圈数字18' },
+                    { symbol: '⑲', name: '带圈数字19' },
+                    { symbol: '⑳', name: '带圈数字20' },
+                    { symbol: '⓪', name: '带圈数字0' },
+                    { symbol: '⓿', name: '带圈数字0' },
+                    { symbol: '❶', name: '带圈数字1' },
+                    { symbol: '❷', name: '带圈数字2' },
+                    { symbol: '❸', name: '带圈数字3' },
+                    { symbol: '❹', name: '带圈数字4' },
+                    { symbol: '❺', name: '带圈数字5' },
+                    { symbol: '❻', name: '带圈数字6' },
+                    { symbol: '❼', name: '带圈数字7' },
+                    { symbol: '❽', name: '带圈数字8' },
+                    { symbol: '❾', name: '带圈数字9' },
+                    { symbol: '❿', name: '带圈数字10' },
+                    { symbol: '㈠', name: '括号数字1' },
+                    { symbol: '㈡', name: '括号数字2' },
+                    { symbol: '㈢', name: '括号数字3' },
+                    { symbol: '㈣', name: '括号数字4' },
+                    { symbol: '㈤', name: '括号数字5' },
+                    { symbol: '㈥', name: '括号数字6' },
+                    { symbol: '㈦', name: '括号数字7' },
+                    { symbol: '㈧', name: '括号数字8' },
+                    { symbol: '㈨', name: '括号数字9' },
+                    { symbol: '㈩', name: '括号数字10' },
+                    { symbol: '⑴', name: '圆括号数字1' },
+                    { symbol: '⑵', name: '圆括号数字2' },
+                    { symbol: '⑶', name: '圆括号数字3' },
+                    { symbol: '⑷', name: '圆括号数字4' },
+                    { symbol: '⑸', name: '圆括号数字5' }
+                ]
+            },
+            
+            loveSymbols: {
+                name: "爱心符号",
+                icon: "fa-heart",
+                symbols: [
+                    { symbol: '♥', name: '爱心' },
+                    { symbol: '❣', name: '带点爱心' },
+                    { symbol: 'ღ', name: '花体爱心' },
+                    { symbol: '❤', name: '实心爱心' },
+                    { symbol: '❥', name: '装饰爱心' },
+                    { symbol: '♡', name: '空心爱心' },
+                    { symbol: '💘', name: '丘比特之箭' },
+                    { symbol: '💝', name: '礼物爱心' },
+                    { symbol: '💖', name: '闪亮爱心' },
+                    { symbol: '💗', name: '旋转爱心' },
+                    { symbol: '💓', name: '跳动爱心' },
+                    { symbol: '💞', name: '相扣爱心' },
+                    { symbol: '💕', name: '双爱心' },
+                    { symbol: '💟', name: '带圈爱心' }
+                ]
+            },
+            
+            units: {
+                name: "单位符号",
+                icon: "fa-balance-scale",
+                symbols: [
+                    { symbol: '°', name: '度' },
+                    { symbol: '′', name: '分' },
+                    { symbol: '″', name: '秒' },
+                    { symbol: '＄', name: '美元' },
+                    { symbol: '￥', name: '人民币' },
+                    { symbol: '〒', name: '邮政编码' },
+                    { symbol: '￠', name: '分' },
+                    { symbol: '￡', name: '英镑' },
+                    { symbol: '％', name: '百分号' },
+                    { symbol: '＠', name: '艾特' },
+                    { symbol: '℃', name: '摄氏度' },
+                    { symbol: '℉', name: '华氏度' },
+                    { symbol: '﹩', name: '小型美元' },
+                    { symbol: '﹪', name: '小型百分号' },
+                    { symbol: '‰', name: '千分号' },
+                    { symbol: '﹫', name: '小型艾特' },
+                    { symbol: '㎡', name: '平方米' },
+                    { symbol: '㎥', name: '立方米' },
+                    { symbol: 'm²', name: '平方米' },
+                    { symbol: 'm³', name: '立方米' },
+                    { symbol: '㎜', name: '毫米' },
+                    { symbol: '㎟', name: '平方毫米' },
+                    { symbol: '㎣', name: '立方毫米' },
+                    { symbol: '㎝', name: '厘米' },
+                    { symbol: '㎠', name: '平方厘米' },
+                    { symbol: '㎤', name: '立方厘米' },
+                    { symbol: '㍷', name: '千米' },
+                    { symbol: '㍸', name: '米' },
+                    { symbol: '㍹', name: '厘米' },
+                    { symbol: '㎞', name: '千米' },
+                    { symbol: '㎢', name: '平方千米' },
+                    { symbol: '㎦', name: '立方千米' },
+                    { symbol: '㏎', name: '千克' },
+                    { symbol: '㎚', name: '纳米' },
+                    { symbol: '㎛', name: '微米' },
+                    { symbol: '㏕', name: '毫升' },
+                    { symbol: '㎍', name: '微克' },
+                    { symbol: '㎎', name: '毫克' },
+                    { symbol: '㎏', name: '千克' },
+                    { symbol: '㏄', name: '厘升' }
+                ]
+            },
+            
+            currency: {
+                name: "货币符号",
+                icon: "fa-money",
+                symbols: [
+                    { symbol: '€', name: '欧元' },
+                    { symbol: '£', name: '英镑' },
+                    { symbol: 'Ұ', name: '哈萨克斯坦坚戈' },
+                    { symbol: '₴', name: '乌克兰格里夫纳' },
+                    { symbol: '$', name: '美元' },
+                    { symbol: '₰', name: '格鲁吉亚拉里' },
+                    { symbol: '¢', name: '分' },
+                    { symbol: '₤', name: '里拉' },
+                    { symbol: '¥', name: '日元/人民币' },
+                    { symbol: '₳', name: '阿根廷比索' },
+                    { symbol: '₲', name: '巴拉圭瓜拉尼' },
+                    { symbol: '₪', name: '以色列新谢克尔' },
+                    { symbol: '₵', name: '加纳塞地' },
+                    { symbol: '元', name: '人民币' },
+                    { symbol: '₣', name: '法郎' },
+                    { symbol: '₱', name: '菲律宾比索' },
+                    { symbol: '฿', name: '泰铢' },
+                    { symbol: '¤', name: '通用货币' },
+                    { symbol: '₡', name: '哥斯达黎加科朗' },
+                    { symbol: '₮', name: '蒙古图格里克' },
+                    { symbol: '₭', name: '老挝基普' },
+                    { symbol: '₩', name: '韩元' },
+                    { symbol: 'ރ', name: '马尔代夫拉菲亚' },
+                    { symbol: '円', name: '日元' },
+                    { symbol: '₢', name: '巴西雷亚尔' },
+                    { symbol: '₥', name: '密耳' },
+                    { symbol: '₫', name: '越南盾' },
+                    { symbol: '₦', name: '尼日利亚奈拉' },
+                    { symbol: 'zł', name: '波兰兹罗提' },
+                    { symbol: '﷼', name: '伊朗里亚尔' },
+                    { symbol: '₠', name: '欧洲货币单位' },
+                    { symbol: '₧', name: '比塞塔' },
+                    { symbol: '₯', name: '德拉克马' },
+                    { symbol: '₨', name: '卢比' },
+                    { symbol: 'Kč', name: '捷克克朗' },
+                    { symbol: 'र', name: '印度卢比' },
+                    { symbol: '₹', name: '印度卢比' },
+                    { symbol: 'ƒ', name: '荷兰盾' },
+                    { symbol: '₸', name: '哈萨克斯坦坚戈' },
+                    { symbol: '￠', name: '美分' }
+                ]
+            },
+            
+            cyrillic: {
+                name: "俄语字母",
+                icon: "fa-language",
+                symbols: [
+                    { symbol: 'А', name: '俄语A' },
+                    { symbol: 'Б', name: '俄语B' },
+                    { symbol: 'В', name: '俄语V' },
+                    { symbol: 'Г', name: '俄语G' },
+                    { symbol: 'Д', name: '俄语D' },
+                    { symbol: 'Е', name: '俄语E' },
+                    { symbol: 'Ё', name: '俄语Yo' },
+                    { symbol: 'Ж', name: '俄语Zh' },
+                    { symbol: 'З', name: '俄语Z' },
+                    { symbol: 'И', name: '俄语I' },
+                    { symbol: 'Й', name: '俄语Y' },
+                    { symbol: 'К', name: '俄语K' },
+                    { symbol: 'Л', name: '俄语L' },
+                    { symbol: 'М', name: '俄语M' },
+                    { symbol: 'Н', name: '俄语N' },
+                    { symbol: 'О', name: '俄语O' },
+                    { symbol: 'П', name: '俄语P' },
+                    { symbol: 'Р', name: '俄语R' },
+                    { symbol: 'С', name: '俄语S' },
+                    { symbol: 'Т', name: '俄语T' },
+                    { symbol: 'У', name: '俄语U' },
+                    { symbol: 'Ф', name: '俄语F' },
+                    { symbol: 'Х', name: '俄语Kh' },
+                    { symbol: 'Ц', name: '俄语Ts' },
+                    { symbol: 'Ч', name: '俄语Ch' },
+                    { symbol: 'Ш', name: '俄语Sh' },
+                    { symbol: 'Щ', name: '俄语Shch' },
+                    { symbol: 'Ъ', name: '俄语硬音符号' },
+                    { symbol: 'Ы', name: '俄语Y' },
+                    { symbol: 'Ь', name: '俄语软音符号' },
+                    { symbol: 'Э', name: '俄语E' },
+                    { symbol: 'Ю', name: '俄语Yu' },
+                    { symbol: 'Я', name: '俄语Ya' },
+                    { symbol: 'а', name: '俄语小写a' },
+                    { symbol: 'б', name: '俄语小写b' },
+                    { symbol: 'в', name: '俄语小写v' },
+                    { symbol: 'г', name: '俄语小写g' },
+                    { symbol: 'д', name: '俄语小写d' },
+                    { symbol: 'е', name: '俄语小写e' },
+                    { symbol: 'ё', name: '俄语小写yo' },
+                    { symbol: 'ж', name: '俄语小写zh' },
+                    { symbol: 'з', name: '俄语小写z' },
+                    { symbol: 'и', name: '俄语小写i' },
+                    { symbol: 'й', name: '俄语小写y' },
+                    { symbol: 'к', name: '俄语小写k' },
+                    { symbol: 'л', name: '俄语小写l' },
+                    { symbol: 'м', name: '俄语小写m' },
+                    { symbol: 'н', name: '俄语小写n' }
+                ]
+            },
+            
+            pinyin: {
+                name: "汉语拼音",
+                icon: "fa-font",
+                symbols: [
+                    { symbol: 'ā', name: 'a一声' },
+                    { symbol: 'á', name: 'a二声' },
+                    { symbol: 'ǎ', name: 'a三声' },
+                    { symbol: 'à', name: 'a四声' },
+                    { symbol: 'ō', name: 'o一声' },
+                    { symbol: 'ó', name: 'o二声' },
+                    { symbol: 'ǒ', name: 'o三声' },
+                    { symbol: 'ò', name: 'o四声' },
+                    { symbol: 'ē', name: 'e一声' },
+                    { symbol: 'é', name: 'e二声' },
+                    { symbol: 'ě', name: 'e三声' },
+                    { symbol: 'è', name: 'e四声' },
+                    { symbol: 'ī', name: 'i一声' },
+                    { symbol: 'í', name: 'i二声' },
+                    { symbol: 'ǐ', name: 'i三声' },
+                    { symbol: 'ì', name: 'i四声' },
+                    { symbol: 'ū', name: 'u一声' },
+                    { symbol: 'ú', name: 'u二声' },
+                    { symbol: 'ǔ', name: 'u三声' },
+                    { symbol: 'ù', name: 'u四声' },
+                    { symbol: 'ǖ', name: 'ü一声' },
+                    { symbol: 'ǘ', name: 'ü二声' },
+                    { symbol: 'ǚ', name: 'ü三声' },
+                    { symbol: 'ǜ', name: 'ü四声' },
+                    { symbol: 'ü', name: 'ü' },
+                    { symbol: 'ê', name: 'ê' },
+                    { symbol: 'ɑ', name: 'ɑ' },
+                    { symbol: '', name: 'ɑn' },
+                    { symbol: 'ń', name: 'n二声' },
+                    { symbol: 'ň', name: 'n三声' },
+                    { symbol: '', name: 'n四声' },
+                    { symbol: 'ɡ', name: 'g' },
+                    { symbol: 'ㄅ', name: '拼音b' },
+                    { symbol: 'ㄆ', name: '拼音p' },
+                    { symbol: 'ㄇ', name: '拼音m' },
+                    { symbol: 'ㄈ', name: '拼音f' },
+                    { symbol: 'ㄉ', name: '拼音d' },
+                    { symbol: 'ㄊ', name: '拼音t' },
+                    { symbol: 'ㄋ', name: '拼音n' },
+                    { symbol: 'ㄌ', name: '拼音l' },
+                    { symbol: 'ㄍ', name: '拼音g' },
+                    { symbol: 'ㄎ', name: '拼音k' },
+                    { symbol: 'ㄏ', name: '拼音h' },
+                    { symbol: 'ㄐ', name: '拼音j' },
+                    { symbol: 'ㄑ', name: '拼音q' },
+                    { symbol: 'ㄒ', name: '拼音x' }
+                ]
+            },
+            
+            chineseSpecial: {
+                name: "特殊中文字符",
+                icon: "fa-font-awesome",
+                symbols: [
+                    { symbol: '零', name: '零' },
+                    { symbol: '壹', name: '壹' },
+                    { symbol: '贰', name: '贰' },
+                    { symbol: '叁', name: '叁' },
+                    { symbol: '肆', name: '肆' },
+                    { symbol: '伍', name: '伍' },
+                    { symbol: '陆', name: '陆' },
+                    { symbol: '柒', name: '柒' },
+                    { symbol: '捌', name: '捌' },
+                    { symbol: '玖', name: '玖' },
+                    { symbol: '拾', name: '拾' },
+                    { symbol: '佰', name: '佰' },
+                    { symbol: '仟', name: '仟' },
+                    { symbol: '万', name: '万' },
+                    { symbol: '亿', name: '亿' },
+                    { symbol: '吉', name: '吉' },
+                    { symbol: '太', name: '太' },
+                    { symbol: '拍', name: '拍' },
+                    { symbol: '艾', name: '艾' },
+                    { symbol: '分', name: '分' },
+                    { symbol: '厘', name: '厘' },
+                    { symbol: '毫', name: '毫' },
+                    { symbol: '微', name: '微' },
+                    { symbol: '卍', name: '卍字符' },
+                    { symbol: '卐', name: '反卍字符' },
+                    { symbol: '卄', name: '二十' },
+                    { symbol: '巜', name: '双书名号左' },
+                    { symbol: '弍', name: '二' },
+                    { symbol: '弎', name: '三' },
+                    { symbol: '弐', name: '二' },
+                    { symbol: '朤', name: '四日' },
+                    { symbol: '氺', name: '水' },
+                    { symbol: '曱', name: '曱' },
+                    { symbol: '甴', name: '甴' },
+                    { symbol: '囍', name: '双喜' },
+                    { symbol: '兀', name: '兀' },
+                    { symbol: '々', name: '重复符号' },
+                    { symbol: '〆', name: '签名符号' },
+                    { symbol: 'の', name: '之' },
+                    { symbol: 'ぁ', name: '啊' },
+                    { symbol: '〡', name: '数字1' },
+                    { symbol: '〢', name: '数字2' },
+                    { symbol: '〣', name: '数字3' },
+                    { symbol: '〤', name: '数字4' },
+                    { symbol: '〥', name: '数字5' },
+                    { symbol: '〦', name: '数字6' },
+                    { symbol: '〧', name: '数字7' },
+                    { symbol: '〨', name: '数字8' },
+                    { symbol: '〩', name: '数字9' }
+                ]
+            },
+            
+            japanese: {
+                name: "日文假名",
+                icon: "fa-comment-o",
+                symbols: [
+                    { symbol: 'ぁ', name: '平假名a' },
+                    { symbol: 'あ', name: '平假名A' },
+                    { symbol: 'ぃ', name: '平假名i' },
+                    { symbol: 'い', name: '平假名I' },
+                    { symbol: 'ぅ', name: '平假名u' },
+                    { symbol: 'う', name: '平假名U' },
+                    { symbol: 'ぇ', name: '平假名e' },
+                    { symbol: 'え', name: '平假名E' },
+                    { symbol: 'ぉ', name: '平假名o' },
+                    { symbol: 'お', name: '平假名O' },
+                    { symbol: 'か', name: '平假名ka' },
+                    { symbol: 'が', name: '平假名ga' },
+                    { symbol: 'き', name: '平假名ki' },
+                    { symbol: 'ぎ', name: '平假名gi' },
+                    { symbol: 'く', name: '平假名ku' },
+                    { symbol: 'ぐ', name: '平假名gu' },
+                    { symbol: 'け', name: '平假名ke' },
+                    { symbol: 'げ', name: '平假名ge' },
+                    { symbol: 'こ', name: '平假名ko' },
+                    { symbol: 'ご', name: '平假名go' },
+                    { symbol: 'さ', name: '平假名sa' },
+                    { symbol: 'ざ', name: '平假名za' },
+                    { symbol: 'し', name: '平假名shi' },
+                    { symbol: 'じ', name: '平假名ji' },
+                    { symbol: 'す', name: '平假名su' },
+                    { symbol: 'ず', name: '平假名zu' },
+                    { symbol: 'せ', name: '平假名se' },
+                    { symbol: 'ぜ', name: '平假名ze' },
+                    { symbol: 'そ', name: '平假名so' },
+                    { symbol: 'ぞ', name: '平假名zo' },
+                    { symbol: 'た', name: '平假名ta' },
+                    { symbol: 'だ', name: '平假名da' },
+                    { symbol: 'ち', name: '平假名chi' },
+                    { symbol: 'ぢ', name: '平假名ji' },
+                    { symbol: 'っ', name: '平假名字母促音' },
+                    { symbol: 'つ', name: '平假名tsu' },
+                    { symbol: 'づ', name: '平假名zu' },
+                    { symbol: 'て', name: '平假名te' },
+                    { symbol: 'で', name: '平假名de' },
+                    { symbol: 'と', name: '平假名to' },
+                    { symbol: 'ど', name: '平假名do' },
+                    { symbol: 'ャ', name: '片假名小ya' },
+                    { symbol: 'ヤ', name: '片假名ya' },
+                    { symbol: 'ュ', name: '片假名小yu' },
+                    { symbol: 'ユ', name: '片假名yu' },
+                    { symbol: 'ョ', name: '片假名小yo' },
+                    { symbol: 'ヨ', name: '片假名yo' },
+                    { symbol: 'ラ', name: '片假名ra' },
+                    { symbol: 'リ', name: '片假名ri' },
+                    { symbol: 'ル', name: '片假名ru' }
+                ]
+            }
+        };
+
+        // 初始化变量
+        let totalSymbolsCount = 0;
+        let totalCategoriesCount = Object.keys(symbolData).length;
+        
+        // 渲染符号到页面
+        function renderSymbols() {
+            const container = document.getElementById('symbolCategories');
+            const tabsContainer = document.querySelector('.flex.space-x-2');
+            
+            // 遍历每个符号类别
+            for (const [categoryId, categoryInfo] of Object.entries(symbolData)) {
+                // 计算总符号数
+                totalSymbolsCount += categoryInfo.symbols.length;
+                
+                // 创建分类标签
+                const tab = document.createElement('button');
+                tab.className = 'category-tab px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium transition-all hover:bg-gray-200';
+                tab.dataset.category = categoryId;
+                tab.innerHTML = `<i class="fa ${categoryInfo.icon} mr-1"></i>${categoryInfo.name}`;
+                tabsContainer.appendChild(tab);
+                
+                // 创建分类区块
+                const categorySection = document.createElement('section');
+                categorySection.className = 'category-section';
+                categorySection.dataset.category = categoryId;
+                
+                // 创建分类标题
+                const header = document.createElement('h2');
+                header.className = 'category-header flex items-center';
+                header.innerHTML = `<i class="fa ${categoryInfo.icon} text-primary mr-2"></i>${categoryInfo.name}`;
+                categorySection.appendChild(header);
+                
+                // 创建符号网格
+                const symbolsGrid = document.createElement('div');
+                symbolsGrid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4';
+                
+                // 添加符号
+                categoryInfo.symbols.forEach(symbolInfo => {
+                    const symbolContainer = document.createElement('div');
+                    symbolContainer.className = 'symbol-container relative';
+                    symbolContainer.setAttribute('data-symbol', symbolInfo.symbol);
+                    symbolContainer.setAttribute('data-name', symbolInfo.name);
+                    symbolContainer.setAttribute('data-category', categoryId);
+                    
+                    const symbolCard = document.createElement('div');
+                    symbolCard.className = 'symbol-card text-2xl';
+                    symbolCard.textContent = symbolInfo.symbol;
+                    
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'symbol-tooltip';
+                    tooltip.textContent = `${symbolInfo.symbol} ${symbolInfo.name}`;
+                    
+                    symbolContainer.appendChild(symbolCard);
+                    symbolContainer.appendChild(tooltip);
+                    symbolsGrid.appendChild(symbolContainer);
+                    
+                    // 添加点击复制功能
+                    symbolContainer.addEventListener('click', () => {
+                        copyToClipboard(symbolInfo.symbol);
+                        showNotification(`已复制: ${symbolInfo.symbol}`);
+                        
+                        // 添加点击动画
+                        symbolCard.classList.add('scale-90', 'bg-primary/10', 'border-primary');
+                        setTimeout(() => {
+                            symbolCard.classList.remove('scale-90', 'bg-primary/10', 'border-primary');
+                        }, 200);
+                    });
+                });
+                
+                categorySection.appendChild(symbolsGrid);
+                container.appendChild(categorySection);
+            }
+            
+            // 更新统计信息
+            document.getElementById('totalSymbols').textContent = totalSymbolsCount;
+            document.getElementById('totalCategories').textContent = totalCategoriesCount;
+            
+            // 设置分类标签点击事件
+            setupCategoryTabs();
+        }
+
+        // 分类标签功能
+        function setupCategoryTabs() {
+            const tabs = document.querySelectorAll('.category-tab');
+            const sections = document.querySelectorAll('.category-section');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // 移除所有标签的活动状态
+                    tabs.forEach(t => {
+                        t.classList.remove('active', 'bg-primary', 'text-white');
+                        t.classList.add('bg-gray-100', 'text-gray-700');
+                    });
+                    
+                    // 设置当前标签为活动状态
+                    tab.classList.add('active', 'bg-primary', 'text-white');
+                    tab.classList.remove('bg-gray-100', 'text-gray-700');
+                    
+                    const category = tab.dataset.category;
+                    
+                    // 显示/隐藏对应分类
+                    sections.forEach(section => {
+                        if (category === 'all' || section.dataset.category === category) {
+                            section.classList.remove('hidden');
+                        } else {
+                            section.classList.add('hidden');
+                        }
+                    });
+                    
+                    // 滚动到顶部
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+        }
+
+        // 复制到剪贴板功能
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).catch(err => {
+                console.error('无法复制文本: ', err);
+                // 备用方法
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            });
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.getElementById('copyNotification');
+            notification.querySelector('span').textContent = message;
+            notification.classList.remove('translate-y-20', 'opacity-0');
+            notification.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-y-0', 'opacity-100');
+                notification.classList.add('translate-y-20', 'opacity-0');
+            }, 2000);
+        }
+
+        // 搜索功能
+        function setupSearch() {
+            const symbolSearch = document.getElementById('symbolSearch');
+            const clearSearch = document.getElementById('clearSearch');
+            const searchResults = document.getElementById('searchResults');
+            const searchResultsContainer = document.getElementById('searchResultsContainer');
+            const resultsCount = document.getElementById('resultsCount');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            const categories = document.querySelectorAll('.category-section');
+            
+            // 监听搜索输入
+            symbolSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                
+                // 显示/隐藏清除按钮
+                if (searchTerm.length > 0) {
+                    clearSearch.classList.remove('hidden');
+                } else {
+                    clearSearch.classList.add('hidden');
+                    searchResults.classList.add('hidden');
+                    // 显示所有分类
+                    categories.forEach(cat => cat.classList.remove('hidden'));
+                    return;
+                }
+                
+                // 隐藏所有分类
+                categories.forEach(cat => cat.classList.add('hidden'));
+                
+                // 清空之前的搜索结果
+                searchResultsContainer.innerHTML = '';
+                let resultsFound = 0;
+                
+                // 搜索所有符号
+                for (const [categoryId, categoryInfo] of Object.entries(symbolData)) {
+                    categoryInfo.symbols.forEach(symbolInfo => {
+                        const symbolMatch = symbolInfo.symbol.toLowerCase().includes(searchTerm);
+                        const nameMatch = symbolInfo.name.toLowerCase().includes(searchTerm);
+                        
+                        if (symbolMatch || nameMatch) {
+                            resultsFound++;
+                            
+                            // 创建搜索结果元素
+                            const symbolContainer = document.createElement('div');
+                            symbolContainer.className = 'symbol-container relative';
+                            
+                            const symbolCard = document.createElement('div');
+                            symbolCard.className = 'symbol-card text-2xl';
+                            
+                            // 高亮匹配的符号
+                            if (symbolMatch) {
+                                symbolCard.textContent = symbolInfo.symbol;
+                            } else {
+                                symbolCard.textContent = symbolInfo.symbol;
+                            }
+                            
+                            const tooltip = document.createElement('div');
+                            tooltip.className = 'symbol-tooltip';
+                            
+                            // 高亮匹配的名称
+                            if (nameMatch) {
+                                const highlightedName = symbolInfo.name.replace(
+                                    new RegExp(searchTerm, 'gi'),
+                                    match => `<span class="search-highlight">${match}</span>`
+                                );
+                                tooltip.innerHTML = `${symbolInfo.symbol} ${highlightedName}`;
+                            } else {
+                                tooltip.textContent = `${symbolInfo.symbol} ${symbolInfo.name}`;
+                            }
+                            
+                            symbolContainer.appendChild(symbolCard);
+                            symbolContainer.appendChild(tooltip);
+                            searchResultsContainer.appendChild(symbolContainer);
+                            
+                            // 添加点击复制功能
+                            symbolContainer.addEventListener('click', () => {
+                                copyToClipboard(symbolInfo.symbol);
+                                showNotification(`已复制: ${symbolInfo.symbol}`);
+                                
+                                // 添加点击动画
+                                symbolCard.classList.add('scale-90', 'bg-primary/10', 'border-primary');
+                                setTimeout(() => {
+                                    symbolCard.classList.remove('scale-90', 'bg-primary/10', 'border-primary');
+                                }, 200);
+                            });
+                        }
+                    });
+                }
+                
+                // 更新结果计数
+                resultsCount.textContent = `(${resultsFound} 个结果)`;
+                
+                if (resultsFound > 0) {
+                    searchResults.classList.remove('hidden');
+                } else {
+                    searchResultsContainer.innerHTML = '<p class="col-span-full text-center py-8 text-gray-500">没有找到匹配的符号</p>';
+                    searchResults.classList.remove('hidden');
+                }
+            });
+            
+            // 清除搜索
+            function clearSearchHandler() {
+                symbolSearch.value = '';
+                clearSearch.classList.add('hidden');
+                searchResults.classList.add('hidden');
+                // 显示所有分类
+                categories.forEach(cat => cat.classList.remove('hidden'));
+                // 重置分类标签
+                document.querySelector('.category-tab[data-category="all"]').click();
+            }
+            
+            clearSearch.addEventListener('click', clearSearchHandler);
+            clearSearchBtn.addEventListener('click', clearSearchHandler);
+            
+            // 点击外部关闭搜索结果
+            document.addEventListener('click', (e) => {
+                if (!searchResults.contains(e.target) && 
+                    e.target !== symbolSearch && 
+                    !symbolSearch.contains(e.target) &&
+                    symbolSearch.value.trim().length > 0) {
+                    searchResults.classList.remove('hidden');
+                }
+            });
+        }
+
+        // 深色/浅色模式切换
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            const icon = themeToggle.querySelector('i');
+            
+            // 检查本地存储的主题偏好
+            if (localStorage.getItem('theme') === 'dark' || 
+                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                html.classList.add('dark');
+                icon.classList.remove('fa-moon-o');
+                icon.classList.add('fa-sun-o');
+            }
+            
+            // 切换主题
+            themeToggle.addEventListener('click', () => {
+                if (html.classList.contains('dark')) {
+                    html.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    icon.classList.remove('fa-sun-o');
+                    icon.classList.add('fa-moon-o');
+                } else {
+                    html.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    icon.classList.remove('fa-moon-o');
+                    icon.classList.add('fa-sun-o');
+                }
+            });
+        }
+
+        // 返回顶部按钮
+        function setupBackToTop() {
+            const backToTopBtn = document.getElementById('backToTop');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopBtn.classList.remove('opacity-0', 'invisible');
+                    backToTopBtn.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopBtn.classList.remove('opacity-100', 'visible');
+                    backToTopBtn.classList.add('opacity-0', 'invisible');
+                }
+            });
+            
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // 滚动时导航栏效果
+        function setupScrollEffects() {
+            const header = document.getElementById('mainHeader');
+            let lastScrollTop = 0;
+            
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.scrollY;
+                
+                if (scrollTop > 50) {
+                    header.classList.add('py-2', 'shadow');
+                    header.classList.remove('py-4');
+                } else {
+                    header.classList.add('py-4');
+                    header.classList.remove('py-2', 'shadow');
+                }
+                
+                lastScrollTop = scrollTop;
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSymbols();
+            setupSearch();
+            setupThemeToggle();
+            setupBackToTop();
+            setupScrollEffects();
+            
+            // 初始化显示所有符号
+            document.querySelector('.category-tab[data-category="all"]').classList.add('active', 'bg-primary', 'text-white');
+            document.querySelector('.category-tab[data-category="all"]').classList.remove('bg-gray-100', 'text-gray-700');
+        });
+    </script>
+</body>
+</html>

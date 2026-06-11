@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打字练习 - 提升你的打字速度</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        success: '#10b981',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .typing-cursor {
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .word-new {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stat-card {
+            animation: fadeInUp 0.5s ease-out backwards;
+        }
+        
+        .correct {
+            color: #10b981;
+            text-decoration: none;
+        }
+        
+        .current {
+            background: #3b82f6;
+            color: white;
+            border-radius: 4px;
+            padding: 0 2px;
+        }
+        
+        .incorrect {
+            color: #ef4444;
+            text-decoration: underline;
+            text-decoration-style: wavy;
+        }
+        
+        .pending {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 min-h-screen p-4 md:p-8">
+    <div class="container mx-auto max-w-4xl">
+        <!-- 标题 -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-2">
+                <i class="fa fa-keyboard-o text-blue-400 mr-2"></i>打字练习
+            </h1>
+            <p class="text-gray-400">提升打字速度，挑战自我！</p>
+        </header>
+
+        <!-- 统计面板 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="stat-card bg-white/10 backdrop-blur rounded-xl p-4 text-center border border-blue-400/20" style="animation-delay: 0.1s">
+                <div class="text-sm text-gray-400 mb-1">打字速度</div>
+                <div id="wpm" class="text-3xl font-bold text-blue-400">0</div>
+                <div class="text-xs text-gray-500">字/分钟</div>
+            </div>
+            <div class="stat-card bg-white/10 backdrop-blur rounded-xl p-4 text-center border border-emerald-400/20" style="animation-delay: 0.2s">
+                <div class="text-sm text-gray-400 mb-1">准确率</div>
+                <div id="accuracy" class="text-3xl font-bold text-emerald-400">100%</div>
+                <div class="text-xs text-gray-500">正确率</div>
+            </div>
+            <div class="stat-card bg-white/10 backdrop-blur rounded-xl p-4 text-center border border-amber-400/20" style="animation-delay: 0.3s">
+                <div class="text-sm text-gray-400 mb-1">已打字数</div>
+                <div id="typed" class="text-3xl font-bold text-amber-400">0</div>
+                <div class="text-xs text-gray-500">个字符</div>
+            </div>
+            <div class="stat-card bg-white/10 backdrop-blur rounded-xl p-4 text-center border border-pink-400/20" style="animation-delay: 0.4s">
+                <div class="text-sm text-gray-400 mb-1">正确字数</div>
+                <div id="correct" class="text-3xl font-bold text-pink-400">0</div>
+                <div class="text-xs text-gray-500">正确</div>
+            </div>
+        </div>
+
+        <!-- 游戏区域 -->
+        <div class="bg-white/5 backdrop-blur rounded-2xl p-6 md:p-8 border border-blue-400/20 mb-6">
+            <!-- 进度条 -->
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-sm text-gray-400">进度</span>
+                <span id="progress-text" class="text-sm text-blue-400">0%</span>
+            </div>
+            <div class="w-full h-2 bg-white/10 rounded-full mb-6">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <!-- 文本显示区域 -->
+            <div id="text-display" class="text-xl md:text-2xl leading-relaxed mb-6 min-h-[120px]">
+                <!-- 文字会通过JS生成 -->
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="input-field" 
+                    class="w-full bg-white/10 border-2 border-blue-400/30 rounded-xl px-6 py-4 text-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-400 transition-all"
+                    placeholder="点击这里开始输入..."
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                >
+                <div id="start-hint" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span class="text-gray-500 text-lg">按下任意键开始...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="flex justify-center gap-4 mb-6">
+            <button id="restart-btn" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-1">
+                <i class="fa fa-refresh mr-2"></i>重新开始
+            </button>
+            <select id="difficulty-select" class="bg-white/10 text-white px-6 py-3 rounded-xl border border-blue-400/30 hover:border-blue-400 transition-all">
+                <option value="easy" class="bg-slate-800">简单模式</option>
+                <option value="normal" selected class="bg-slate-800">普通模式</option>
+                <option value="hard" class="bg-slate-800">困难模式</option>
+            </select>
+        </div>
+
+        <!-- 说明 -->
+        <div class="bg-white/5 backdrop-blur rounded-xl p-6 border border-blue-400/10">
+            <h3 class="font-bold text-blue-400 mb-3"><i class="fa fa-info-circle mr-2"></i>打字技巧</h3>
+            <ul class="text-gray-400 space-y-2 text-sm">
+                <li>• 保持正确的指法，不要一直看键盘</li>
+                <li>• 专注于准确率而非速度</li>
+                <li>• 遇到不会的单词不要停顿，继续打下去</li>
+                <li>• 定期练习可以显著提升打字速度</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 文本库
+        const texts = {
+            easy: [
+                '学习是一个持续的过程。每天进步一点点，日积月累就会有大变化。',
+                '阳光照耀大地，微风轻拂树叶。新的一天充满了希望和可能。',
+                '音乐是人类共同的语言。优美的旋律可以触动每个人的心弦。',
+                '书是人类进步的阶梯。通过阅读我们可以站在巨人的肩膀上。',
+                '友谊是一种珍贵的情感。真正的朋友会在你需要时伸出援手。',
+                '科技创新改变着我们的生活。拥抱变化才能跟上时代的步伐。',
+                '健康是人生最大的财富。保持良好的生活习惯才能拥有健康的体魄。',
+                '自然之美无处不在。只要用心观察，就能发现身边的美好。',
+                '时间是最公平的资源。珍惜每一分每一秒，让生命更有价值。',
+                '梦想是人生的动力。为梦想努力，让生活充满意义。'
+            ],
+            normal: [
+                '计算机编程是一门创造性的艺术。通过代码，我们可以构建虚拟世界，解决现实问题。',
+                '人工智能正在深刻改变各行各业的运作方式。从医疗诊断到自动驾驶，AI的应用无处不在。',
+                '良好的时间管理能够显著提高工作效率。合理规划时间，让每一天都过得充实而有意义。',
+                '环境保护是全人类的共同责任。我们每个人都可以为建设美丽中国贡献自己的一份力量。',
+                '互联网连接了整个世界，让信息传递变得前所未有的便捷。知识的获取从未如此简单。',
+                '数学是科学的基础，是理解世界的重要工具。培养数学思维能够提升我们的逻辑能力。',
+                '历史是一面镜子，可以让我们了解过去，更好地把握现在，预见未来。',
+                '文学艺术滋养着人类的精神世界。优秀的作品能够跨越时空，触动读者的心灵。',
+                '体育锻炼不仅能够强健体魄，还能磨炼意志。保持运动习惯是健康生活的重要组成部分。',
+                '团队合作是现代社会必备的能力。学会与他人协作，能够让我们在工作和生活中取得更大的成就。'
+            ],
+            hard: [
+                '量子计算是一项颠覆性的技术，它利用量子力学原理来处理信息，理论上能够在短时间内解决传统计算机需要数千年才能完成的复杂问题。',
+                '区块链技术作为一种去中心化的分布式账本技术，通过密码学方法确保数据的不可篡改性和可追溯性，为数字经济的发展提供了新的可能性。',
+                '人工智能与机器学习的快速发展正在重塑各行各业的格局，从医疗诊断到金融风控，从自动驾驶到智能制造，AI的应用正在深刻改变人类社会的面貌。',
+                '可持续发展强调经济、社会和环境的协调发展，要求我们在发展经济的同时，保护生态环境，促進社会公平，为子孙后代留下美好的生存空间。',
+                '全球化进程促进了各国之间的经济文化交流，但同时也带来了文化同质化的风险。如何在全球化浪潮中保持文化的多样性和独特性，是我们面临的重要课题。',
+                '数据科学与大数据技术的结合，使得我们能够从海量数据中挖掘出有价值的信息和规律，为企业决策和科学研究提供了强有力的支持。',
+                '网络安全已成为数字时代的重要议题。随着网络攻击手段的不断升级，加强网络安全防护意识，提高防范能力，对于个人和企业都至关重要。',
+                '生命科学的突破正在揭开人体奥秘的更多层面。从基因编辑到细胞疗法，生物技术为人类健康事业带来了革命性的变革和希望。'
+            ]
+        };
+
+        // 游戏状态
+        let currentText = '';
+        let currentIndex = 0;
+        let startTime = null;
+        let totalChars = 0;
+        let correctChars = 0;
+        let isGameStarted = false;
+        let isGameFinished = false;
+
+        // DOM元素
+        const inputField = document.getElementById('input-field');
+        const textDisplay = document.getElementById('text-display');
+        const startHint = document.getElementById('start-hint');
+        const restartBtn = document.getElementById('restart-btn');
+        const difficultySelect = document.getElementById('difficulty-select');
+
+        // 初始化游戏
+        function initGame() {
+            const difficulty = difficultySelect.value;
+            const textArray = texts[difficulty];
+            currentText = textArray[Math.floor(Math.random() * textArray.length)];
+            currentIndex = 0;
+            startTime = null;
+            totalChars = 0;
+            correctChars = 0;
+            isGameStarted = false;
+            isGameFinished = false;
+            
+            inputField.value = '';
+            inputField.disabled = false;
+            startHint.classList.remove('hidden');
+            
+            renderText();
+            updateStats();
+        }
+
+        // 渲染文本
+        function renderText() {
+            const chars = currentText.split('');
+            let html = '';
+            
+            chars.forEach((char, index) => {
+                if (index < currentIndex) {
+                    // 已输入并正确
+                    html += `<span class="correct">${char}</span>`;
+                } else if (index === currentIndex) {
+                    // 当前字符
+                    html += `<span class="current typing-cursor">${char}</span>`;
+                } else {
+                    // 未输入
+                    html += `<span class="pending">${char}</span>`;
+                }
+            });
+            
+            textDisplay.innerHTML = `<div class="word-new">${html}</div>`;
+        }
+
+        // 更新统计
+        function updateStats() {
+            const elapsed = startTime ? (Date.now() - startTime) / 1000 / 60 : 0; // 分钟
+            const wpm = elapsed > 0 ? Math.round((correctChars / 5) / elapsed) : 0;
+            const accuracy = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;
+            
+            document.getElementById('wpm').textContent = wpm;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('typed').textContent = totalChars;
+            document.getElementById('correct').textContent = correctChars;
+            
+            const progress = Math.round((currentIndex / currentText.length) * 100);
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = progress + '%';
+        }
+
+        // 处理输入
+        function handleInput(e) {
+            if (isGameFinished) return;
+            
+            const inputValue = inputField.value;
+            
+            // 开始计时
+            if (!isGameStarted && inputValue.length > 0) {
+                isGameStarted = true;
+                startTime = Date.now();
+                startHint.classList.add('hidden');
+                
+                // 开始更新统计
+                updateStatsInterval = setInterval(() => {
+                    if (isGameStarted && !isGameFinished) {
+                        updateStats();
+                    }
+                }, 1000);
+            }
+            
+            const currentChar = currentText[currentIndex];
+            const inputChar = inputValue[inputValue.length - 1];
+            
+            if (inputChar !== undefined) {
+                totalChars++;
+                
+                if (inputChar === currentChar) {
+                    correctChars++;
+                    currentIndex++;
+                } else {
+                    // 错误输入，但仍然继续
+                    currentIndex++;
+                }
+                
+                renderText();
+                updateStats();
+                
+                // 检查是否完成
+                if (currentIndex >= currentText.length) {
+                    gameFinish();
+                }
+            }
+        }
+
+        // 游戏结束
+        function gameFinish() {
+            isGameFinished = true;
+            inputField.disabled = true;
+            clearInterval(updateStatsInterval);
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = Math.floor(elapsed % 60);
+            
+            setTimeout(() => {
+                alert(`🎉 恭喜完成！\n\n用时: ${minutes}分${seconds}秒\n打字速度: ${Math.round((correctChars / 5) / (elapsed / 60))} 字/分钟\n准确率: ${Math.round((correctChars / totalChars) * 100)}%`);
+            }, 100);
+        }
+
+        // 事件监听
+        inputField.addEventListener('input', handleInput);
+        
+        inputField.addEventListener('focus', () => {
+            if (!isGameStarted) {
+                startHint.classList.add('hidden');
+            }
+        });
+        
+        inputField.addEventListener('blur', () => {
+            if (!isGameStarted) {
+                startHint.classList.remove('hidden');
+            }
+        });
+
+        restartBtn.addEventListener('click', () => {
+            clearInterval(updateStatsInterval);
+            initGame();
+            inputField.focus();
+        });
+
+        difficultySelect.addEventListener('change', () => {
+            clearInterval(updateStatsInterval);
+            initGame();
+        });
+
+        // 全局按键监听
+        document.addEventListener('keydown', (e) => {
+            if (!isGameStarted && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+                inputField.focus();
+            }
+        });
+
+        // 初始化
+        initGame();
+    </script>
+</body>
+</html>

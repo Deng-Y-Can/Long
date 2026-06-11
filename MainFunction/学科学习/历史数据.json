@@ -1,6 +1,54 @@
 {
   "timeline": [
     {
+      "time": "约300万年前",
+      "education_level": "初中",
+      "region": "国外",
+      "event": "南方古猿阿法种出现",
+      "significance": "被认为是人类最早的祖先之一，发现的“露西”化石是重要证据",
+      "additional_info": "1974年在埃塞俄比亚发现露西化石，距今约320万年"
+    },
+    {
+      "time": "约200万年前",
+      "education_level": "初中",
+      "region": "国外",
+      "event": "能人出现",
+      "significance": "最早制造工具的人类，标志着人类进化的重要里程碑",
+      "additional_info": "能人是最早的人属成员，脑容量比南方古猿大"
+    },
+    {
+      "time": "约170万年前",
+      "education_level": "初中",
+      "region": "国外",
+      "event": "匠人出现",
+      "significance": "第一个走出非洲的人类物种，学会使用火和制造更先进的工具",
+      "additional_info": "匠人化石发现于非洲和亚洲多个地点"
+    },
+    {
+      "time": "约120万年前",
+      "education_level": "初中",
+      "region": "国外",
+      "event": "海德堡人出现",
+      "significance": "尼安德特人和智人的共同祖先，开始使用木矛等复合工具",
+      "additional_info": "化石发现于德国海德堡附近"
+    },
+    {
+      "time": "约70万年前",
+      "education_level": "初中",
+      "region": "国外",
+      "event": "尼安德特人出现",
+      "significance": "适应寒冷气候的人类物种，具有高度智慧和社会组织",
+      "additional_info": "主要分布在欧洲和西亚，灭绝于约3万年前"
+    },
+    {
+      "time": "约30万年前",
+      "education_level": "初中",
+      "region": "国外",
+      "event": "智人出现",
+      "significance": "现代人类的直接祖先，具有语言能力和复杂思维",
+      "additional_info": "起源于非洲，后来扩散到全球各地"
+    },
+    {
       "time": "约1200万年前",
       "education_level": "初中",
       "region": "国外",
@@ -119,6 +167,22 @@
       "event": "战国时期",
       "significance": "封建制度逐步确立，各国进行变法，思想领域出现百家争鸣的局面，为中国古代文化的发展奠定了基础",
       "additional_info": "主要诸侯国有齐、楚、燕、韩、赵、魏、秦"
+    },
+    {
+      "time": "公元前551年",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "孔子诞生",
+      "significance": "儒家学派创始人，其思想对中国和东亚文化产生深远影响",
+      "additional_info": "名丘，字仲尼，鲁国陬邑人，晚年修订六经"
+    },
+    {
+      "time": "公元前5世纪",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "百家争鸣",
+      "significance": "中国历史上第一次思想解放运动，形成儒家、道家、墨家、法家等重要学派",
+      "additional_info": "各学派相互辩论、相互影响，奠定了中国传统文化的基础"
     },
     {
       "time": "公元前356年",
@@ -249,6 +313,22 @@
       "additional_info": "南朝包括宋、齐、梁、陈，北朝包括北魏、东魏、西魏、北齐、北周"
     },
     {
+      "time": "约公元462年",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "祖冲之算出圆周率精确到小数点后七位",
+      "significance": "在世界上首次将圆周率精确到小数点后第七位，领先世界近千年",
+      "additional_info": "祖冲之还编制了《大明历》，改进了历法"
+    },
+    {
+      "time": "约公元533年",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "贾思勰著《齐民要术》",
+      "significance": "中国现存最早的完整农书，系统总结了六世纪以前黄河中下游地区的农业生产经验",
+      "additional_info": "全书共十卷，内容涉及农作物栽培、畜牧、农产品加工等"
+    },
+    {
       "time": "公元581年",
       "education_level": "初中",
       "region": "国内",
@@ -297,12 +377,44 @@
       "additional_info": "由安禄山和史思明发动的叛乱"
     },
     {
+      "time": "约公元868年",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "雕版印刷《金刚经》",
+      "significance": "世界上现存最早的标有确切日期的雕版印刷品，标志着印刷术的成熟",
+      "additional_info": "发现于敦煌莫高窟，现藏于英国伦敦大英博物馆"
+    },
+    {
       "time": "公元907年",
       "education_level": "初中",
       "region": "国内",
       "event": "唐朝灭亡",
       "significance": "中国历史进入五代十国时期，社会再次陷入分裂和战乱",
       "additional_info": "朱温废掉唐哀帝，建立后梁"
+    },
+    {
+      "time": "约公元1041年",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "毕昇发明活字印刷术",
+      "significance": "印刷史上的重大革命，大大提高了印刷效率，推动了知识的传播",
+      "additional_info": "使用胶泥制作活字，可重复使用"
+    },
+    {
+      "time": "公元1086年",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "沈括著《梦溪笔谈》",
+      "significance": "中国科学史上的里程碑，总结了北宋时期的科学成就",
+      "additional_info": "内容涉及数学、天文、地理、物理、化学等多个领域"
+    },
+    {
+      "time": "约12世纪",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "指南针用于航海",
+      "significance": "为远洋航行提供了重要技术保障，推动了世界航海事业的发展",
+      "additional_info": "南宋时期指南针已广泛应用于航海"
     },
     {
       "time": "公元960年",
@@ -1823,6 +1935,230 @@
       "event": "我国“羲和号”太阳探测科学技术试验卫星发射成功",
       "significance": "标志着我国正式步入“探日”时代，填补了我国太阳探测领域的空白",
       "additional_info": "卫星主要开展太阳耀斑爆发和日冕物质抛射等太阳活动的观测研究"
+    },
+    {
+      "time": "2021年12月",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "我国首座自主设计、建造、运营的第三代核电技术“华龙一号”投入商业运行",
+      "significance": "标志着我国核电技术跻身世界前列，为能源安全和低碳发展提供重要支撑",
+      "additional_info": "华龙一号是我国具有完全自主知识产权的三代核电技术"
+    },
+    {
+      "time": "2022年6月",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "我国第三艘航空母舰“福建舰”下水",
+      "significance": "是我国完全自主设计建造的首艘弹射型航空母舰，标志着我国海军建设取得重大突破",
+      "additional_info": "福建舰采用平直通长飞行甲板，配置电磁弹射和阻拦装置"
+    },
+    {
+      "time": "2023年5月",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "我国“天问一号”探测器成功着陆火星",
+      "significance": "我国首次火星探测任务圆满成功，成为世界上第二个成功着陆火星并开展巡视探测的国家",
+      "additional_info": "祝融号火星车在火星表面开展了多项科学探测任务"
+    },
+    {
+      "time": "2023年10月",
+      "education_level": "初中",
+      "region": "国内",
+      "event": "我国成功发射神舟十七号载人飞船",
+      "significance": "标志着我国空间站建造和运营持续稳步推进，航天员长期驻留能力进一步提升",
+      "additional_info": "神舟十七号乘组完成了多项科学实验和技术试验任务"
+    },
+    {
+      "time": "约公元前2600年",
+      "education_level": "高中",
+      "region": "国外（古埃及）",
+      "event": "古埃及吉萨金字塔群建成",
+      "significance": "古埃及文明的杰出代表，展示了高超的建筑技术和组织能力，成为世界七大奇迹之一",
+      "additional_info": "包括胡夫金字塔、哈夫拉金字塔和孟卡拉金字塔"
+    },
+    {
+      "time": "约公元前2500年",
+      "education_level": "高中",
+      "region": "国外（古印度）",
+      "event": "印度河流域文明繁荣",
+      "significance": "世界最早的城市文明之一，拥有先进的城市规划和排水系统",
+      "additional_info": "主要城市包括摩亨佐-达罗和哈拉帕"
+    },
+    {
+      "time": "公元前509年",
+      "education_level": "高中",
+      "region": "国外（古罗马）",
+      "event": "罗马共和国建立",
+      "significance": "开启了罗马长达数百年的共和制时期，对西方政治制度产生深远影响",
+      "additional_info": "推翻了罗马王政，建立了元老院、执政官等制度"
+    },
+    {
+      "time": "公元前27年",
+      "education_level": "初中",
+      "region": "国外（古罗马）",
+      "event": "罗马帝国建立",
+      "significance": "开创了罗马帝国的辉煌时代，成为横跨欧亚非的庞大帝国",
+      "additional_info": "屋大维被授予“奥古斯都”称号，成为罗马第一位皇帝"
+    },
+    {
+      "time": "公元395年",
+      "education_level": "初中",
+      "region": "国外（古罗马）",
+      "event": "罗马帝国分裂为东西两部分",
+      "significance": "标志着罗马帝国走向衰落，东罗马帝国（拜占庭帝国）继续存在千年",
+      "additional_info": "分裂后的西罗马帝国于476年灭亡"
+    },
+    {
+      "time": "公元622年",
+      "education_level": "高中",
+      "region": "国外（阿拉伯）",
+      "event": "穆罕默德迁徙麦地那",
+      "significance": "伊斯兰教兴起的重要转折点，标志着阿拉伯帝国的开端",
+      "additional_info": "这一年被定为伊斯兰教历元年"
+    },
+    {
+      "time": "公元1271年",
+      "education_level": "初中",
+      "region": "国外（意大利）",
+      "event": "马可·波罗启程前往中国",
+      "significance": "促进了东西方文化交流，其游记激发了欧洲人对东方的向往",
+      "additional_info": "马可·波罗在中国生活了17年，担任元朝官员"
+    },
+    {
+      "time": "1519年-1522年",
+      "education_level": "初中",
+      "region": "国外",
+      "event": "麦哲伦船队完成环球航行",
+      "significance": "首次证明地球是圆的，开辟了新的海上航线",
+      "additional_info": "麦哲伦在航行中去世，其船队完成了环球航行"
+    },
+    {
+      "time": "1687年",
+      "education_level": "初中",
+      "region": "国外（英国）",
+      "event": "牛顿发表《自然哲学的数学原理》",
+      "significance": "奠定了经典力学的基础，对物理学和科学方法产生深远影响",
+      "additional_info": "提出万有引力定律和三大运动定律"
+    },
+    {
+      "time": "1785年",
+      "education_level": "初中",
+      "region": "国外（英国）",
+      "event": "瓦特改良蒸汽机",
+      "significance": "推动了第一次工业革命，开启了机器大工业时代",
+      "additional_info": "使蒸汽机成为实用的动力源，广泛应用于工厂和交通运输"
+    },
+    {
+      "time": "1807年",
+      "education_level": "高中",
+      "region": "国外（美国）",
+      "event": "富尔顿发明蒸汽轮船",
+      "significance": "开创了水上交通运输的新纪元，促进了内河和海洋运输的发展",
+      "additional_info": "第一艘蒸汽轮船“克莱蒙特号”在哈德逊河试航成功"
+    },
+    {
+      "time": "1825年",
+      "education_level": "初中",
+      "region": "国外（英国）",
+      "event": "斯蒂芬森发明蒸汽机车",
+      "significance": "开启了铁路时代，极大地改变了交通运输和经济格局",
+      "additional_info": "第一列客运火车在斯托克顿和达灵顿之间运行"
+    },
+    {
+      "time": "1831年",
+      "education_level": "初中",
+      "region": "国外（英国）",
+      "event": "法拉第发现电磁感应现象",
+      "significance": "奠定了电磁学的基础，为发电机和电动机的发明提供了理论依据",
+      "additional_info": "这一发现推动了电气时代的到来"
+    },
+    {
+      "time": "1879年",
+      "education_level": "初中",
+      "region": "国外（美国）",
+      "event": "爱迪生发明实用白炽灯泡",
+      "significance": "照亮了现代世界，推动了电力照明的普及",
+      "additional_info": "爱迪生改进了电灯的灯丝材料，使其寿命大大延长"
+    },
+    {
+      "time": "1895年",
+      "education_level": "初中",
+      "region": "国外（德国）",
+      "event": "伦琴发现X射线",
+      "significance": "开创了医学影像学的新时代，对医学诊断和材料分析产生深远影响",
+      "additional_info": "伦琴因此获得首届诺贝尔物理学奖"
+    },
+    {
+      "time": "1903年",
+      "education_level": "初中",
+      "region": "国外（美国）",
+      "event": "莱特兄弟发明飞机",
+      "significance": "实现了人类飞行的梦想，开启了航空时代",
+      "additional_info": "首次动力飞行在北卡罗来纳州的基蒂霍克进行"
+    },
+    {
+      "time": "1905年",
+      "education_level": "初中",
+      "region": "国外（瑞士）",
+      "event": "爱因斯坦提出狭义相对论",
+      "significance": "颠覆了经典力学的时空观，是物理学史上的重大革命",
+      "additional_info": "提出了著名的质能方程E=mc²"
+    },
+    {
+      "time": "1928年",
+      "education_level": "初中",
+      "region": "国外（英国）",
+      "event": "弗莱明发现青霉素",
+      "significance": "开创了抗生素时代，挽救了无数人的生命",
+      "additional_info": "青霉素是第一种抗生素，由亚历山大·弗莱明偶然发现"
+    },
+    {
+      "time": "1946年",
+      "education_level": "初中",
+      "region": "国外（美国）",
+      "event": "世界第一台电子计算机ENIAC诞生",
+      "significance": "标志着计算机时代的开始，开启了信息革命",
+      "additional_info": "ENIAC重达30吨，占地170平方米"
+    },
+    {
+      "time": "1953年",
+      "education_level": "初中",
+      "region": "国外（英国）",
+      "event": "沃森和克里克发现DNA双螺旋结构",
+      "significance": "揭示了遗传信息的分子结构，开创了分子生物学时代",
+      "additional_info": "这一发现被认为是20世纪最重要的科学发现之一"
+    },
+    {
+      "time": "1969年",
+      "education_level": "初中",
+      "region": "国外（美国）",
+      "event": "互联网诞生（ARPANET建立）",
+      "significance": "开创了信息时代，彻底改变了人类的沟通和生活方式",
+      "additional_info": "ARPANET是互联网的前身，最初只有4个节点"
+    },
+    {
+      "time": "2007年",
+      "education_level": "初中",
+      "region": "国外（美国）",
+      "event": "苹果公司发布第一代iPhone",
+      "significance": "开创了智能手机时代，改变了移动通讯和互联网使用方式",
+      "additional_info": "首款触摸屏智能手机，集成了电话、互联网、音乐播放器等功能"
+    },
+    {
+      "time": "2020年",
+      "education_level": "初中",
+      "region": "国外",
+      "event": "新冠疫情全球爆发",
+      "significance": "对全球公共卫生、经济和社会生活产生深远影响，推动了疫苗研发和远程办公的普及",
+      "additional_info": "新冠病毒于2019年底在中国武汉首次被发现"
+    },
+    {
+      "time": "2022年",
+      "education_level": "初中",
+      "region": "国外（美国）",
+      "event": "ChatGPT发布",
+      "significance": "人工智能技术取得重大突破，推动了生成式AI的广泛应用",
+      "additional_info": "由OpenAI开发，能够进行自然语言对话和内容生成"
     }
   ]
 }

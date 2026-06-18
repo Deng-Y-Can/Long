@@ -4,31 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MainFunction 功能导航中心 - 学生学习工具集合</title>
+    <link rel="stylesheet" href="全局样式变量.css">
     <link rel="stylesheet" href="样式.css">
 </head>
 <body>
-    <div class="container">
+    <!-- 加载遮罩 -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">正在加载功能导航...</div>
+            <div class="loading-progress">
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast消息容器 -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="container" id="main-container" style="opacity: 0; transform: translateY(20px);">
         <header>
             <h1>📚 功能导航中心</h1>
             <p>一站式管理您的学习、工具、游戏和更多功能</p>
             <div class="stats">
-                <div class="stat-item">📊 功能总数: 66</div>
-                <div class="stat-item">📁 分类数: 6</div>
-                <div class="stat-item">📜 历史事件: 200+</div>
-                <div class="stat-item">🕒 更新时间: 最新</div>
+                <div class="stat-item">📊 功能总数: <span class="stat-value" id="total-count">66</span></div>
+                <div class="stat-item">📁 分类数: <span class="stat-value">6</span></div>
+                <div class="stat-item">📜 历史事件: <span class="stat-value">200+</span></div>
+                <div class="stat-item">🕒 更新时间: <span class="stat-value">最新</span></div>
             </div>
         </header>
 
         <div class="search-box">
             <div class="search-wrapper">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="输入功能名称搜索..." oninput="searchFiles()">
+                <input type="text" id="searchInput" placeholder="输入功能名称搜索..." autocomplete="off">
+                <button id="clear-search" class="clear-btn" style="display: none;">✕</button>
             </div>
+            <div class="search-suggestions" id="search-suggestions"></div>
+            <div class="search-stats" id="search-stats"></div>
         </div>
 
-        <div class="content">
+        <div class="category-tabs" id="category-tabs">
+            <button class="tab-btn active" data-category="all">全部</button>
+            <button class="tab-btn" data-category="学习工具">📖 学习工具</button>
+            <button class="tab-btn" data-category="学科学习">🎓 学科学习</button>
+            <button class="tab-btn" data-category="实用工具">🛠️ 实用工具</button>
+            <button class="tab-btn" data-category="游戏娱乐">🎮 游戏娱乐</button>
+            <button class="tab-btn" data-category="安全防护">🛡️ 安全防护</button>
+            <button class="tab-btn" data-category="生日纪念">🎂 生日纪念</button>
+        </div>
+
+        <div class="content" id="main-content">
             <!-- 学习工具 -->
-            <div class="category-section">
+            <div class="category-section" data-category="学习工具">
                 <div class="category-title-wrapper">
                     <div class="category-icon">📖</div>
                     <h2 class="category-title">学习工具<span class="category-count">(15个)</span></h2>
@@ -143,7 +171,7 @@
             </div>
 
             <!-- 学科学习 -->
-            <div class="category-section">
+            <div class="category-section" data-category="学科学习">
                 <div class="category-title-wrapper">
                     <div class="category-icon">🎓</div>
                     <h2 class="category-title">学科学习<span class="category-count">(20个)</span></h2>
@@ -293,7 +321,7 @@
             </div>
 
             <!-- 实用工具 -->
-            <div class="category-section">
+            <div class="category-section" data-category="实用工具">
                 <div class="category-title-wrapper">
                     <div class="category-icon">🛠️</div>
                     <h2 class="category-title">实用工具<span class="category-count">(14个)</span></h2>
@@ -401,10 +429,10 @@
             </div>
 
             <!-- 游戏娱乐 -->
-            <div class="category-section">
+            <div class="category-section" data-category="游戏娱乐">
                 <div class="category-title-wrapper">
                     <div class="category-icon">🎮</div>
-                    <h2 class="category-title">游戏娱乐<span class="category-count">(12个)</span></h2>
+                    <h2 class="category-title">游戏娱乐<span class="category-count">(13个)</span></h2>
                 </div>
                 <div class="file-grid">
                     <a href="游戏娱乐/五子棋.html" class="file-card">
@@ -502,7 +530,7 @@
             </div>
 
             <!-- 安全防护 -->
-            <div class="category-section">
+            <div class="category-section" data-category="安全防护">
                 <div class="category-title-wrapper">
                     <div class="category-icon">🛡️</div>
                     <h2 class="category-title">安全防护<span class="category-count">(3个)</span></h2>
@@ -533,7 +561,7 @@
             </div>
 
             <!-- 生日纪念 -->
-            <div class="category-section">
+            <div class="category-section" data-category="生日纪念">
                 <div class="category-title-wrapper">
                     <div class="category-icon">🎂</div>
                     <h2 class="category-title">生日纪念<span class="category-count">(2个)</span></h2>
@@ -565,22 +593,201 @@
         </footer>
     </div>
 
+    <script src="工具函数.js"></script>
     <script>
-        function searchFiles() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        // 页面加载完成后显示内容
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                const mainContainer = document.getElementById('main-container');
+                
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                    mainContainer.style.opacity = '1';
+                    mainContainer.style.transform = 'translateY(0)';
+                }, 300);
+                
+                showToast('欢迎来到功能导航中心！', 'success');
+            }, 500);
+        });
+
+        // Toast提示函数
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'warning' ? '!' : 'i'}</span>
+                <span class="toast-message">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, duration);
+        }
+
+        // 防抖搜索函数
+        const debouncedSearch = Utils.debounce(function(searchTerm) {
+            performSearch(searchTerm);
+        }, 200);
+
+        // 搜索输入处理
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clear-search');
+        const searchSuggestions = document.getElementById('search-suggestions');
+        const searchStats = document.getElementById('search-stats');
+
+        searchInput.addEventListener('input', function(e) {
+            const term = e.target.value.trim();
+            clearBtn.style.display = term ? 'block' : 'none';
+            debouncedSearch(term);
+        });
+
+        // 清除搜索
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            debouncedSearch('');
+        });
+
+        // 执行搜索
+        function performSearch(searchTerm) {
             const cards = document.querySelectorAll('.file-card');
+            const sections = document.querySelectorAll('.category-section');
+            let visibleCards = 0;
+            let totalCards = cards.length;
+            
+            // 收集匹配建议
+            const suggestions = [];
             
             cards.forEach(card => {
                 const title = card.querySelector('.file-title').textContent.toLowerCase();
                 const desc = card.querySelector('.file-desc').textContent.toLowerCase();
+                const section = card.closest('.category-section');
                 
-                if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+                if (!searchTerm) {
                     card.style.display = 'block';
+                    section.style.display = 'block';
+                    visibleCards++;
                 } else {
-                    card.style.display = 'none';
+                    if (title.includes(searchTerm.toLowerCase()) || desc.includes(searchTerm.toLowerCase())) {
+                        card.style.display = 'block';
+                        section.style.display = 'block';
+                        visibleCards++;
+                        if (suggestions.length < 5) {
+                            suggestions.push(title);
+                        }
+                    } else {
+                        card.style.display = 'none';
+                    }
                 }
             });
+            
+            // 更新搜索统计
+            if (searchTerm) {
+                searchStats.innerHTML = `找到 <strong>${visibleCards}</strong> 个匹配结果`;
+                searchStats.style.display = 'block';
+            } else {
+                searchStats.style.display = 'none';
+            }
+            
+            // 显示/隐藏空分类
+            sections.forEach(section => {
+                const visibleInSection = section.querySelectorAll('.file-card[style="display: block"]').length;
+                if (!searchTerm || visibleInSection > 0) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+            
+            // 显示搜索建议
+            if (suggestions.length > 0 && searchTerm.length > 1) {
+                searchSuggestions.innerHTML = suggestions.map(s => 
+                    `<div class="suggestion-item">${s}</div>`
+                ).join('');
+                searchSuggestions.style.display = 'block';
+            } else {
+                searchSuggestions.style.display = 'none';
+            }
+            
+            // 如果没有匹配结果
+            if (searchTerm && visibleCards === 0) {
+                showToast('没有找到匹配的功能', 'warning');
+            }
         }
+
+        // 分类标签切换
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const category = this.dataset.category;
+                const sections = document.querySelectorAll('.category-section');
+                
+                tabButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                sections.forEach(section => {
+                    if (category === 'all') {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = section.dataset.category === category ? 'block' : 'none';
+                    }
+                });
+                
+                // 清空搜索
+                searchInput.value = '';
+                clearBtn.style.display = 'none';
+                searchStats.style.display = 'none';
+                searchSuggestions.style.display = 'none';
+            });
+        });
+
+        // 卡片点击反馈
+        const cards = document.querySelectorAll('.file-card');
+        cards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                const href = this.getAttribute('href');
+                
+                if (href.endsWith('.json') || href.endsWith('.xlsx') || href.endsWith('.txt')) {
+                    showToast('正在下载文件...', 'info');
+                }
+                
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 200);
+            });
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K 聚焦搜索框
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+                showToast('搜索框已激活', 'info', 2000);
+            }
+            
+            // Escape 清空搜索
+            if (e.key === 'Escape') {
+                if (searchInput.value) {
+                    searchInput.value = '';
+                    clearBtn.style.display = 'none';
+                    debouncedSearch('');
+                }
+            }
+        });
     </script>
 </body>
 </html>

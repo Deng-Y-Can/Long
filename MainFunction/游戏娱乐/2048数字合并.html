@@ -64,9 +64,179 @@
         .tile-slide {
             animation: slide 0.15s ease-out;
         }
+        
+        /* Toast消息样式 */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .toast-success { border-left: 4px solid #10B981; }
+        .toast-warning { border-left: 4px solid #F59E0B; }
+        .toast-info { border-left: 4px solid #3B82F6; }
+        
+        /* 加载遮罩 */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 游戏结束/胜利模态框 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            max-width: 320px;
+            margin: 0 20px;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        
+        .modal-score {
+            font-size: 1.25rem;
+            color: #6B7280;
+            margin-bottom: 24px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #8B5CF6, #EC4899);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: semibold;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary {
+            background: #F3F4F6;
+            color: #374151;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: semibold;
+            transition: all 0.2s ease;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-violet-50 to-pink-50 min-h-screen font-sans">
+    <!-- Toast消息容器 -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="text-purple-600 font-semibold">加载游戏中...</div>
+    </div>
+    
+    <!-- 游戏结束模态框 -->
+    <div class="modal-overlay" id="game-over-modal">
+        <div class="modal-content">
+            <div class="modal-title text-gray-800">游戏结束！</div>
+            <div class="modal-score">最终得分：<span class="text-purple-600 font-bold" id="final-score">0</span></div>
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="init()">
+                    <i class="fa fa-refresh mr-2"></i>再来一局
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 胜利模态框 -->
+    <div class="modal-overlay" id="win-modal">
+        <div class="modal-content">
+            <div class="modal-title text-green-600">🎉 恭喜！</div>
+            <div class="modal-score">你达到了 <span class="text-green-600 font-bold">2048</span>！</div>
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="closeWinModal()">继续挑战</button>
+                <button class="btn-secondary" onclick="init()">开始新游戏</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="container mx-auto px-4 py-8 max-w-lg">
         <!-- 头部 -->
         <header class="text-center mb-8">
@@ -122,16 +292,68 @@
         let score = 0;
         let bestScore = parseInt(localStorage.getItem('2048-best') || '0');
         let history = [];
+        let hasWon = false;
 
         // 初始化游戏
         function init() {
-            grid = Array(4).fill(null).map(() => Array(4).fill(0));
-            score = 0;
-            history = [];
-            addRandomTile();
-            addRandomTile();
-            updateDisplay();
-            document.getElementById('best-score').textContent = bestScore;
+            showLoading();
+            setTimeout(() => {
+                grid = Array(4).fill(null).map(() => Array(4).fill(0));
+                score = 0;
+                history = [];
+                hasWon = false;
+                addRandomTile();
+                addRandomTile();
+                updateDisplay();
+                document.getElementById('best-score').textContent = bestScore;
+                hideLoading();
+                showToast('游戏开始！使用方向键或滑动控制', 'info');
+            }, 500);
+        }
+
+        // Toast消息提示
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <i class="fa ${type === 'success' ? 'fa-check-circle text-green-500' : type === 'warning' ? 'fa-warning text-yellow-500' : 'fa-info-circle text-blue-500'}"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
+
+        // 隐藏加载状态
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
+        // 显示游戏结束模态框
+        function showGameOverModal() {
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('game-over-modal').classList.add('show');
+        }
+
+        // 显示胜利模态框
+        function showWinModal() {
+            document.getElementById('win-modal').classList.add('show');
+        }
+
+        // 关闭胜利模态框
+        function closeWinModal() {
+            document.getElementById('win-modal').classList.remove('show');
+            hasWon = true;
+            showToast('继续挑战更高分数！', 'success');
         }
 
         // 添加随机方块
@@ -246,20 +468,17 @@
                 
                 // 检查游戏结束
                 if (isGameOver()) {
-                    setTimeout(() => alert('游戏结束！得分：' + score), 100);
+                    setTimeout(() => showGameOverModal(), 200);
                 }
                 
-                // 检查胜利
-                for (let i = 0; i < 4; i++) {
-                    for (let j = 0; j < 4; j++) {
-                        if (grid[i][j] === 2048) {
-                            setTimeout(() => {
-                                if (confirm('恭喜达到2048！是否继续？')) {
-                                    // 继续游戏
-                                } else {
-                                    init();
-                                }
-                            }, 100);
+                // 检查胜利（只在首次达到2048时显示）
+                if (!hasWon) {
+                    for (let i = 0; i < 4; i++) {
+                        for (let j = 0; j < 4; j++) {
+                            if (grid[i][j] === 2048) {
+                                setTimeout(() => showWinModal(), 200);
+                                return;
+                            }
                         }
                     }
                 }

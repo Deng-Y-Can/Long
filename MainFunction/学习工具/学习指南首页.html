@@ -4,22 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>学习资料指南 - Excel表格阅读器</title>
+    <link rel="stylesheet" href="../全局样式变量.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-sans);
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: var(--gradient-dark);
             color: #e6e6e6;
             min-height: 100vh;
             overflow-x: hidden;
             padding-bottom: 20px;
         }
+        
+        /* Toast消息容器 */
+        .toast-container {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateX(120%);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 280px;
+            max-width: 400px;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .toast-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .toast-success .toast-icon { background: linear-gradient(135deg, #11998e, #38ef7d); color: white; }
+        .toast-error .toast-icon { background: linear-gradient(135deg, #ef4444, #f87171); color: white; }
+        .toast-warning .toast-icon { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white; }
+        .toast-info .toast-icon { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white; }
+        
+        .toast-message { font-size: 14px; color: #333; font-weight: 500; }
         
         .container {
             display: flex;
@@ -30,14 +80,12 @@
             transform-style: preserve-3d;
         }
         
-        /* 左侧导航栏样式 */
         .sidebar {
             width: 280px;
             background: rgba(20, 20, 40, 0.9);
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6),
-                        inset 0 0 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
@@ -49,8 +97,7 @@
         
         .sidebar:hover {
             transform: translateZ(30px);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7),
-                        inset 0 0 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), inset 0 0 30px rgba(0, 0, 0, 0.3);
         }
         
         .logo {
@@ -72,10 +119,7 @@
             font-weight: 700;
         }
         
-        .logo p {
-            font-size: 0.85rem;
-            color: #8a8a9e;
-        }
+        .logo p { font-size: 0.85rem; color: #8a8a9e; }
         
         .config-info {
             background: rgba(0, 210, 255, 0.1);
@@ -112,9 +156,7 @@
             padding-left: 5px;
         }
         
-        .sheet-list h3 i {
-            color: #00d2ff;
-        }
+        .sheet-list h3 i { color: #00d2ff; }
         
         .sheet-items {
             display: flex;
@@ -154,9 +196,7 @@
             transition: transform 0.35s ease;
         }
         
-        .sheet-item:hover::before {
-            transform: scaleX(1);
-        }
+        .sheet-item:hover::before { transform: scaleX(1); }
         
         .sheet-item:hover {
             background: rgba(0, 210, 255, 0.12);
@@ -172,15 +212,8 @@
             transform: translateZ(10px);
         }
         
-        .sheet-item.hidden {
-            opacity: 0.5;
-            background: rgba(255, 255, 255, 0.02);
-        }
-        
-        .sheet-item.hidden .sheet-icon {
-            background: rgba(80, 80, 100, 0.2);
-            color: #6a6a7e;
-        }
+        .sheet-item.hidden { opacity: 0.5; background: rgba(255, 255, 255, 0.02); }
+        .sheet-item.hidden .sheet-icon { background: rgba(80, 80, 100, 0.2); color: #6a6a7e; }
         
         .sheet-icon {
             width: 42px;
@@ -200,18 +233,9 @@
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
         }
         
-        .sheet-info h4 {
-            font-size: 0.95rem;
-            margin-bottom: 4px;
-            font-weight: 500;
-        }
+        .sheet-info h4 { font-size: 0.95rem; margin-bottom: 4px; font-weight: 500; }
+        .sheet-info p { font-size: 0.78rem; color: #7a7a8e; }
         
-        .sheet-info p {
-            font-size: 0.78rem;
-            color: #7a7a8e;
-        }
-        
-        /* 右侧主内容区样式 */
         .main-content {
             flex: 1;
             display: flex;
@@ -225,8 +249,7 @@
             background: rgba(20, 20, 40, 0.9);
             border-radius: 20px;
             padding: 28px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6),
-                        inset 0 0 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
@@ -236,9 +259,7 @@
             transition: transform 0.3s ease;
         }
         
-        .header:hover {
-            transform: translateZ(20px);
-        }
+        .header:hover { transform: translateZ(20px); }
         
         .header h2 {
             font-size: 1.7rem;
@@ -250,10 +271,7 @@
             font-weight: 700;
         }
         
-        .sheet-stats {
-            display: flex;
-            gap: 22px;
-        }
+        .sheet-stats { display: flex; gap: 22px; }
         
         .stat {
             display: flex;
@@ -280,19 +298,14 @@
             text-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
         }
         
-        .stat-label {
-            font-size: 0.85rem;
-            color: #8a8a9e;
-            margin-top: 4px;
-        }
+        .stat-label { font-size: 0.85rem; color: #8a8a9e; margin-top: 4px; }
         
         .table-container {
             flex: 1;
             background: rgba(20, 20, 40, 0.9);
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6),
-                        inset 0 0 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             overflow-x: auto;
@@ -303,7 +316,6 @@
             max-height: calc(100vh - 220px);
         }
         
-        /* 右侧渐变遮罩 */
         .table-container::after {
             content: '';
             position: absolute;
@@ -341,29 +353,30 @@
             50% { opacity: 0.6; transform: scale(1.05); }
         }
         
-        .no-data h3 {
-            font-size: 1.3rem;
-            margin-bottom: 12px;
-            color: #e6e6e6;
+        .no-data h3 { font-size: 1.3rem; margin-bottom: 12px; color: #e6e6e6; }
+        .no-data p { font-size: 0.95rem; line-height: 1.6; }
+        
+        /* 虚拟滚动容器 */
+        .virtual-scroll-container {
+            max-height: 500px;
+            overflow-y: auto;
+            position: relative;
         }
         
-        .no-data p {
-            font-size: 0.95rem;
-            line-height: 1.6;
+        .virtual-scroll-content {
+            position: relative;
         }
         
-        /* 表格样式优化 */
+        /* 表格样式 */
         .excel-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5),
-                        inset 0 0 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 0, 0, 0.3);
             min-width: 900px;
             background: rgba(255, 255, 255, 0.02);
-            transform: translateZ(0);
         }
         
         .excel-table thead {
@@ -374,11 +387,8 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
         
-        .excel-table th,
-        .excel-table td {
+        .excel-table th, .excel-table td {
             position: relative;
-            transform: translateZ(2px);
-            transition: transform 0.25s ease, background 0.3s ease;
             word-break: break-word;
             white-space: pre-wrap;
             max-width: 200px;
@@ -413,17 +423,11 @@
             background: rgba(255, 255, 255, 0.02);
         }
         
-        .excel-table tbody tr:nth-child(even) {
-            background: rgba(255, 255, 255, 0.04);
-        }
+        .excel-table tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.04); }
         
         .excel-table tbody tr:hover {
             background: rgba(0, 210, 255, 0.08);
             transform: scale(1.002);
-        }
-        
-        .excel-table tbody tr:hover td {
-            transform: translateZ(8px);
         }
         
         .excel-table td {
@@ -435,91 +439,16 @@
             transition: background 0.3s ease;
         }
         
-        .excel-table tbody tr:last-child td {
-            border-bottom: none;
-        }
+        .excel-table tbody tr:last-child td { border-bottom: none; }
         
-        .excel-table tbody tr.highlight-row {
-            background: rgba(0, 210, 255, 0.12);
+        .highlight-row {
+            background: rgba(0, 210, 255, 0.12) !important;
             box-shadow: inset 0 0 20px rgba(0, 210, 255, 0.1);
         }
         
-        .excel-table .highlight-cell {
+        .highlight-cell {
             background: rgba(0, 210, 255, 0.15);
             border-left: 3px solid #00d2ff;
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 1200px) {
-            .container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-            }
-            
-            .table-container {
-                max-height: calc(100vh - 350px);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 20px;
-                text-align: center;
-            }
-            
-            .sheet-stats {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .stat {
-                min-width: 70px;
-                padding: 10px 16px;
-            }
-            
-            .table-container {
-                padding: 15px;
-            }
-            
-            .excel-table {
-                font-size: 0.85rem;
-                min-width: 600px;
-            }
-            
-            .excel-table th, .excel-table td {
-                padding: 10px 8px;
-                min-width: 70px;
-            }
-            
-            .sidebar {
-                padding: 20px;
-            }
-        }
-        
-        /* 滚动条样式 */
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, #00d2ff, #3a7bd5);
-            border-radius: 10px;
-            border: 2px solid rgba(20, 20, 40, 0.9);
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, #00e5ff, #4a8be5);
         }
         
         /* 加载动画 */
@@ -533,29 +462,19 @@
             animation: spin 1.2s linear infinite;
             margin: 0 auto;
             box-shadow: 0 0 25px rgba(0, 210, 255, 0.5);
-            transform: translateZ(20px);
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) translateZ(20px);
+            transform: translate(-50%, -50%);
         }
         
         @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg) translateZ(20px); }
-            100% { transform: translate(-50%, -50%) rotate(360deg) translateZ(20px); }
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
         
-        .loading .loader {
-            display: block;
-        }
+        .loading .loader { display: block; }
         
-        .loading .table-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* 控制按钮 */
         .controls {
             display: flex;
             flex-direction: column;
@@ -577,18 +496,13 @@
             justify-content: center;
             gap: 10px;
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-            transform: translateZ(0);
             font-size: 0.9rem;
         }
         
         .btn:hover {
             background: rgba(0, 210, 255, 0.2);
-            transform: translateY(-3px) translateZ(5px);
+            transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(0, 210, 255, 0.3);
-        }
-        
-        .btn:active {
-            transform: translateY(-1px) translateZ(3px);
         }
         
         .btn-primary {
@@ -599,11 +513,10 @@
         
         .btn-primary:hover {
             background: linear-gradient(90deg, #00e5ff 0%, #4a8be5 100%);
-            transform: translateY(-4px) translateZ(8px);
+            transform: translateY(-4px);
             box-shadow: 0 14px 30px rgba(0, 210, 255, 0.5);
         }
         
-        /* 表格滚动提示 */
         .scroll-hint {
             position: absolute;
             bottom: 15px;
@@ -618,7 +531,6 @@
             gap: 8px;
             z-index: 20;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-            transform: translateZ(10px);
             animation: fadeInOut 3s ease-in-out infinite;
         }
         
@@ -627,7 +539,6 @@
             50% { opacity: 1; }
         }
         
-        /* 搜索框 */
         .search-box {
             margin-bottom: 15px;
             position: relative;
@@ -659,7 +570,6 @@
             color: #6a6a7e;
         }
         
-        /* 数据统计 */
         .data-stats {
             display: flex;
             gap: 15px;
@@ -680,11 +590,83 @@
             font-weight: 600;
             margin-right: 4px;
         }
+        
+        /* 分页控件 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: #e6e6e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .page-btn:hover {
+            background: rgba(0, 210, 255, 0.15);
+            border-color: #00d2ff;
+        }
+        
+        .page-btn.active {
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            border-color: transparent;
+            color: white;
+        }
+        
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .container { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; }
+            .table-container { max-height: calc(100vh - 350px); }
+        }
+        
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 20px; text-align: center; }
+            .sheet-stats { flex-wrap: wrap; justify-content: center; }
+            .stat { min-width: 70px; padding: 10px 16px; }
+            .table-container { padding: 15px; }
+            .excel-table { font-size: 0.85rem; min-width: 600px; }
+            .excel-table th, .excel-table td { padding: 10px 8px; min-width: 70px; }
+            .sidebar { padding: 20px; }
+            .toast-container { bottom: 20px; right: 20px; left: 20px; }
+            .toast { min-width: auto; max-width: none; }
+        }
+        
+        @media (max-width: 480px) {
+            .stat { min-width: 60px; padding: 8px 12px; }
+            .stat-value { font-size: 1.4rem; }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #00d2ff, #3a7bd5);
+            border-radius: 10px;
+            border: 2px solid rgba(20, 20, 40, 0.9);
+        }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #00e5ff, #4a8be5); }
     </style>
 </head>
 <body>
+    <!-- Toast消息容器 -->
+    <div class="toast-container" id="toast-container"></div>
+    
     <div class="container">
-        <!-- 左侧导航栏 -->
         <div class="sidebar">
             <div class="logo">
                 <h1><i class="fas fa-file-excel"></i> 学习资料指南</h1>
@@ -720,7 +702,6 @@
             </div>
         </div>
         
-        <!-- 右侧主内容区 -->
         <div class="main-content">
             <div class="header">
                 <h2 id="current-sheet">请加载Excel文件</h2>
@@ -753,6 +734,7 @@
                 <div class="data-stats" id="data-stats" style="display: none;">
                     <div class="data-stat"><span>筛选:</span>显示全部数据</div>
                     <div class="data-stat"><span>匹配:</span>0 条</div>
+                    <div class="data-stat"><span>当前页:</span>1 / 1</div>
                 </div>
                 
                 <div class="no-data">
@@ -766,6 +748,12 @@
                 <table class="excel-table" id="excel-table" style="display: none;">
                 </table>
                 
+                <div class="pagination" id="pagination" style="display: none;">
+                    <button class="page-btn" id="prev-page" disabled>上一页</button>
+                    <span id="page-numbers"></span>
+                    <button class="page-btn" id="next-page" disabled>下一页</button>
+                </div>
+                
                 <div class="scroll-hint" id="scroll-hint">
                     <i class="fas fa-arrows-alt-h"></i> 横向滚动查看更多
                 </div>
@@ -773,11 +761,13 @@
         </div>
     </div>
 
+    <script src="../工具函数.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script>
         // 配置
         const excelFileName = "学习资料.xlsx";
+        const PAGE_SIZE = 50;
         
         // 全局变量
         let workbook = null;
@@ -786,6 +776,7 @@
         let visibleSheets = [];
         let currentData = [];
         let filteredData = [];
+        let currentPage = 1;
         
         // DOM元素
         const loadExcelBtn = document.getElementById('load-excel-btn');
@@ -805,6 +796,26 @@
         const searchInput = document.getElementById('search-input');
         const dataStats = document.getElementById('data-stats');
         const scrollHint = document.getElementById('scroll-hint');
+        const pagination = document.getElementById('pagination');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        
+        // Toast提示函数
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'warning' ? '!' : 'i'}</span>
+                <span class="toast-message">${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -814,11 +825,16 @@
             loadExcelBtn.addEventListener('click', loadExcelFile);
             showAllBtn.addEventListener('click', showAllSheets);
             refreshBtn.addEventListener('click', loadExcelFile);
-            searchInput.addEventListener('input', filterTable);
             
-            setTimeout(() => {
-                loadExcelFile();
-            }, 500);
+            // 防抖搜索
+            const debouncedSearch = Utils.debounce(filterTable, 200);
+            searchInput.addEventListener('input', () => debouncedSearch());
+            
+            // 分页事件
+            prevPageBtn.addEventListener('click', () => changePage(currentPage - 1));
+            nextPageBtn.addEventListener('click', () => changePage(currentPage + 1));
+            
+            setTimeout(() => loadExcelFile(), 500);
         });
         
         // 加载Excel文件
@@ -847,6 +863,7 @@
                         </button>
                     </div>
                 `;
+                showToast('加载Excel文件失败，请检查文件路径', 'error');
             }
         }
         
@@ -865,6 +882,7 @@
                 }
                 
                 tableContainer.classList.remove('loading');
+                showToast('数据加载成功！', 'success');
             } catch (error) {
                 console.error('解析失败:', error);
                 tableContainer.classList.remove('loading');
@@ -875,6 +893,7 @@
                         <p>无法读取Excel文件，请确保文件格式正确</p>
                     </div>
                 `;
+                showToast('解析Excel文件失败，请检查文件格式', 'error');
             }
         }
         
@@ -932,9 +951,7 @@
         function updateActiveSheetInList(sheetName) {
             document.querySelectorAll('.sheet-item').forEach(item => {
                 item.classList.remove('active');
-                if (item.dataset.sheetName === sheetName) {
-                    item.classList.add('active');
-                }
+                if (item.dataset.sheetName === sheetName) item.classList.add('active');
             });
         }
         
@@ -945,6 +962,7 @@
             try {
                 const worksheet = workbook.Sheets[sheetName];
                 currentData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+                currentPage = 1;
                 
                 if (currentData.length === 0) {
                     tableContainer.innerHTML = `
@@ -957,19 +975,14 @@
                     return;
                 }
                 
-                // 显示搜索框和统计信息
                 searchBox.style.display = 'block';
                 dataStats.style.display = 'flex';
                 document.querySelector('.data-stat:first-child span + span').textContent = '显示全部数据';
-                document.querySelector('.data-stat:last-child span + span').textContent = `${currentData.length - 1} 条`;
+                document.querySelector('.data-stat:nth-child(2) span + span').textContent = `${currentData.length - 1} 条`;
                 
-                // 保存过滤后的数据
                 filteredData = [...currentData];
+                renderTable();
                 
-                // 生成表格
-                renderTable(filteredData);
-                
-                // 更新标题和统计
                 currentSheetDisplay.textContent = sheetName;
                 totalRowsElement.textContent = currentData.length - 1;
                 totalColsElement.textContent = currentData[0]?.length || 0;
@@ -984,24 +997,38 @@
                         <p>无法显示工作表 "${sheetName}"</p>
                     </div>
                 `;
+                showToast(`无法显示工作表 "${sheetName}"`, 'error');
             }
         }
         
+        // 获取分页数据
+        function getPageData(data) {
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const end = start + PAGE_SIZE;
+            const header = data.slice(0, 1);
+            const body = data.slice(1);
+            const paginatedBody = body.slice(start, end);
+            return [...header, ...paginatedBody];
+        }
+        
         // 渲染表格
-        function renderTable(data) {
+        function renderTable(data = filteredData) {
             tableContainer.innerHTML = '';
             tableContainer.appendChild(searchBox);
             tableContainer.appendChild(dataStats);
             tableContainer.appendChild(excelTable);
+            tableContainer.appendChild(pagination);
             tableContainer.appendChild(scrollHint);
             
             excelTable.innerHTML = '';
             excelTable.style.display = 'table';
             
+            const pageData = getPageData(data);
+            
             // 生成表头
             const headerRow = document.createElement('tr');
-            if (data.length > 0) {
-                data[0].forEach((cell, colIndex) => {
+            if (pageData.length > 0) {
+                pageData[0].forEach((cell, colIndex) => {
                     const th = document.createElement('th');
                     th.textContent = formatCellContent(cell);
                     th.style.minWidth = `${Math.max(80, String(cell).length * 10)}px`;
@@ -1014,15 +1041,14 @@
             
             // 生成表体
             const tbody = document.createElement('tbody');
-            for (let i = 1; i < data.length; i++) {
+            for (let i = 1; i < pageData.length; i++) {
                 const row = document.createElement('tr');
                 row.dataset.rowIndex = i;
                 
-                data[i].forEach((cell, colIndex) => {
+                pageData[i].forEach((cell, colIndex) => {
                     const td = document.createElement('td');
                     td.textContent = formatCellContent(cell);
                     
-                    // 高亮处理特殊内容
                     if (String(cell).toLowerCase().includes('小蓝人')) {
                         td.classList.add('highlight-cell');
                         row.classList.add('highlight-row');
@@ -1034,35 +1060,55 @@
                 tbody.appendChild(row);
             }
             excelTable.appendChild(tbody);
+            
+            // 更新分页
+            updatePagination(data);
+        }
+        
+        // 更新分页控件
+        function updatePagination(data) {
+            const totalPages = Math.ceil((data.length - 1) / PAGE_SIZE);
+            document.querySelector('.data-stat:nth-child(3) span + span').textContent = `${currentPage} / ${totalPages}`;
+            
+            prevPageBtn.disabled = currentPage <= 1;
+            nextPageBtn.disabled = currentPage >= totalPages;
+            
+            pagination.style.display = totalPages > 1 ? 'flex' : 'none';
+        }
+        
+        // 切换页码
+        function changePage(page) {
+            const totalPages = Math.ceil((filteredData.length - 1) / PAGE_SIZE);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            renderTable();
         }
         
         // 格式化单元格内容
         function formatCellContent(cell) {
             if (cell === null || cell === undefined) return '';
-            if (typeof cell === 'number') {
-                return cell.toLocaleString();
-            }
+            if (typeof cell === 'number') return cell.toLocaleString();
             return String(cell);
         }
         
         // 表格搜索过滤
         function filterTable() {
             const searchTerm = searchInput.value.toLowerCase().trim();
+            currentPage = 1;
             
             if (!searchTerm) {
                 filteredData = [...currentData];
                 document.querySelector('.data-stat:first-child span + span').textContent = '显示全部数据';
             } else {
                 filteredData = currentData.filter((row, rowIndex) => {
-                    if (rowIndex === 0) return true; // 保留表头
-                    return row.some(cell => 
-                        String(cell).toLowerCase().includes(searchTerm)
-                    );
+                    if (rowIndex === 0) return true;
+                    return row.some(cell => String(cell).toLowerCase().includes(searchTerm));
                 });
                 document.querySelector('.data-stat:first-child span + span').textContent = `搜索: "${searchTerm}"`;
             }
             
-            document.querySelector('.data-stat:last-child span + span').textContent = `${filteredData.length - 1} 条`;
+            document.querySelector('.data-stat:nth-child(2) span + span').textContent = `${filteredData.length - 1} 条`;
             
             if (filteredData.length > 0) {
                 renderTable(filteredData);
@@ -1078,7 +1124,7 @@
                         <p>没有找到包含 "${searchTerm}" 的内容</p>
                     </div>
                 `;
-                document.getElementById('search-input').addEventListener('input', filterTable);
+                document.getElementById('search-input').addEventListener('input', Utils.debounce(filterTable, 200));
             }
         }
         
@@ -1094,15 +1140,10 @@
         }
         
         // 触摸设备检测
-        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isTouchDevice = Utils.isMobile();
         if (!isTouchDevice) {
-            tableContainer.addEventListener('mouseenter', () => {
-                scrollHint.style.display = 'flex';
-            });
-            
-            tableContainer.addEventListener('mouseleave', () => {
-                scrollHint.style.display = 'none';
-            });
+            tableContainer.addEventListener('mouseenter', () => scrollHint.style.display = 'flex');
+            tableContainer.addEventListener('mouseleave', () => scrollHint.style.display = 'none');
         } else {
             scrollHint.style.display = 'none';
         }
@@ -1134,6 +1175,32 @@
             const x = e.pageX - tableContainer.offsetLeft;
             const walk = (x - startX) * 1.5;
             tableContainer.scrollLeft = scrollLeft - walk;
+        });
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+                showToast('搜索框已激活', 'info', 2000);
+            }
+            
+            if (e.key === 'Escape') {
+                if (searchInput.value) {
+                    searchInput.value = '';
+                    Utils.debounce(filterTable, 200)();
+                }
+            }
+            
+            if (e.key === 'ArrowLeft' && e.ctrlKey) {
+                e.preventDefault();
+                prevPageBtn.click();
+            }
+            
+            if (e.key === 'ArrowRight' && e.ctrlKey) {
+                e.preventDefault();
+                nextPageBtn.click();
+            }
         });
     </script>
 </body>

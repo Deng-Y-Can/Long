@@ -275,6 +275,15 @@
         let events = [];
         let filteredEvents = [];
         let totalEventsCount = 0;
+        let currentPage = 1;
+        const PAGE_SIZE = 10;
+        
+        // 数据缓存
+        const dataCache = {
+            events: null,
+            lastLoadTime: null,
+            cacheDuration: 300000 // 5分钟缓存
+        };
 
         // DOM 元素
         const loadingElement = document.getElementById('loading');
@@ -337,6 +346,17 @@
                 timelineContainer.classList.add('hidden');
                 noResultsElement.classList.add('hidden');
 
+                // 检查缓存
+                const cachedData = getCachedData();
+                if (cachedData) {
+                    console.log('使用缓存数据');
+                    events = [...cachedData];
+                    totalEventsCount = events.length;
+                    updateLoadingProgress(totalEventsCount, totalEventsCount);
+                    initializeEvents();
+                    return;
+                }
+
                 // 这里使用示例JSON数据URL
                 const response = await fetch('历史数据.json');
 
@@ -358,22 +378,16 @@
                 // 更新加载进度
                 updateLoadingProgress(totalEventsCount, totalEventsCount);
 
-                // 按时间排序（改进的排序算法）
-                events.sort((a, b) => {
-                    return compareTime(a.time, b.time);
-                });
+                // 缓存数据
+                cacheData(events);
 
                 // 验证是否所有事件都已加载
                 if (events.length === 0) {
                     throw new Error('未加载到任何历史事件数据');
                 }
 
-                // 应用筛选并显示事件
-                applyFilters();
-
-                // 显示时间轴，隐藏加载状态
-                loadingElement.classList.add('hidden');
-                timelineContainer.classList.remove('hidden');
+                // 初始化并显示事件
+                initializeEvents();
 
             } catch (error) {
                 console.error('加载事件失败:', error);
@@ -381,6 +395,38 @@
                 errorElement.classList.remove('hidden');
                 errorDetails.textContent = error.message;
             }
+        }
+
+        // 获取缓存数据
+        function getCachedData() {
+            if (dataCache.events && dataCache.lastLoadTime) {
+                const now = Date.now();
+                if (now - dataCache.lastLoadTime < dataCache.cacheDuration) {
+                    return dataCache.events;
+                }
+            }
+            return null;
+        }
+
+        // 缓存数据
+        function cacheData(data) {
+            dataCache.events = [...data];
+            dataCache.lastLoadTime = Date.now();
+        }
+
+        // 初始化事件数据
+        function initializeEvents() {
+            // 按时间排序（改进的排序算法）
+            events.sort((a, b) => {
+                return compareTime(a.time, b.time);
+            });
+
+            // 应用筛选并显示事件
+            applyFilters();
+
+            // 显示时间轴，隐藏加载状态
+            loadingElement.classList.add('hidden');
+            timelineContainer.classList.remove('hidden');
         }
 
         // 更新加载进度
@@ -516,20 +562,20 @@
             filteredEvents = events.filter(event => {
                 // 搜索词筛选
                 if (searchTerm && !(
-                    event.event.toLowerCase().includes(searchTerm) ||
-                    event.significance.toLowerCase().includes(searchTerm) ||
-                    event.additional_info.toLowerCase().includes(searchTerm)
+                    event.事件.toLowerCase().includes(searchTerm) ||
+                    event.意义.toLowerCase().includes(searchTerm) ||
+                    event.附加信息.toLowerCase().includes(searchTerm)
                 )) {
                     return false;
                 }
 
                 // 地区筛选
-                if (region !== 'all' && !event.region.includes(region)) {
+                if (region !== 'all' && !event.地区.includes(region)) {
                     return false;
                 }
 
                 // 教育级别筛选
-                if (education !== 'all' && event.education_level !== education) {
+                if (education !== 'all' && event.教育水平 !== education) {
                     return false;
                 }
 
@@ -600,7 +646,7 @@
             mobileEventCountElement.textContent = filtered;
         }
 
-        // 渲染事件 - 直接显示全部信息
+        // 渲染事件 - 支持分页显示
         function renderEvents(eventsToRender) {
             // 清空容器
             eventsContainer.innerHTML = '';
@@ -616,10 +662,17 @@
             timelineContainer.classList.remove('hidden');
             noResultsElement.classList.add('hidden');
 
-            // 渲染每个事件
-            eventsToRender.forEach((event, index) => {
+            // 计算分页
+            const totalPages = Math.ceil(eventsToRender.length / PAGE_SIZE);
+            const startIndex = (currentPage - 1) * PAGE_SIZE;
+            const endIndex = startIndex + PAGE_SIZE;
+            const pageEvents = eventsToRender.slice(startIndex, endIndex);
+
+            // 渲染当前页的事件
+            pageEvents.forEach((event, pageIndex) => {
+                const globalIndex = startIndex + pageIndex;
                 // 交替显示在时间轴两侧
-                const isLeft = index % 2 === 0;
+                const isLeft = globalIndex % 2 === 0;
                 const cardClass = isLeft
                     ? 'ml-0 mr-auto md:mr-1/2 md:pr-8'
                     : 'ml-auto mr-0 md:ml-1/2 md:pl-8';
@@ -629,38 +682,39 @@
                 const eventElement = document.createElement('div');
                 eventElement.className = `relative ${cardClass} w-full md:w-[calc(50%-2rem)] opacity-0`;
                 eventElement.setAttribute('data-animate', 'true');
+                eventElement.setAttribute('data-index', globalIndex);
                 eventElement.innerHTML = `
                         <!-- 时间点 -->
-                        <div class="timeline-dot pulse-border" data-index="${index}"></div>
+                        <div class="timeline-dot pulse-border" data-index="${globalIndex}"></div>
 
                         <!-- 事件卡片 - 直接显示全部信息 -->
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 card-hover border border-gray-100 dark:border-gray-700">
                             <div class="flex flex-wrap justify-between items-start mb-3 gap-2">
-                                <h3 class="font-bold text-lg text-gray-900 dark:text-white">${event.event}</h3>
+                                <h3 class="font-bold text-lg text-gray-900 dark:text-white">${escapeHtml(event.事件)}</h3>
                                 <div class="flex gap-2">
-                                    <span class="text-sm px-2 py-0.5 rounded-full ${event.region.includes('国内') ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'}">
-                                        ${event.region.includes('国内') ? '国内' : '国外'}
+                                    <span class="text-sm px-2 py-0.5 rounded-full ${event.地区.includes('国内') ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'}">
+                                        ${event.地区.includes('国内') ? '国内' : '国外'}
                                     </span>
-                                    <span class="text-sm px-2 py-0.5 rounded-full ${event.education_level === '初中' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'}">
-                                        ${event.education_level}
+                                    <span class="text-sm px-2 py-0.5 rounded-full ${event.教育水平 === '初中' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'}">
+                                        ${event.教育水平}
                                     </span>
                                 </div>
                             </div>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 flex items-center">
-                                <i class="fa fa-clock-o mr-1"></i> ${event.time}
+                                <i class="fa fa-clock-o mr-1"></i> ${escapeHtml(event.time)}
                             </p>
                             <div class="space-y-4">
                                 <div>
                                     <h4 class="font-semibold text-sm text-gray-600 dark:text-gray-300 mb-1 flex items-center">
                                         <i class="fa fa-star text-yellow-500 mr-1"></i> 事件意义
                                     </h4>
-                                    <p class="text-gray-700 dark:text-gray-300 text-sm">${event.significance}</p>
+                                    <p class="text-gray-700 dark:text-gray-300 text-sm">${escapeHtml(event.意义)}</p>
                                 </div>
                                 <div>
                                     <h4 class="font-semibold text-sm text-gray-600 dark:text-gray-300 mb-1 flex items-center">
                                         <i class="fa fa-info-circle text-primary mr-1"></i> 补充信息
                                     </h4>
-                                    <p class="text-gray-700 dark:text-gray-300 text-sm">${event.additional_info}</p>
+                                    <p class="text-gray-700 dark:text-gray-300 text-sm">${escapeHtml(event.附加信息)}</p>
                                 </div>
                             </div>
                         </div>
@@ -670,12 +724,90 @@
                 eventsContainer.appendChild(eventElement);
 
                 // 初始延迟动画，确保按顺序显示
-                if (index < 5) { // 只对前5个元素立即应用动画，其余由滚动触发
+                if (pageIndex < 3) {
                     setTimeout(() => {
                         eventElement.classList.add(animationClass);
-                    }, index * 200);
+                    }, pageIndex * 250);
                 }
             });
+
+            // 渲染分页控件
+            renderPagination(totalPages);
+        }
+
+        // 渲染分页控件
+        function renderPagination(totalPages) {
+            // 移除现有的分页容器
+            const existingPagination = document.getElementById('events-pagination');
+            if (existingPagination) {
+                existingPagination.remove();
+            }
+
+            // 如果只有一页，不显示分页
+            if (totalPages <= 1) {
+                return;
+            }
+
+            // 创建分页容器
+            const paginationContainer = document.createElement('div');
+            paginationContainer.id = 'events-pagination';
+            paginationContainer.className = 'flex justify-center items-center gap-2 mt-12 py-6 border-t border-gray-200 dark:border-gray-700';
+
+            // 上一页按钮
+            const prevButton = document.createElement('button');
+            prevButton.className = `px-4 py-2 rounded-lg transition-colors ${currentPage <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
+            prevButton.innerHTML = '<i class="fa fa-chevron-left"></i>';
+            prevButton.disabled = currentPage <= 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderEvents(filteredEvents);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+
+            // 页码按钮
+            const pageButtons = [];
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = `w-10 h-10 rounded-lg transition-colors ${currentPage === i ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
+                pageButton.textContent = i;
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    renderEvents(filteredEvents);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                pageButtons.push(pageButton);
+            }
+
+            // 下一页按钮
+            const nextButton = document.createElement('button');
+            nextButton.className = `px-4 py-2 rounded-lg transition-colors ${currentPage >= totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
+            nextButton.innerHTML = '<i class="fa fa-chevron-right"></i>';
+            nextButton.disabled = currentPage >= totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderEvents(filteredEvents);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+
+            // 组装分页控件
+            paginationContainer.appendChild(prevButton);
+            pageButtons.forEach(btn => paginationContainer.appendChild(btn));
+            paginationContainer.appendChild(nextButton);
+
+            // 添加到时间轴容器
+            timelineContainer.appendChild(paginationContainer);
+        }
+
+        // HTML转义函数 - XSS防护
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // 初始化滚动动画

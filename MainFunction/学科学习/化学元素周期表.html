@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>元素周期表</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="化学数据_loader.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
     <script>
@@ -236,12 +237,18 @@
             initDOMReferences();
 
             try {
-                // 读取同目录下的elements.json文件
-                const response = await fetch('化学数据.json');
-                if (!response.ok) {
-                    throw new Error('文件不存在或无法读取');
+                // 优先使用内联数据 (支持 file:// 协议)
+                let elements;
+                if (window.__化学数据__) {
+                    elements = window.__化学数据__;
+                    console.log('使用内联化学数据');
+                } else {
+                    const response = await fetch('化学数据.json');
+                    if (!response.ok) {
+                        throw new Error('文件不存在或无法读取');
+                    }
+                    elements = await response.json();
                 }
-                const elements = await response.json();
 
                 // 隐藏加载状态，显示内容
                 DOM.loading.classList.add('hidden');

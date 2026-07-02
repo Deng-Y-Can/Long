@@ -7,6 +7,8 @@
     <!-- 引入外部资源 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 数据加载器 (支持 file:// 协议) -->
+    <script src="物理数据_loader.js"></script>
 
     <!-- 配置Tailwind -->
     <script>
@@ -399,11 +401,22 @@
 
         // 带备选路径的JSON数据加载函数
         async function loadPhysicsDataWithFallback() {
-            // 先尝试主路径
+            // 优先使用内联数据 (支持 file:// 协议)
+            if (window.__PHYSICS_DATA__ && window.__PHYSICS_DATA__.middle_high_school_physics) {
+                console.log('使用内联物理数据');
+                const validatedData = validateAndFixDataStructure(window.__PHYSICS_DATA__);
+                if (validatedData) {
+                    physicsData = validatedData;
+                    initializePage();
+                    return;
+                }
+            }
+
+            // 回退到 fetch 加载 (需要 HTTP 服务器)
             try {
                 const success = await tryLoadPhysicsData(jsonFilePath);
                 if (success) {
-                    return; // 加载成功，退出函数
+                    return;
                 }
             } catch (error) {
                 console.log(`主路径 ${jsonFilePath} 加载失败，尝试备选路径...`);
@@ -414,7 +427,7 @@
                 try {
                     const success = await tryLoadPhysicsData(path);
                     if (success) {
-                        return; // 加载成功，退出函数
+                        return;
                     }
                 } catch (error) {
                     console.log(`备选路径 ${path} 加载失败，尝试下一个路径...`);

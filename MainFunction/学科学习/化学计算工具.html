@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>初高中化学学习平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="化学计算数据_loader.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script>
         // 配置清新柔和的Tailwind主题
@@ -478,14 +479,18 @@
         // 从JSON文件加载数据 - 修复核心：添加错误处理和数据验证
         async function loadChemistryData() {
             try {
-                // 尝试从外部文件加载
-                const response = await fetch('化学计算数据.json');
-
-                if (!response.ok) {
-                    throw new Error(`HTTP错误: ${response.status}`);
+                // 优先使用内联数据 (支持 file:// 协议)
+                let data;
+                if (window.__化学计算数据__) {
+                    data = window.__化学计算数据__;
+                    console.log('使用内联化学计算数据');
+                } else {
+                    const response = await fetch('化学计算数据.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误: ${response.status}`);
+                    }
+                    data = await response.json();
                 }
-
-                const data = await response.json();
 
                 // 验证数据结构
                 if (!data || !data.chemistry_knowledge ||

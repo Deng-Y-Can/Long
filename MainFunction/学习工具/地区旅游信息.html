@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>地区信息展示平台</title>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="地区数据_loader.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <style type="text/tailwindcss">
         @theme {
@@ -137,41 +138,40 @@
         let filteredData = [];
         let currentSearch = '';
 
-        // 从JSON文件读取数据
-        fetch('地区数据.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('网络响应不正常');
+        // 从JSON文件读取数据 (优先使用内联数据)
+        function processRegionData(data) {
+            for (const region in data) {
+                if (data.hasOwnProperty(region)) {
+                    const areaList = data[region];
+                    allAreas = allAreas.concat(areaList);
+                    areaList.forEach(area => {
+                        provinces.add(area.province);
+                    });
                 }
-                return response.json();
-            })
-            .then(data => {
-                // 扁平化JSON数据，将所有地区信息放入一个数组，并提取所有省份
-                for (const region in data) {
-                    if (data.hasOwnProperty(region)) {
-                        const areaList = data[region];
-                        allAreas = allAreas.concat(areaList);
-                        areaList.forEach(area => {
-                            provinces.add(area.province);
-                        });
-                    }
-                }
+            }
+            renderProvinceButtons();
+            filteredData = allAreas;
+            updateDataDisplay();
+            showRandomArea();
+            setInterval(showRandomArea, 5000);
+        }
 
-                // 渲染省份筛选按钮
-                renderProvinceButtons();
-                // 初始化数据
-                filteredData = allAreas;
-                updateDataDisplay();
-                // 初始展示一个随机地区
-                showRandomArea();
-                // 定时切换随机地区，每5秒一次
-                setInterval(showRandomArea, 5000);
-            })
-            .catch(error => {
-                console.error('读取JSON数据失败：', error);
-                const container = document.getElementById('dataContainer');
-                container.innerHTML = '<div class="text-center text-red-500 py-8">数据加载失败，请检查JSON文件是否存在或格式是否正确</div>';
-            });
+        if (window.__地区数据__) {
+            console.log('使用内联地区数据');
+            processRegionData(window.__地区数据__);
+        } else {
+            fetch('地区数据.json')
+                .then(response => {
+                    if (!response.ok) throw new Error('网络响应不正常');
+                    return response.json();
+                })
+                .then(data => processRegionData(data))
+                .catch(error => {
+                    console.error('读取JSON数据失败：', error);
+                    const container = document.getElementById('dataContainer');
+                    container.innerHTML = '<div class="text-center text-red-500 py-8">数据加载失败，请检查JSON文件是否存在或格式是否正确</div>';
+                });
+        }
 
         // 当前筛选的省份
         let currentProvince = 'all';

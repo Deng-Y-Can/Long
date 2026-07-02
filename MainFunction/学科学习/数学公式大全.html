@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Candy数学公式库</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="数学数据_loader.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
     <script>
@@ -397,11 +398,17 @@
         // 从 JSON 文件加载数据
         async function loadFormulas() {
             try {
-                const response = await fetch('数学数据.json');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                // 优先使用内联数据 (支持 file:// 协议)
+                if (window.__数学数据__) {
+                    formulas = window.__数学数据__;
+                    console.log('使用内联数学数据');
+                } else {
+                    const response = await fetch('数学数据.json');
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    formulas = await response.json();
                 }
-                formulas = await response.json();
 
                 // 处理数据
                 processFormulas();

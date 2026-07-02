@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>生物学知识学习平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="生物数据_loader.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Tailwind 配置 -->
@@ -318,6 +319,12 @@
             </li>
           `;
 
+            // 优先使用内联数据 (支持 file:// 协议)
+            if (window.__生物数据__) {
+                biologyKnowledge = window.__生物数据__;
+                console.log('使用内联生物数据');
+                loadChapters(currentLevel);
+            } else {
             // 使用fetch加载JSON文件
             fetch('生物数据.json')
                 .then(response => {
@@ -336,6 +343,8 @@
                     // 显示错误信息
                     errorMessage.textContent = `无法加载知识点数据: ${error.message}，请稍后重试`;
                     errorModal.classList.remove('hidden');
+                });
+            }
                     // 触发动画
                     setTimeout(() => {
                         errorModal.querySelector('div:nth-child(2)').classList.add('scale-100', 'opacity-100');

@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>元素周期表</title>
+    <title>化学反应方程式</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="化学数据_loader.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
     <script>
@@ -304,6 +305,10 @@
         // 加载元素数据
         async function loadElementData() {
             try {
+                if (window.__化学数据__) {
+                    console.log('使用内联化学数据');
+                    return window.__化学数据__;
+                }
                 const response = await fetch('化学数据.json');
                 if (!response.ok) {
                     throw new Error(`无法加载数据: ${response.statusText}`);

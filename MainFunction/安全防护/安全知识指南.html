@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>应急事件处理指南</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="安全数据_loader.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Tailwind 配置 -->
@@ -169,11 +170,17 @@
         // 从外部JSON文件加载数据
         async function loadEmergencyData() {
             try {
-                const response = await fetch('安全数据.json'); // 假设JSON文件在同级目录
-                if (!response.ok) {
-                    throw new Error(`HTTP错误！状态码：${response.status}`);
+                // 优先使用内联数据 (支持 file:// 协议)
+                if (window.__安全数据__) {
+                    emergencyData = window.__安全数据__;
+                    console.log('使用内联安全数据');
+                } else {
+                    const response = await fetch('安全数据.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误！状态码：${response.status}`);
+                    }
+                    emergencyData = await response.json();
                 }
-                emergencyData = await response.json();
 
                 // 数据加载成功后渲染内容
                 renderEmergencyGuide(emergencyData);

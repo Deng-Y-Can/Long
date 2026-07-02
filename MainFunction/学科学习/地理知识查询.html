@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>初中地理学习平台</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="地理数据_loader.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <script>
     // Tailwind配置
@@ -586,14 +587,17 @@
     // 从JSON加载地理数据
     async function loadGeographyData() {
       try {
-        // 这里假设JSON文件路径是'geography.json'，实际使用时请替换为正确路径
-        const response = await fetch('地理数据.json');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        // 优先使用内联数据 (支持 file:// 协议)
+        if (window.__地理数据__) {
+          geographyData = window.__地理数据__;
+          console.log('使用内联地理数据');
+        } else {
+          const response = await fetch('地理数据.json');
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          geographyData = await response.json();
         }
-        
-        geographyData = await response.json();
         console.log('地理数据加载成功:', geographyData);
         
         // 处理并显示数据

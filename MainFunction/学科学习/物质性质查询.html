@@ -6,6 +6,7 @@
     <title>化学物质数据库</title>
     <!-- 外部资源 - 使用更可靠的CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="物质性质数据_loader.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- 解决favicon错误 -->
@@ -414,10 +415,15 @@
         // 初始化函数
         async function init() {
             try {
-                // 读取JSON数据
-                const response = await fetch('物质性质数据.json');
-                if (!response.ok) throw new Error('网络响应错误');
-                substancesData = await response.json();
+                // 优先使用内联数据 (支持 file:// 协议)
+                if (window.__物质性质数据__) {
+                    substancesData = window.__物质性质数据__;
+                    console.log('使用内联物质性质数据');
+                } else {
+                    const response = await fetch('物质性质数据.json');
+                    if (!response.ok) throw new Error('网络响应错误');
+                    substancesData = await response.json();
+                }
 
                 // 更新统计信息
                 updateStatistics();

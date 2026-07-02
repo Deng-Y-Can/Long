@@ -6,6 +6,7 @@
     <title>历史事件时间轴</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="历史数据_loader.js"></script>
     <script>
         // Tailwind 配置
         tailwind.config = {
@@ -357,14 +358,31 @@
                     return;
                 }
 
-                // 这里使用示例JSON数据URL
-                const response = await fetch('历史数据.json');
-
-                if (!response.ok) {
-                    throw new Error(`HTTP错误: 状态码 ${response.status}`);
+                // 优先使用内联数据 (支持 file:// 协议)
+                let data = null;
+                if (window.__HISTORY_DATA__ && Array.isArray(window.__HISTORY_DATA__.timeline)) {
+                    data = window.__HISTORY_DATA__;
+                    console.log('使用内联历史数据');
+                } else {
+                    // 回退到 fetch 加载 (需要 HTTP 服务器)
+                    try {
+                        const response = await fetch('历史数据.json');
+                        if (!response.ok) {
+                            throw new Error(`HTTP错误: 状态码 ${response.status}`);
+                        }
+                        data = await response.json();
+                    } catch (fetchError) {
+                        console.warn('fetch 加载失败，尝试 XHR...');
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', '历史数据.json', false);
+                        try {
+                            xhr.send();
+                            data = JSON.parse(xhr.responseText);
+                        } catch (xhrError) {
+                            throw new Error('无法加载历史数据。请通过HTTP服务器打开此页面，或确保 历史数据_loader.js 文件存在。');
+                        }
+                    }
                 }
-
-                const data = await response.json();
 
                 // 验证数据结构
                 if (!data || !Array.isArray(data.timeline)) {

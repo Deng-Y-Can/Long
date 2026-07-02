@@ -14,6 +14,7 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="PH值数据_loader.js"></script>
 
     <!-- Tailwind配置 -->
     <script>
@@ -474,14 +475,17 @@
                 errorIndicator.classList.add('hidden');
                 emptyIndicator.classList.add('hidden');
 
-                // 请将此处替换为您的ph_substances.json文件实际路径
-                const response = await fetch('PH值数据.json');
-
-                if (!response.ok) {
-                    throw new Error(`HTTP错误: ${response.status}`);
+                // 优先使用内联数据 (支持 file:// 协议)
+                if (window.__PH值数据__) {
+                    substances = window.__PH值数据__;
+                    console.log('使用内联PH值数据');
+                } else {
+                    const response = await fetch('PH值数据.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误: ${response.status}`);
+                    }
+                    substances = await response.json();
                 }
-
-                substances = await response.json();
                 filteredSubstances = [...substances];
 
                 // 处理数据
